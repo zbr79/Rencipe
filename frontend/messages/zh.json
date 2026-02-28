@@ -8,9 +8,23 @@
     "profile": "我的"
   },
   "home": {
-    "viewAllRecipes": "查看所有食谱",
+    "searchPlaceholder": "搜索食谱...",
+    "following": "关注",
+    "recommended": "推荐",
+    "trending": "热门",
+    "categories": "分类",
+    "featured": "精选食谱",
+    "startsToday": "今日发现",
+    "creator": "创作者",
+    "discoverRecipes": "发现美食食谱",
+    "exploreRecipes": "探索美味食谱，分享您的烹饪创意",
     "createRecipe": "创建食谱",
-    "noRecipes": "尚无食谱。"
+    "recentRecipes": "最近的食谱",
+    "viewAll": "查看全部",
+    "viewAllRecipes": "查看所有食谱",
+    "noRecipes": "尚无食谱。",
+    "beFirst": "成为第一个分享美味食谱的人！",
+    "createFirst": "创建您的第一个食谱"
   },
   "create": {
     "title": "创建食谱",
@@ -139,6 +153,7 @@
       "darkMode": "深色模式"
     }
   },
+  "common": {
     "loading": "加载中…",
     "error": "错误",
     "success": "成功",

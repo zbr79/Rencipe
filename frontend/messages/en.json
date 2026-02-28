@@ -8,9 +8,23 @@
     "profile": "Profile"
   },
   "home": {
-    "viewAllRecipes": "View All Recipes",
+    "searchPlaceholder": "Search recipes...",
+    "following": "Following",
+    "recommended": "Recommended",
+    "trending": "Trending",
+    "categories": "Categories",
+    "featured": "Featured Recipes",
+    "startsToday": "Discover today",
+    "creator": "Creator",
+    "discoverRecipes": "Discover Recipes",
+    "exploreRecipes": "Explore delicious recipes and share your culinary creations",
     "createRecipe": "Create Recipe",
-    "noRecipes": "No recipes yet."
+    "recentRecipes": "Recent Recipes",
+    "viewAll": "View All",
+    "viewAllRecipes": "View All Recipes",
+    "noRecipes": "No recipes yet.",
+    "beFirst": "Be the first to share a delicious recipe!",
+    "createFirst": "Create Your First Recipe"
   },
   "create": {
     "title": "Create Your Recipe",
@@ -138,8 +152,7 @@
       "language": "Language",
       "darkMode": "Dark Mode"
     }
-  },
-    "loading": "Loading…",
+  },  "common": {    "loading": "Loading…",
     "error": "Error",
     "success": "Success",
     "back": "Back",

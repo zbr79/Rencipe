@@ -15,7 +15,6 @@ type Recipe = {
 };
 
 type ListRes = { recipes: Recipe[] };
-type CreateRes = { recipe: Recipe };
 
 function safeJson(text: string) {
   try {
@@ -34,6 +33,7 @@ export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("recommended");
 
   async function fetchRecipes() {
     setLoading(true);
@@ -69,53 +69,99 @@ export default function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const tabs = [
+    { id: "following", label: t("home.following") || "Following" },
+    { id: "recommended", label: t("home.recommended") || "Recommended" },
+    { id: "trending", label: t("home.trending") || "Trending" },
+    { id: "categories", label: t("home.categories") || "Categories" },
+  ];
+
   return (
     <main className={styles.container}>
-      <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Rencipe</h1>
-          <div className={styles.sub}>
-            API: <span className={styles.mono}>{API}</span>
-          </div>
+      {/* Search Bar */}
+      <div className={styles.searchSection}>
+        <div className={styles.searchInput}>
+          <span className={styles.searchIcon}>search</span>
+          <input 
+            type="text" 
+            placeholder={t("home.searchPlaceholder") || "Search recipes..."} 
+            readOnly
+          />
         </div>
-        <div className={styles.headerActions}>
-          <Link href={`/${locale}/recipes`} className={styles.btn}>
-            {t("home.viewAllRecipes")}
-          </Link>
-          <Link href={`/${locale}/create`} className={styles.primaryBtn}>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className={styles.tabs}>
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Featured Banner */}
+      <div className={styles.banner}>
+        <div className={styles.bannerContent}>
+          <h3 className={styles.bannerTitle}>{t("home.featured") || "Featured Recipes"}</h3>
+          <p className={styles.bannerSubtitle}>{t("home.startsToday") || "Discover today"}</p>
+        </div>
+        <span className={styles.bannerArrow}>→</span>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className={styles.errorBanner}>
+          <span>⚠️ {error}</span>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading ? (
+        <div className={styles.loadingState}>
+          <div className={styles.loadingSpinner}></div>
+        </div>
+      ) : recipes.length === 0 ? (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>🍳</div>
+          <h3 className={styles.emptyTitle}>{t("home.noRecipes")}</h3>
+          <p className={styles.emptyDescription}>
+            {t("home.beFirst") || "Be the first to share a recipe!"}
+          </p>
+          <Link href={`/${locale}/create`} className={styles.emptyButton}>
             + {t("home.createRecipe")}
           </Link>
         </div>
-      </header>
-
-      {error && <div className={styles.error}>❌ {error}</div>}
-
-      {loading ? (
-        <div className={styles.muted}>{t("common.loading")}</div>
-      ) : recipes.length === 0 ? (
-        <div className={styles.muted}>{t("home.noRecipes")}</div>
       ) : (
-        <div className={styles.list}>
+        <div className={styles.recipeGrid}>
           {recipes.map((r) => (
-            <article key={r.id} className={styles.card}>
-              <div className={styles.cardTitle}>{r.title}</div>
-
-              {(r.updatedAt || r.createdAt) && (
-                <div className={styles.meta}>
-                  {r.updatedAt
-                    ? `${t("common.updated")}: ${new Date(r.updatedAt).toLocaleString()}`
-                    : `${t("common.created")}: ${new Date(r.createdAt!).toLocaleString()}`}
+            <Link key={r.id} href={`/${locale}/recipes/${r.id}`} className={styles.recipeCard}>
+              <div className={styles.cardImage}>
+                <div className={styles.imagePlaceholder}>
+                  <span>🍽️</span>
                 </div>
-              )}
-
-              <div className={styles.preview}>
-                {r.content?.length > 260 ? r.content.slice(0, 260) + "…" : r.content}
               </div>
+              
+              <div className={styles.cardContent}>
+                <h3 className={styles.cardTitle}>{r.title}</h3>
+                
+                <div className={styles.cardMeta}>
+                  <span className={styles.author}>
+                    <span className={styles.avatarInitial}>C</span>
+                    {t("home.creator") || "Creator"}
+                  </span>
+                </div>
 
-              <Link href={`/${locale}/recipes/${r.id}`} className={styles.link}>
-                → {t("common.readMore")}
-              </Link>
-            </article>
+                {r.content && (
+                  <p className={styles.cardDescription}>
+                    {r.content.length > 60 ? r.content.slice(0, 60) + "…" : r.content}
+                  </p>
+                )}
+              </div>
+            </Link>
           ))}
         </div>
       )}
