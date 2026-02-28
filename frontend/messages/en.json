@@ -32,7 +32,7 @@
     "placeholders": {
       "recipeName": "Enter recipe name",
       "description": "Describe your recipe...",
-      "ingredient Name": "Name",
+      "ingredientName": "Name",
       "quantity": "Qty",
       "unit": "Unit",
       "note": "Note",

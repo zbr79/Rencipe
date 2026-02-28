@@ -32,7 +32,7 @@
     "placeholders": {
       "recipeName": "输入食谱名称",
       "description": "描述您的食谱...",
-      "ingredient Name": "名称",
+      "ingredientName": "名称",
       "quantity": "数量",
       "unit": "单位",
       "note": "备注",
