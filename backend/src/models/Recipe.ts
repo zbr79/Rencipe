@@ -1,15 +1,74 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
-const RecipeSchema = new mongoose.Schema(
+export interface IRecipe extends Document {
+  title: string;
+  description: string;
+  authorId: mongoose.Types.ObjectId;
+
+  ingredients: {
+    name: string;
+    quantity: number;
+    unit: string;
+    note?: string;
+  }[];
+
+  steps: {
+    stepNumber: number;
+    instruction: string;
+  }[];
+
+  servings: number;
+  difficulty: "Easy" | "Medium" | "Hard";
+
+  tags: string[];
+  cuisine: string;
+
+  likes: number;
+  views: number;
+  ratingAverage: number;
+  ratingCount: number;
+
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const RecipeSchema = new Schema<IRecipe>(
   {
-    title: { type: String, required: true, trim: true, maxlength: 120 },
-    content: { type: String, required: true, trim: true, maxlength: 20000 },
+    title: { type: String, required: true, trim: true },
+    description: { type: String, required: true, trim: true },
+    authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
 
-    // optional for later
-    uploadedBy: { type: String, required: false }, // userId
-    source: { type: String, required: false }, // original source URL/string
+    ingredients: [
+      {
+        name: String,
+        quantity: Number,
+        unit: String,
+        note: String,
+      },
+    ],
+
+    steps: [
+      {
+        stepNumber: Number,
+        instruction: String,
+      },
+    ],
+
+    servings: Number,
+    difficulty: {
+      type: String,
+      enum: ["Easy", "Medium", "Hard"],
+    },
+
+    tags: [String],
+    cuisine: String,
+
+    likes: { type: Number, default: 0 },
+    views: { type: Number, default: 0 },
+    ratingAverage: { type: Number, default: 0 },
+    ratingCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
-export default mongoose.models.Recipe || mongoose.model("Recipe", RecipeSchema);
+export default mongoose.models.Recipe || mongoose.model<IRecipe>("Recipe", RecipeSchema);

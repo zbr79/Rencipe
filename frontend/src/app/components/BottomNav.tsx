@@ -6,6 +6,7 @@ import styles from "./bottom-nav.module.css";
 
 const navItems = [
   { href: "/", label: "Home" },
+  { href: "/recipes", label: "Recipes" },
   { href: "/search", label: "Search" },
   { href: "/create", label: "Create" },
   { href: "/saved", label: "Saved" },
