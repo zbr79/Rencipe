@@ -3,12 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./bottom-nav.module.css";
-import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function BottomNav() {
   const pathname = usePathname();
-  
-  // Extract locale from pathname (e.g., /en/recipes -> en)
   const locale = pathname.split('/')[1] || 'en';
 
   const navItems = [
@@ -38,9 +35,6 @@ export default function BottomNav() {
             </Link>
           );
         })}
-      </div>
-      <div className={styles.langSwitcher}>
-        <LanguageSwitcher />
       </div>
     </nav>
   );

@@ -1,18 +1,12 @@
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
-import BottomNav from '../components/BottomNav';
+import LocaleSync from '../components/LocaleSync';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import '../globals.css';
 
 export function generateStaticParams() {
   return [{ locale: 'en' }, { locale: 'zh' }];
 }
-
-export const metadata = {
-  title: 'Rencipe',
-  description: 'A recipe sharing platform',
-  viewport: 'width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no',
-};
 
 async function loadMessages(locale: string) {
   if (!locale) {
@@ -23,7 +17,7 @@ async function loadMessages(locale: string) {
   return (await import(`../../../messages/${locale}.json`)).default;
 }
 
-export default async function RootLayout({
+export default async function LocaleLayout({
   children,
   params,
 }: {
@@ -36,19 +30,13 @@ export default async function RootLayout({
   const messages = await loadMessages(locale);
 
   return (
-    <html lang={locale}>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-      </head>
-      <body>
-        <NextIntlClientProvider messages={messages} locale={locale}>
-          <ThemeProvider>
-            {children}
-            <BottomNav />
-          </ThemeProvider>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <>
+      <LocaleSync locale={locale} />
+      <NextIntlClientProvider messages={messages} locale={locale}>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </NextIntlClientProvider>
+    </>
   );
 }
