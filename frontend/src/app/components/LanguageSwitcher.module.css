@@ -6,10 +6,10 @@
 
 .button {
   padding: 6px 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border);
   border-radius: 6px;
   background-color: transparent;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -19,12 +19,12 @@
 }
 
 .button:hover {
-  border-color: #4ecdc4;
-  color: #4ecdc4;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .button.active {
-  background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+  background: var(--primary);
   color: white;
-  border-color: transparent;
+  border-color: var(--primary);
 }

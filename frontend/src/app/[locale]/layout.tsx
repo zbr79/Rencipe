@@ -1,6 +1,7 @@
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
 import BottomNav from '../components/BottomNav';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import '../globals.css';
 
 export function generateStaticParams() {
@@ -42,8 +43,10 @@ export default async function RootLayout({
       </head>
       <body>
         <NextIntlClientProvider messages={messages} locale={locale}>
-          {children}
-          <BottomNav />
+          <ThemeProvider>
+            {children}
+            <BottomNav />
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

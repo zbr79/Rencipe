@@ -1,13 +1,23 @@
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111827;
+  --primary: #3b82f6;
+  --border: #e5e7eb;
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --text-secondary: #6b7280;
+  --hover-bg: #f3f4f6;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html.dark {
+  --background: #1a1a1a;
+  --foreground: #e5e5e5;
+  --primary: #3b82f6;
+  --border: #404040;
+  --card-bg: #242424;
+  --input-bg: #2a2a2a;
+  --text-secondary: #a0a0a0;
+  --hover-bg: #333333;
 }
 
 html,
@@ -36,10 +46,4 @@ body {
 a {
   color: inherit;
   text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
 }

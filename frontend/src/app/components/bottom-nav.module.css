@@ -14,11 +14,11 @@
   padding-left: 12px;
   padding-right: 12px;
 
-  background: #ffffff;
-  border-top: 1px solid #e5e5e5;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
 
   z-index: 9999;
-  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
 
   -webkit-user-select: none;
   -webkit-touch-callout: none;
@@ -42,7 +42,7 @@
   width: 60px;
   height: 60px;
   text-decoration: none;
-  color: #999;
+  color: var(--text-secondary);
   transition: all 0.2s ease;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -50,7 +50,7 @@
 }
 
 .item:active {
-  background-color: #f5f5f5;
+  background-color: var(--hover-bg);
 }
 
 .icon {
@@ -59,17 +59,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: var(--text-secondary);
   width: 24px;
   height: 24px;
 }
 
 .item.active {
-  color: #000;
+  color: var(--foreground);
 }
 
 .item.active .icon {
-  color: #000;
+  color: var(--foreground);
   font-size: 24px;
 }
 

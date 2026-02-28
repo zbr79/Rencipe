@@ -2,19 +2,19 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 24px 16px 80px;
-  background-color: #ffffff;
+  background-color: var(--background);
 }
 
 .header {
   margin-bottom: 32px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
 }
 
 .header h1 {
   font-size: 28px;
   font-weight: 800;
-  color: #111827;
+  color: var(--foreground);
   margin: 0;
 }
 
@@ -25,7 +25,7 @@
 .sectionTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0 0 12px 0;
@@ -37,7 +37,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border);
 }
 
 .settingItem:last-child {
@@ -60,32 +60,33 @@
 .settingLabel span:last-child {
   font-size: 14px;
   font-weight: 500;
-  color: #111827;
+  color: var(--foreground);
 }
 
 .settingValue {
   font-size: 14px;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .settingSelect {
   padding: 8px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 14px;
-  color: #111827;
-  background-color: #ffffff;
+  color: var(--foreground);
+  background-color: var(--input-bg);
   cursor: pointer;
   transition: border-color 0.2s ease;
 }
 
 .settingSelect:hover {
-  border-color: #d1d5db;
+  border-color: var(--border);
+  background-color: var(--hover-bg);
 }
 
 .settingSelect:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -104,13 +105,13 @@
   position: relative;
   width: 48px;
   height: 28px;
-  background-color: #e5e7eb;
+  background-color: var(--border);
   border-radius: 14px;
   transition: background-color 0.3s ease;
 }
 
 .toggle input:checked + .toggleSlider {
-  background-color: #3b82f6;
+  background-color: var(--primary);
 }
 
 .toggleSlider::after {

@@ -1,24 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useTheme } from "../../contexts/ThemeContext";
 import styles from "./page.module.css";
 
 export default function SettingsPage() {
   const params = useParams();
   const locale = params.locale as string;
   const t = useTranslations("settings");
-
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const handleLanguageChange = (newLocale: string) => {
     window.location.href = newLocale === "en" ? "/en/settings" : "/zh/settings";
-  };
-
-  const handleDarkModeToggle = () => {
-    setIsDarkMode(!isDarkMode);
-    // Placeholder - will implement actual dark mode later
   };
 
   return (
@@ -69,8 +63,8 @@ export default function SettingsPage() {
           <label className={styles.toggle}>
             <input
               type="checkbox"
-              checked={isDarkMode}
-              onChange={handleDarkModeToggle}
+              checked={theme === "dark"}
+              onChange={toggleTheme}
             />
             <span className={styles.toggleSlider}></span>
           </label>
