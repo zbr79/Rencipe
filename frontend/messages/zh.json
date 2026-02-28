@@ -126,7 +126,19 @@
     "medium": "中等",
     "hard": "困难"
   },
-  "common": {
+  "settings": {
+    "title": "设置",
+    "account": {
+      "title": "帐户",
+      "loggedInAs": "登录身份",
+      "guestUser": "访客用户"
+    },
+    "app": {
+      "title": "应用",
+      "language": "语言",
+      "darkMode": "深色模式"
+    }
+  },
     "loading": "加载中…",
     "error": "错误",
     "success": "成功",

@@ -10,6 +10,7 @@ export function generateStaticParams() {
 export const metadata = {
   title: 'Rencipe',
   description: 'A recipe sharing platform',
+  viewport: 'width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no',
 };
 
 async function loadMessages(locale: string) {
@@ -35,11 +36,13 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+      </head>
       <body>
         <NextIntlClientProvider messages={messages} locale={locale}>
-          <div style={{ paddingBottom: "60px" }}>
-            {children}
-          </div>
+          {children}
           <BottomNav />
         </NextIntlClientProvider>
       </body>

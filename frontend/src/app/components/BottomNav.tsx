@@ -1,24 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
 import styles from "./bottom-nav.module.css";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const params = useParams();
-  const locale = params.locale as string;
-  const t = useTranslations("navigation");
+  
+  // Extract locale from pathname (e.g., /en/recipes -> en)
+  const locale = pathname.split('/')[1] || 'en';
 
   const navItems = [
-    { href: `/${locale}`, label: t("home") },
-    { href: `/${locale}/recipes`, label: t("recipes") },
-    { href: `/${locale}/search`, label: t("search") },
-    { href: `/${locale}/create`, label: t("create") },
-    { href: `/${locale}/saved`, label: t("saved") },
-    { href: `/${locale}/profile`, label: t("profile") },
+    { href: `/${locale}`, icon: "home", label: "Home" },
+    { href: `/${locale}/search`, icon: "search", label: "Search" },
+    { href: `/${locale}/create`, icon: "add_circle", label: "Create" },
+    { href: `/${locale}/saved`, icon: "favorite", label: "Saved" },
+    { href: `/${locale}/settings`, icon: "settings", label: "Settings" },
   ];
 
   return (
@@ -32,8 +30,11 @@ export default function BottomNav() {
               key={item.href}
               href={item.href}
               className={`${styles.item} ${active ? styles.active : ""}`}
+              title={item.label}
             >
-              {item.label}
+              <span className={`material-symbols-outlined ${styles.icon}`}>
+                {item.icon}
+              </span>
             </Link>
           );
         })}

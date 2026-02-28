@@ -126,7 +126,19 @@
     "medium": "Medium",
     "hard": "Hard"
   },
-  "common": {
+  "settings": {
+    "title": "Settings",
+    "account": {
+      "title": "Account",
+      "loggedInAs": "Logged in as",
+      "guestUser": "Guest User"
+    },
+    "app": {
+      "title": "App",
+      "language": "Language",
+      "darkMode": "Dark Mode"
+    }
+  },
     "loading": "Loading…",
     "error": "Error",
     "success": "Success",

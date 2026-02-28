@@ -10,9 +10,7 @@ interface Recipe {
   id: string;
   title: string;
   description: string;
-  difficulty: "Easy" | "Medium" | "Hard";
   servings: number;
-  cuisine: string;
   tags: string[];
   likes: number;
   views: number;
@@ -26,14 +24,11 @@ export default function RecipesPage() {
   const locale = params.locale as string;
   const t = useTranslations("recipes");
   const tCommon = useTranslations("common");
-  const tDifficulty = useTranslations("difficulty");
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({
-    difficulty: "",
-    cuisine: "",
     searchTerm: "",
   });
 
@@ -63,10 +58,6 @@ export default function RecipesPage() {
   };
 
   const filteredRecipes = recipes.filter((recipe) => {
-    const matchesDifficulty =
-      !filters.difficulty || recipe.difficulty === filters.difficulty;
-    const matchesCuisine =
-      !filters.cuisine || recipe.cuisine === filters.cuisine;
     const matchesSearch =
       !filters.searchTerm ||
       recipe.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
@@ -74,28 +65,12 @@ export default function RecipesPage() {
         .toLowerCase()
         .includes(filters.searchTerm.toLowerCase());
 
-    return matchesDifficulty && matchesCuisine && matchesSearch;
+    return matchesSearch;
   });
 
-  const difficulties = Array.from(
-    new Set(recipes.map((r) => r.difficulty).filter(Boolean))
-  );
-  const cuisines = Array.from(
-    new Set(recipes.map((r) => r.cuisine).filter(Boolean))
-  );
 
-  const getDifficultyLabel = (difficulty: string) => {
-    switch (difficulty) {
-      case "Easy":
-        return tDifficulty("easy");
-      case "Medium":
-        return tDifficulty("medium");
-      case "Hard":
-        return tDifficulty("hard");
-      default:
-        return difficulty;
-    }
-  };
+
+
 
   return (
     <div className={styles.container}>
@@ -117,35 +92,7 @@ export default function RecipesPage() {
             className={styles.searchInput}
           />
 
-          <select
-            value={filters.difficulty}
-            onChange={(e) =>
-              setFilters({ ...filters, difficulty: e.target.value })
-            }
-            className={styles.select}
-          >
-            <option value="">{t("filters.allDifficulty")}</option>
-            {difficulties.map((d) => (
-              <option key={d} value={d}>
-                {getDifficultyLabel(d)}
-              </option>
-            ))}
-          </select>
 
-          <select
-            value={filters.cuisine}
-            onChange={(e) =>
-              setFilters({ ...filters, cuisine: e.target.value })
-            }
-            className={styles.select}
-          >
-            <option value="">{t("filters.allCuisines")}</option>
-            {cuisines.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
 
           <button onClick={fetchRecipes} className={styles.refreshBtn}>
             {t("buttons.refresh")}
@@ -184,20 +131,11 @@ export default function RecipesPage() {
           >
             <div className={styles.cardHeader}>
               <h3>{recipe.title}</h3>
-              <span
-                className={`${styles.difficulty} ${styles[`difficulty-${(recipe.difficulty || "easy").toLowerCase()}`]}`}
-              >
-                {getDifficultyLabel(recipe.difficulty || "Easy")}
-              </span>
             </div>
 
             <p className={styles.description}>
               {recipe.description || t("empty.noDescription")}
             </p>
-
-            {recipe.cuisine && (
-              <p className={styles.cuisine}>🍳 {recipe.cuisine}</p>
-            )}
 
             <div className={styles.meta}>
               <span className={styles.metaItem}>

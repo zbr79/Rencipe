@@ -30,9 +30,7 @@ export default function CreatePage() {
     ingredients: [] as Ingredient[],
     steps: [] as Step[],
     servings: 1,
-    difficulty: "Easy" as "Easy" | "Medium" | "Hard",
     tags: [] as string[],
-    cuisine: "",
   });
 
   const [currentIngredient, setCurrentIngredient] = useState<Ingredient>({
@@ -152,9 +150,7 @@ export default function CreatePage() {
         ingredients: [],
         steps: [],
         servings: 1,
-        difficulty: "Easy",
         tags: [],
-        cuisine: "",
       });
 
       setTimeout(() => {
@@ -245,37 +241,7 @@ export default function CreatePage() {
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="difficulty" className={styles.label}>
-                {t("labels.difficulty")}
-              </label>
-              <select
-                id="difficulty"
-                name="difficulty"
-                value={formData.difficulty}
-                onChange={handleInputChange}
-                className={styles.input}
-              >
-                <option value="Easy">{t("difficulty.easy")}</option>
-                <option value="Medium">{t("difficulty.medium")}</option>
-                <option value="Hard">{t("difficulty.hard")}</option>
-              </select>
-            </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="cuisine" className={styles.label}>
-                {t("labels.cuisine")}
-              </label>
-              <input
-                id="cuisine"
-                type="text"
-                name="cuisine"
-                placeholder={t("placeholders.cuisine")}
-                value={formData.cuisine}
-                onChange={handleInputChange}
-                className={styles.input}
-              />
-            </div>
           </div>
         </section>
 

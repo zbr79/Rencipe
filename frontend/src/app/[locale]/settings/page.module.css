@@ -1,0 +1,144 @@
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+  background-color: #ffffff;
+}
+
+.header {
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px 0;
+  padding: 0 0 8px 0;
+}
+
+.settingItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.settingItem:last-child {
+  border-bottom: none;
+}
+
+.settingLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.icon {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+}
+
+.settingLabel span:last-child {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.settingValue {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.settingSelect {
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #111827;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.settingSelect:hover {
+  border-color: #d1d5db;
+}
+
+.settingSelect:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.toggle input {
+  display: none;
+}
+
+.toggleSlider {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  background-color: #e5e7eb;
+  border-radius: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.toggle input:checked + .toggleSlider {
+  background-color: #3b82f6;
+}
+
+.toggleSlider::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  background-color: white;
+  border-radius: 50%;
+  transition: left 0.3s ease;
+}
+
+.toggle input:checked + .toggleSlider::after {
+  left: 22px;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 20px 12px 80px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .settingItem {
+    padding: 12px 0;
+  }
+}

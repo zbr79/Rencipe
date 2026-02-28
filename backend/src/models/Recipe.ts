@@ -18,10 +18,8 @@ export interface IRecipe extends Document {
   }[];
 
   servings: number;
-  difficulty: "Easy" | "Medium" | "Hard";
 
   tags: string[];
-  cuisine: string;
 
   likes: number;
   views: number;
@@ -55,13 +53,8 @@ const RecipeSchema = new Schema<IRecipe>(
     ],
 
     servings: Number,
-    difficulty: {
-      type: String,
-      enum: ["Easy", "Medium", "Hard"],
-    },
 
     tags: [String],
-    cuisine: String,
 
     likes: { type: Number, default: 0 },
     views: { type: Number, default: 0 },

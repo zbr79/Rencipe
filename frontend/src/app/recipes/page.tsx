@@ -8,9 +8,7 @@ interface Recipe {
   id: string;
   title: string;
   description: string;
-  difficulty: "Easy" | "Medium" | "Hard";
   servings: number;
-  cuisine: string;
   tags: string[];
   likes: number;
   views: number;
@@ -24,8 +22,6 @@ export default function RecipesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({
-    difficulty: "",
-    cuisine: "",
     searchTerm: "",
   });
 
@@ -55,10 +51,6 @@ export default function RecipesPage() {
   };
 
   const filteredRecipes = recipes.filter((recipe) => {
-    const matchesDifficulty =
-      !filters.difficulty || recipe.difficulty === filters.difficulty;
-    const matchesCuisine =
-      !filters.cuisine || recipe.cuisine === filters.cuisine;
     const matchesSearch =
       !filters.searchTerm ||
       recipe.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
@@ -66,11 +58,10 @@ export default function RecipesPage() {
         .toLowerCase()
         .includes(filters.searchTerm.toLowerCase());
 
-    return matchesDifficulty && matchesCuisine && matchesSearch;
+    return matchesSearch;
   });
 
-  const difficulties = Array.from(new Set(recipes.map((r) => r.difficulty).filter(Boolean)));
-  const cuisines = Array.from(new Set(recipes.map((r) => r.cuisine).filter(Boolean)));
+
 
   return (
     <div className={styles.container}>
@@ -92,35 +83,7 @@ export default function RecipesPage() {
             className={styles.searchInput}
           />
 
-          <select
-            value={filters.difficulty}
-            onChange={(e) =>
-              setFilters({ ...filters, difficulty: e.target.value })
-            }
-            className={styles.select}
-          >
-            <option value="">All Difficulty Levels</option>
-            {difficulties.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
 
-          <select
-            value={filters.cuisine}
-            onChange={(e) =>
-              setFilters({ ...filters, cuisine: e.target.value })
-            }
-            className={styles.select}
-          >
-            <option value="">All Cuisines</option>
-            {cuisines.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
 
           <button onClick={fetchRecipes} className={styles.refreshBtn}>
             Refresh
@@ -156,18 +119,9 @@ export default function RecipesPage() {
           >
             <div className={styles.cardHeader}>
               <h3>{recipe.title}</h3>
-              <span
-                className={`${styles.difficulty} ${styles[`difficulty-${(recipe.difficulty || "easy").toLowerCase()}`]}`}
-              >
-                {recipe.difficulty || "Easy"}
-              </span>
             </div>
 
             <p className={styles.description}>{recipe.description || "No description provided"}</p>
-
-            {recipe.cuisine && (
-              <p className={styles.cuisine}>🍳 {recipe.cuisine}</p>
-            )}
 
             <div className={styles.meta}>
               <span className={styles.metaItem}>🍽️ {recipe.servings || 1} servings</span>

@@ -11,9 +11,7 @@ function pickRecipe(doc: IRecipe) {
     ingredients: doc.ingredients,
     steps: doc.steps,
     servings: doc.servings,
-    difficulty: doc.difficulty,
     tags: doc.tags,
-    cuisine: doc.cuisine,
     likes: doc.likes,
     views: doc.views,
     ratingAverage: doc.ratingAverage,
@@ -29,11 +27,9 @@ function pickRecipe(doc: IRecipe) {
  */
 export async function listRecipes(req: Request, res: Response) {
   try {
-    const { skip = 0, limit = 20, cuisine, difficulty, tags } = req.query;
+    const { skip = 0, limit = 20, tags } = req.query;
     const filter: any = {};
 
-    if (cuisine) filter.cuisine = cuisine;
-    if (difficulty) filter.difficulty = difficulty;
     if (tags) filter.tags = { $in: Array.isArray(tags) ? tags : [tags] };
 
     const docs = await Recipe.find(filter)
@@ -66,9 +62,7 @@ export async function createRecipe(req: Request, res: Response) {
       ingredients,
       steps,
       servings,
-      difficulty,
       tags,
-      cuisine,
     } = req.body;
 
     // Validation
@@ -84,9 +78,7 @@ export async function createRecipe(req: Request, res: Response) {
     if (!mongoose.Types.ObjectId.isValid(authorId)) {
       return res.status(400).json({ error: "authorId must be a valid MongoDB ObjectId" });
     }
-    if (difficulty && !["Easy", "Medium", "Hard"].includes(difficulty)) {
-      return res.status(400).json({ error: "difficulty must be Easy, Medium, or Hard" });
-    }
+
 
     const doc = await Recipe.create({
       title: String(title).trim(),
@@ -95,9 +87,7 @@ export async function createRecipe(req: Request, res: Response) {
       ingredients: ingredients || [],
       steps: steps || [],
       servings: servings || 1,
-      difficulty: difficulty || "Easy",
       tags: tags || [],
-      cuisine: cuisine || "",
       likes: 0,
       views: 0,
       ratingAverage: 0,
@@ -148,9 +138,7 @@ export async function updateRecipe(req: Request, res: Response) {
       ...(req.body.ingredients !== undefined && { ingredients: req.body.ingredients }),
       ...(req.body.steps !== undefined && { steps: req.body.steps }),
       ...(req.body.servings !== undefined && { servings: req.body.servings }),
-      ...(req.body.difficulty !== undefined && { difficulty: req.body.difficulty }),
       ...(req.body.tags !== undefined && { tags: req.body.tags }),
-      ...(req.body.cuisine !== undefined && { cuisine: req.body.cuisine }),
     };
 
     const doc = await Recipe.findByIdAndUpdate(id, updateData, { new: true });
