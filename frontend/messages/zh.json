@@ -1,0 +1,144 @@
+{
+  "navigation": {
+    "home": "首页",
+    "recipes": "食谱",
+    "search": "搜索",
+    "create": "创建",
+    "saved": "保存",
+    "profile": "我的"
+  },
+  "home": {
+    "viewAllRecipes": "查看所有食谱",
+    "createRecipe": "创建食谱",
+    "noRecipes": "尚无食谱。"
+  },
+  "create": {
+    "title": "创建食谱",
+    "subtitle": "与社区分享您的烹饪杰作",
+    "sections": {
+      "basics": "基本信息",
+      "details": "食谱详情",
+      "ingredients": "食材",
+      "steps": "步骤",
+      "tags": "标签"
+    },
+    "labels": {
+      "recipeName": "食谱名称 *",
+      "description": "描述 *",
+      "servings": "份数",
+      "difficulty": "难度",
+      "cuisine": "菜系"
+    },
+    "placeholders": {
+      "recipeName": "输入食谱名称",
+      "description": "描述您的食谱...",
+      "ingredient Name": "名称",
+      "quantity": "数量",
+      "unit": "单位",
+      "note": "备注",
+      "cuisine": "中式",
+      "step": "输入烹饪步骤...",
+      "tag": "添加标签..."
+    },
+    "buttons": {
+      "add": "添加",
+      "addStep": "添加步骤",
+      "publish": "发布食谱",
+      "publishing": "发布中..."
+    },
+    "difficulty": {
+      "easy": "简单",
+      "medium": "中等",
+      "hard": "困难"
+    },
+    "validation": {
+      "fillAllIngredients": "请填写所有食材字段",
+      "enterStepInstruction": "请输入步骤说明"
+    },
+    "error": {
+      "failedCreate": "创建食谱失败"
+    },
+    "success": {
+      "created": "食谱创建成功！"
+    }
+  },
+  "recipes": {
+    "title": "食谱",
+    "filters": {
+      "title": "筛选",
+      "searchPlaceholder": "搜索食谱...",
+      "allDifficulty": "所有难度",
+      "allCuisines": "所有菜系"
+    },
+    "buttons": {
+      "refresh": "刷新"
+    },
+    "count": {
+      "showing": "显示 {showing} / {total} 个食谱"
+    },
+    "empty": {
+      "noRecipes": "未找到食谱。尝试调整您的筛选条件。",
+      "createFirst": "创建您的第一个食谱",
+      "noDescription": "未提供描述"
+    },
+    "meta": {
+      "servings": "份"
+    },
+    "error": {
+      "failedFetch": "获取食谱失败"
+    }
+  },
+  "recipeDetail": {
+    "sections": {
+      "ingredients": "食材",
+      "instructions": "步骤",
+      "tags": "标签"
+    },
+    "labels": {
+      "servings": "份数",
+      "step": "步骤"
+    },
+    "buttons": {
+      "backToRecipes": "返回食谱列表",
+      "likeTitle": "给此食谱点赞"
+    },
+    "meta": {
+      "views": "次浏览",
+      "ratings": "个评分"
+    },
+    "rating": {
+      "beFirst": "成为第一个评分此食谱的人！"
+    },
+    "footer": {
+      "created": "创建时间"
+    },
+    "empty": {
+      "noDescription": "未提供描述"
+    },
+    "error": {
+      "notFound": "未找到食谱",
+      "failedLike": "点赞失败",
+      "failedRate": "评分失败"
+    }
+  },
+  "difficulty": {
+    "easy": "简单",
+    "medium": "中等",
+    "hard": "困难"
+  },
+  "common": {
+    "loading": "加载中…",
+    "error": "错误",
+    "success": "成功",
+    "back": "返回",
+    "close": "关闭",
+    "delete": "删除",
+    "edit": "编辑",
+    "save": "保存",
+    "cancel": "取消",
+    "fetchError": "获取失败",
+    "updated": "更新时间",
+    "created": "创建时间",
+    "readMore": "阅读更多"
+  }
+}

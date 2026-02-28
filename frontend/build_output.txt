@@ -1,0 +1,29 @@
+
+> rencipe@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 7.3s
+  Running TypeScript ...
+Failed to compile.
+
+./src/i18n/request.ts:3:55
+Type error: Type 'Promise<{ locale: string | undefined; messages: any; }>' is not assignable to type 'RequestConfig | Promise<RequestConfig>'.
+  Type 'Promise<{ locale: string | undefined; messages: any; }>' is not assignable to type 'Promise<RequestConfig>'.
+    Type '{ locale: string | undefined; messages: any; }' is not assignable to type 'RequestConfig'.
+      Type '{ locale: string | undefined; messages: any; }' is not assignable to type '{ locale: string; }'.
+        Types of property 'locale' are incompatible.
+          Type 'string | undefined' is not assignable to type 'string'.
+            Type 'undefined' is not assignable to type 'string'.
+
+[0m [90m 1 |[39m [36mimport[39m { getRequestConfig } [36mfrom[39m [32m'next-intl/server'[39m[33m;[39m
+ [90m 2 |[39m
+[31m[1m>[22m[39m[90m 3 |[39m [36mexport[39m [36mdefault[39m getRequestConfig([36masync[39m ({ locale }) [33m=>[39m ({
+ [90m   |[39m                                                       [31m[1m^[22m[39m
+ [90m 4 |[39m   locale[33m,[39m
+ [90m 5 |[39m   messages[33m:[39m ([36mawait[39m [36mimport[39m([32m`../../messages/${locale}.json`[39m))[33m.[39m[36mdefault[39m[33m,[39m
+ [90m 6 |[39m }))[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null

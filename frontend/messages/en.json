@@ -1,0 +1,144 @@
+{
+  "navigation": {
+    "home": "Home",
+    "recipes": "Recipes",
+    "search": "Search",
+    "create": "Create",
+    "saved": "Saved",
+    "profile": "Profile"
+  },
+  "home": {
+    "viewAllRecipes": "View All Recipes",
+    "createRecipe": "Create Recipe",
+    "noRecipes": "No recipes yet."
+  },
+  "create": {
+    "title": "Create Your Recipe",
+    "subtitle": "Share your culinary masterpiece with the community",
+    "sections": {
+      "basics": "Recipe Basics",
+      "details": "Recipe Details",
+      "ingredients": "Ingredients",
+      "steps": "Steps",
+      "tags": "Tags"
+    },
+    "labels": {
+      "recipeName": "Recipe Name *",
+      "description": "Description *",
+      "servings": "Servings",
+      "difficulty": "Difficulty",
+      "cuisine": "Cuisine"
+    },
+    "placeholders": {
+      "recipeName": "Enter recipe name",
+      "description": "Describe your recipe...",
+      "ingredient Name": "Name",
+      "quantity": "Qty",
+      "unit": "Unit",
+      "note": "Note",
+      "cuisine": "Italian",
+      "step": "Enter cooking instruction...",
+      "tag": "Add a tag..."
+    },
+    "buttons": {
+      "add": "Add",
+      "addStep": "Add Step",
+      "publish": "Publish Recipe",
+      "publishing": "Publishing..."
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "validation": {
+      "fillAllIngredients": "Please fill in all ingredient fields",
+      "enterStepInstruction": "Please enter step instruction"
+    },
+    "error": {
+      "failedCreate": "Failed to create recipe"
+    },
+    "success": {
+      "created": "Recipe created successfully!"
+    }
+  },
+  "recipes": {
+    "title": "Recipes",
+    "filters": {
+      "title": "Filters",
+      "searchPlaceholder": "Search recipes...",
+      "allDifficulty": "All Difficulty Levels",
+      "allCuisines": "All Cuisines"
+    },
+    "buttons": {
+      "refresh": "Refresh"
+    },
+    "count": {
+      "showing": "Showing {showing} of {total} recipes"
+    },
+    "empty": {
+      "noRecipes": "No recipes found. Try adjusting your filters.",
+      "createFirst": "Create Your First Recipe",
+      "noDescription": "No description provided"
+    },
+    "meta": {
+      "servings": "servings"
+    },
+    "error": {
+      "failedFetch": "Failed to fetch recipes"
+    }
+  },
+  "recipeDetail": {
+    "sections": {
+      "ingredients": "Ingredients",
+      "instructions": "Instructions",
+      "tags": "Tags"
+    },
+    "labels": {
+      "servings": "Servings",
+      "step": "Step"
+    },
+    "buttons": {
+      "backToRecipes": "Back to Recipes",
+      "likeTitle": "Like this recipe"
+    },
+    "meta": {
+      "views": "views",
+      "ratings": "ratings"
+    },
+    "rating": {
+      "beFirst": "Be the first to rate this recipe!"
+    },
+    "footer": {
+      "created": "Created"
+    },
+    "empty": {
+      "noDescription": "No description provided"
+    },
+    "error": {
+      "notFound": "Recipe not found",
+      "failedLike": "Failed to like recipe",
+      "failedRate": "Failed to rate recipe"
+    }
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Error",
+    "success": "Success",
+    "back": "Back",
+    "close": "Close",
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "fetchError": "Failed to fetch",
+    "updated": "Updated",
+    "created": "Created",
+    "readMore": "Read More"
+  }
+}
