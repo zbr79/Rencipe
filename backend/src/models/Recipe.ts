@@ -8,9 +8,7 @@ export interface IRecipe extends Document {
 
   ingredients: {
     name: string;
-    quantity: number;
-    unit: string;
-    note?: string;
+    quantity: string;
   }[];
 
   steps: {
@@ -42,9 +40,7 @@ const RecipeSchema = new Schema<IRecipe>(
     ingredients: [
       {
         name: String,
-        quantity: Number,
-        unit: String,
-        note: String,
+        quantity: String,
       },
     ],
 

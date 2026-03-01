@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import styles from "./page.module.css";
+import { useState, useEffect, useRef } from "react";
+import styles from "./styles.module.css";
+import { useCreateForm } from "../contexts/CreateFormContext";
+import PhotoUploadStep from "./components/PhotoUploadStep";
+import RecipeBasicsForm from "./components/RecipeBasicsForm";
+import IngredientsSection from "./components/IngredientsSection";
+import StepsSection from "./components/StepsSection";
+import TagsSection from "./components/TagsSection";
 
 interface Ingredient {
   name: string;
-  quantity: number;
-  unit: string;
-  note?: string;
+  quantity: string;
 }
 
 interface Step {
@@ -18,30 +21,41 @@ interface Step {
 }
 
 export default function CreatePage() {
+  const { recipeImage: contextImage, recipeImageFile: contextImageFile, setRecipeImage, setRecipeImageFile } = useCreateForm();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [showPhotoStep, setShowPhotoStep] = useState(false);
+  const [recipeImage, setLocalRecipeImage] = useState<string | null>(contextImage);
+  const [recipeImageFile, setLocalRecipeImageFile] = useState<File | null>(contextImageFile);
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     authorId: "507f1f77bcf86cd799439011",
-    ingredients: [] as Ingredient[],
-    steps: [] as Step[],
+    ingredients: [
+      {
+        name: "",
+        quantity: "",
+      },
+    ] as Ingredient[],
+    steps: [
+      {
+        stepNumber: 1,
+        instruction: "",
+      },
+    ] as Step[],
     servings: 1,
     tags: [] as string[],
   });
 
-  const [recipeImage, setRecipeImage] = useState<string | null>(null);
-  const [recipeImageFile, setRecipeImageFile] = useState<File | null>(null);
-
-  const [currentIngredient, setCurrentIngredient] = useState<Ingredient>({
-    name: "",
-    quantity: 0,
-    unit: "",
-    note: "",
-  });
-
-  const [currentStep, setCurrentStep] = useState<Step>({
-    stepNumber: (formData.steps?.length || 0) + 1,
-    instruction: "",
-  });
+  useEffect(() => {
+    if (contextImage) {
+      setLocalRecipeImage(contextImage);
+    }
+    if (contextImageFile) {
+      setLocalRecipeImageFile(contextImageFile);
+    }
+  }, [contextImage, contextImageFile]);
 
   const [stepImages, setStepImages] = useState<{ [key: number]: string }>({});
   const [stepImageFiles, setStepImageFiles] = useState<{ [key: number]: File }>({});
@@ -51,23 +65,18 @@ export default function CreatePage() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error" | "">("");
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "servings" ? Number(value) : value,
-    }));
-  };
-
   const handleRecipeImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setLocalRecipeImageFile(file);
       setRecipeImageFile(file);
       const reader = new FileReader();
       reader.onload = () => {
-        setRecipeImage(reader.result as string);
+        const imageData = reader.result as string;
+        setLocalRecipeImage(imageData);
+        setRecipeImage(imageData);
+        // Move to form step after photo is selected
+        setShowPhotoStep(false);
       };
       reader.readAsDataURL(file);
     }
@@ -86,15 +95,10 @@ export default function CreatePage() {
   };
 
   const addIngredient = () => {
-    if (!currentIngredient.name || !currentIngredient.quantity || !currentIngredient.unit) {
-      alert("请填写所有配料信息");
-      return;
-    }
     setFormData((prev) => ({
       ...prev,
-      ingredients: [...(prev.ingredients || []), currentIngredient],
+      ingredients: [...(prev.ingredients || []), { name: "", quantity: "" }],
     }));
-    setCurrentIngredient({ name: "", quantity: 0, unit: "", note: "" });
   };
 
   const removeIngredient = (index: number) => {
@@ -105,18 +109,10 @@ export default function CreatePage() {
   };
 
   const addStep = () => {
-    if (!currentStep.instruction) {
-      alert("请输入煮饪步骤");
-      return;
-    }
     setFormData((prev) => ({
       ...prev,
-      steps: [...(prev.steps || []), { ...currentStep, stepNumber: (prev.steps?.length || 0) + 1 }],
+      steps: [...(prev.steps || []), { stepNumber: (prev.steps?.length || 0) + 1, instruction: "" }],
     }));
-    setCurrentStep({
-      stepNumber: (formData.steps?.length || 0) + 2,
-      instruction: "",
-    });
   };
 
   const removeStep = (index: number) => {
@@ -127,13 +123,14 @@ export default function CreatePage() {
   };
 
   const addTag = () => {
-    if (tagsInput.trim()) {
+    if (!tagsInput.trim()) return;
+    if (!formData.tags.includes(tagsInput)) {
       setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, tagsInput.trim()],
+        tags: [...prev.tags, tagsInput],
       }));
-      setTagsInput("");
     }
+    setTagsInput("");
   };
 
   const removeTag = (index: number) => {
@@ -217,297 +214,104 @@ export default function CreatePage() {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>创建食谱</h1>
-        <p>分享你的烹饪创意</p>
-      </div>
-
-      {message && (
-        <div className={`${styles.message} ${messageType === "success" ? styles.messageSuccess : styles.messageError}`}>
-          {message}
+    <>
+      {showPhotoStep && (
+        <div className={styles.modalOverlay}>
+          <PhotoUploadStep
+            recipeImage={recipeImage}
+            onImageChange={handleRecipeImageChange}
+            onContinue={() => setShowPhotoStep(false)}
+          />
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className={styles.form}>
-        {/* Recipe Basics */}
-        <section className={styles.section}>
-          <div className={styles.formGroup}>
-            <label htmlFor="title" className={styles.label}>
-              食谱名称
-            </label>
-            <input
-              id="title"
-              type="text"
-              name="title"
-              placeholder="输入食谱名称..."
-              value={formData.title}
-              onChange={handleInputChange}
-              required
-              className={styles.input}
+      <div className={styles.container} style={{ opacity: showPhotoStep ? 0.3 : 1, pointerEvents: showPhotoStep ? "none" : "auto" }}>
+        {recipeImage && (
+          <div className={styles.imageDisplay}>
+            <img 
+              src={recipeImage} 
+              alt="Recipe cover" 
+              className={styles.recipeImage}
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                width: "100%",
+                height: "420px",
+                objectFit: "cover",
+                display: "block",
+                cursor: "pointer",
+              } as React.CSSProperties}
             />
           </div>
+        )}
 
-          <div className={styles.formGroup}>
-            <label htmlFor="description" className={styles.label}>
-              简介
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              placeholder="菜谱简介..."
-              value={formData.description}
-              onChange={handleInputChange}
-              required
-              className={styles.textarea}
-              rows={4}
-            />
+        {message && (
+          <div className={`${styles.message} ${messageType === "success" ? styles.messageSuccess : styles.messageError}`}>
+            {message}
           </div>
+        )}
 
-          <div className={styles.formGroup}>
-            <label htmlFor="recipeImage" className={styles.label}>
-              食谱封面图片
-            </label>
-            <input
-              id="recipeImage"
-              type="file"
-              accept="image/*"
-              onChange={handleRecipeImageChange}
-              className={styles.input}
-            />
-            {recipeImage && (
-              <div style={{ marginTop: "16px" }}>
-                <img src={recipeImage} alt="Recipe preview" style={{ maxWidth: "200px", borderRadius: "8px" }} />
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Recipe Details */}
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2>详细信息</h2>
-          </div>
-
-          <div className={styles.detailsGrid}>
-            <div className={styles.formGroup}>
-              <label htmlFor="servings" className={styles.label}>
-                份数
-              </label>
-              <input
-                id="servings"
-                type="number"
-                name="servings"
-                placeholder="4"
-                value={formData.servings}
-                onChange={handleInputChange}
-                min="1"
-                className={styles.input}
-              />
-            </div>
-
-
-          </div>
-        </section>
-
-        {/* Ingredients */}
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2>配料</h2>
-          </div>
-
-          <div className={styles.ingredientForm}>
-            <div className={styles.ingredientInputs}>
-              <div className={styles.formGroup}>
-                <input
-                  type="text"
-                  placeholder="配料名称"
-                  value={currentIngredient.name}
-                  onChange={(e) =>
-                    setCurrentIngredient({ ...currentIngredient, name: e.target.value })
-                  }
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <input
-                  type="number"
-                  placeholder="数量"
-                  value={currentIngredient.quantity}
-                  onChange={(e) =>
-                    setCurrentIngredient({
-                      ...currentIngredient,
-                      quantity: Number(e.target.value),
-                    })
-                  }
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <input
-                  type="text"
-                  placeholder="单位"
-                  value={currentIngredient.unit}
-                  onChange={(e) =>
-                    setCurrentIngredient({ ...currentIngredient, unit: e.target.value })
-                  }
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <input
-                  type="text"
-                  placeholder="备注"
-                  value={currentIngredient.note}
-                  onChange={(e) =>
-                    setCurrentIngredient({ ...currentIngredient, note: e.target.value })
-                  }
-                  className={styles.input}
-                />
-              </div>
-            </div>
-            <button type="button" onClick={addIngredient} className={styles.addBtn}>
-              + 添加
+        {!recipeImage && (
+          <div className={styles.uploadPrompt}>
+            <p className={styles.uploadPromptText}>先上传封面图片再开始</p>
+            <button
+              type="button"
+              onClick={() => setShowPhotoStep(true)}
+              className={styles.uploadPromptBtn}
+            >
+              📸 上传图片
             </button>
           </div>
+        )}
 
-          {formData.ingredients && formData.ingredients.length > 0 && (
-            <div className={styles.ingredientsList}>
-              <div className={styles.list}>
-                {formData.ingredients.map((ing, idx) => (
-                  <div key={idx} className={styles.ingredientItem}>
-                    <span className={styles.ingredientText}>
-                      {ing.quantity} {ing.unit} {ing.name}
-                      {ing.note && <span className={styles.note}> — {ing.note}</span>}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeIngredient(idx)}
-                      className={styles.removeBtn}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </section>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <RecipeBasicsForm
+            title={formData.title}
+            description={formData.description}
+            servings={formData.servings}
+            onTitleChange={(value) => setFormData({ ...formData, title: value })}
+            onDescriptionChange={(value) => setFormData({ ...formData, description: value })}
+            onServingsChange={(value) => setFormData({ ...formData, servings: value })}
+          />
 
-        {/* Cooking Steps */}
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2>烹饪步骤</h2>
-          </div>
+          <IngredientsSection
+            ingredients={formData.ingredients}
+            onIngredientsChange={(ingredients) => setFormData({ ...formData, ingredients })}
+            onAddIngredient={addIngredient}
+            onRemoveIngredient={removeIngredient}
+          />
 
-          <div className={styles.stepForm}>
-            <textarea
-              placeholder="描述每个烹饪步骤..."
-              value={currentStep.instruction}
-              onChange={(e) =>
-                setCurrentStep({ ...currentStep, instruction: e.target.value })
-              }
-              className={styles.textarea}
-              rows={2}
-            />
-            <div style={{ marginTop: "12px" }}>
-              <label style={{ display: "block", fontSize: "14px", marginBottom: "8px" }}>
-                步骤图片 (可选)
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleStepImageChange(e, currentStep.stepNumber)}
-                className={styles.input}
-              />
-              {stepImages[currentStep.stepNumber] && (
-                <img 
-                  src={stepImages[currentStep.stepNumber]} 
-                  alt="Step preview" 
-                  style={{ maxWidth: "150px", marginTop: "8px", borderRadius: "4px" }} 
-                />
-              )}
-            </div>
-            <button type="button" onClick={addStep} className={styles.addBtn}>
-              + 添加步骤
+          <StepsSection
+            steps={formData.steps}
+            stepImages={stepImages}
+            onStepsChange={(steps) => setFormData({ ...formData, steps })}
+            onStepImageChange={handleStepImageChange}
+            onAddStep={addStep}
+            onRemoveStep={removeStep}
+          />
+
+          <TagsSection
+            tags={formData.tags}
+            tagsInput={tagsInput}
+            onTagsInputChange={setTagsInput}
+            onAddTag={addTag}
+            onRemoveTag={removeTag}
+          />
+
+          <div className={styles.submitContainer}>
+            <button type="submit" disabled={loading || !recipeImage} className={styles.submitBtn}>
+              {loading ? "提交中..." : "创建食谱"}
             </button>
           </div>
+        </form>
 
-          {formData.steps && formData.steps.length > 0 && (
-            <div className={styles.stepsList}>
-              <div className={styles.list}>
-                {formData.steps.map((step, idx) => (
-                  <div key={idx} className={styles.stepItem}>
-                    <span className={styles.stepCircle}>{step.stepNumber}</span>
-                    <div style={{ flex: 1 }}>
-                      <span className={styles.stepText}>{step.instruction}</span>
-                      {stepImages[step.stepNumber] && (
-                        <img 
-                          src={stepImages[step.stepNumber]} 
-                          alt={`Step ${step.stepNumber}`} 
-                          style={{ maxWidth: "120px", marginTop: "8px", display: "block", borderRadius: "4px" }} 
-                        />
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeStep(idx)}
-                      className={styles.removeBtn}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Tags */}
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2>标签</h2>
-          </div>
-
-          <div className={styles.tagsForm}>
-            <input
-              type="text"
-              placeholder="输入标签并按回车..."
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
-              className={styles.input}
-            />
-            <button type="button" onClick={addTag} className={styles.addBtn}>
-              + 添加
-            </button>
-          </div>
-
-          {formData.tags && formData.tags.length > 0 && (
-            <div className={styles.tagsList}>
-              {formData.tags.map((tag, idx) => (
-                <span key={idx} className={styles.tag}>
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => removeTag(idx)}
-                    className={styles.tagRemove}
-                  >
-                    ✕
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Submit */}
-        <div className={styles.submitContainer}>
-          <button type="submit" disabled={loading} className={styles.submitBtn}>
-            {loading ? "提交中..." : "创建食谱"}
-          </button>
-        </div>
-      </form>
-    </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={handleRecipeImageChange}
+        />
+      </div>
+    </>
   );
 }

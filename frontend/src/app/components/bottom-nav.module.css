@@ -40,6 +40,10 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   border-radius: 8px;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
 }
 
 .item:active {

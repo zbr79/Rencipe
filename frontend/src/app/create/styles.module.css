@@ -3,45 +3,6 @@
   margin: 0 auto;
   padding: 40px 20px 100px;
   background-color: var(--background);
-  transition: opacity 0.3s ease;
-}
-
-/* Image Display */
-.imageDisplay {
-  position: relative;
-  margin-bottom: 32px;
-  border-radius: 12px;
-  overflow: hidden;
-  width: 420px !important;
-  height: 420px !important;
-}
-
-.recipeImage {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover;
-  display: block;
-  transition: filter 0.2s ease;
-}
-
-.recipeImage:hover {
-  filter: brightness(0.85);
-}
-
-/* Modal Overlay */
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(2px);
-  animation: fadeIn 0.2s ease-out;
 }
 
 /* Header */
@@ -69,43 +30,7 @@
   margin: 0;
 }
 
-/* Upload Prompt */
-.uploadPrompt {
-  background-color: var(--card-bg);
-  border: 2px dashed var(--border);
-  border-radius: 12px;
-  padding: 32px;
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.uploadPromptText {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin: 0 0 16px;
-}
-
-.uploadPromptBtn {
-  padding: 10px 24px;
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.uploadPromptBtn:hover {
-  background-color: var(--primary-dark, #0084cc);
-}
-
-.uploadPromptBtn:active {
-  transform: scale(0.98);
-}
-
+/* Messages */
 .message {
   padding: 14px 16px;
   margin-bottom: 20px;
@@ -220,14 +145,6 @@
 
   .header p {
     font-size: 14px;
-  }
-
-  .uploadPrompt {
-    padding: 24px;
-  }
-
-  .uploadPromptBtn {
-    width: 100%;
   }
 
   .section {

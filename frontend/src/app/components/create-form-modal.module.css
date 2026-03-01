@@ -1,0 +1,416 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease-out;
+  padding: 20px;
+}
+
+.modalContent {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+  color: var(--foreground);
+  transform: scale(1.1);
+}
+
+/* Menu Container */
+.menuContainer {
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.menuTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--foreground);
+  margin: 0 0 32px;
+}
+
+.menuOption {
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.menuOption:hover:not(:disabled) {
+  background-color: var(--border);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.menuOption:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.menuIcon {
+  font-size: 32px;
+}
+
+.menuLabel {
+  display: block;
+}
+
+/* Upload Container */
+.uploadContainer {
+  padding: 40px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploadPlaceholder {
+  text-align: center;
+  width: 100%;
+}
+
+.uploadIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.uploadText {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 20px;
+}
+
+.selectPhotoBtn {
+  padding: 12px 32px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.selectPhotoBtn:hover {
+  background-color: var(--primary-dark, #0084cc);
+}
+
+.selectPhotoBtn:active {
+  transform: scale(0.98);
+}
+
+.imagePreviewContainer {
+  text-align: center;
+  width: 100%;
+}
+
+.imagePreview {
+  width: 100%;
+  max-width: 300px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.changePhotoLink {
+  display: inline-block;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 12px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.changePhotoLink:hover {
+  background-color: var(--border);
+  color: var(--foreground);
+}
+
+.continueBtn {
+  display: block;
+  margin: 0 auto;
+  padding: 12px 32px;
+  background-color: var(--success);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.continueBtn:hover {
+  background-color: #059669;
+}
+
+.continueBtn:active {
+  transform: scale(0.98);
+}
+
+.formContainer {
+  padding: 40px 32px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 28px;
+  position: relative;
+}
+
+.header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--foreground);
+  margin: 0 0 8px;
+}
+
+.header p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.changePhotoBtn {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.changePhotoBtn:hover {
+  background-color: var(--border);
+  color: var(--foreground);
+}
+
+/* Upload Prompt */
+.uploadPrompt {
+  background-color: var(--background);
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.uploadPromptText {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0 0 12px;
+}
+
+.uploadPromptBtn {
+  padding: 8px 20px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.uploadPromptBtn:hover {
+  background-color: var(--primary-dark, #0084cc);
+}
+
+.uploadPromptBtn:active {
+  transform: scale(0.98);
+}
+
+/* Messages */
+.message {
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  text-align: center;
+  animation: slideIn 0.3s ease-out;
+  border: 1px solid;
+  font-size: 13px;
+}
+
+.messageSuccess {
+  background-color: #f0fdf4;
+  color: #166534;
+  border-color: #dcfce7;
+}
+
+.messageError {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border-color: #fee2e2;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Base Section */
+.section {
+  background-color: transparent;
+  border-radius: 0;
+  padding: 20px 0;
+  box-shadow: none;
+  animation: fadeIn 0.4s ease-out;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+
+/* Submit Button */
+.submitBtn {
+  padding: 10px 24px;
+  background-color: var(--success);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background-color: #059669;
+  box-shadow: var(--shadow-md);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Submit Container */
+.submitContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+  padding: 12px 0 0;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .modalContent {
+    max-height: 95vh;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .formContainer {
+    padding: 28px 20px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .header p {
+    font-size: 13px;
+  }
+
+  .uploadPrompt {
+    padding: 16px;
+  }
+
+  .uploadPromptBtn {
+    width: 100%;
+  }
+
+  .submitBtn {
+    width: 100%;
+  }
+}
