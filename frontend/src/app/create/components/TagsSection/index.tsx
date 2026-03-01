@@ -21,19 +21,14 @@ export default function TagsSection({
         <h2>标签</h2>
       </div>
 
-      <div className={styles.tagsForm}>
-        <input
-          type="text"
-          placeholder="输入标签并按回车..."
-          value={tagsInput}
-          onChange={(e) => onTagsInputChange(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), onAddTag())}
-          className={styles.input}
-        />
-        <button type="button" onClick={onAddTag} className={styles.addBtn}>
-          + 添加
-        </button>
-      </div>
+      <input
+        type="text"
+        placeholder="按回车键添加标签"
+        value={tagsInput}
+        onChange={(e) => onTagsInputChange(e.target.value)}
+        onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), onAddTag())}
+        className={styles.input}
+      />
 
       {tags && tags.length > 0 && (
         <div className={styles.tagsList}>

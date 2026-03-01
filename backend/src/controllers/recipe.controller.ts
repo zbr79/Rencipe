@@ -116,7 +116,7 @@ export async function getRecipeById(req: Request, res: Response) {
     const doc = await Recipe.findByIdAndUpdate(
       id,
       { $inc: { views: 1 } },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!doc) return res.status(404).json({ error: "recipe not found" });
@@ -145,7 +145,7 @@ export async function updateRecipe(req: Request, res: Response) {
       ...(req.body.tags !== undefined && { tags: req.body.tags }),
     };
 
-    const doc = await Recipe.findByIdAndUpdate(id, updateData, { new: true });
+    const doc = await Recipe.findByIdAndUpdate(id, updateData, { returnDocument: 'after' });
 
     if (!doc) return res.status(404).json({ error: "recipe not found" });
 
@@ -208,7 +208,7 @@ export async function likeRecipe(req: Request, res: Response) {
     const doc = await Recipe.findByIdAndUpdate(
       id,
       { $inc: { likes: 1 } },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!doc) return res.status(404).json({ error: "recipe not found" });
@@ -246,7 +246,7 @@ export async function rateRecipe(req: Request, res: Response) {
         ratingAverage: newAverage,
         ratingCount: newCount,
       },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     res.json({ recipe: pickRecipe(updated!) });
@@ -283,7 +283,7 @@ export async function uploadRecipeImage(req: Request, res: Response) {
     const doc = await Recipe.findByIdAndUpdate(
       id,
       { image: imageUrl },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!doc) return res.status(404).json({ error: "recipe not found" });

@@ -45,8 +45,7 @@
   color: var(--foreground);
   transition: all 0.2s ease;
   box-sizing: border-box;
-  margin-bottom: 0;
-  flex: 1;
+  margin-bottom: 12px;
 }
 
 .input::placeholder {
@@ -63,35 +62,7 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.tagsForm {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.addBtn {
-  padding: 10px 16px;
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.addBtn:hover {
-  background-color: #2563eb;
-  transform: none;
-  box-shadow: var(--shadow-md);
-}
-
-.addBtn:active {
-  transform: none;
-  box-shadow: var(--shadow-sm);
-}
+/* Removed - no longer using tagsForm wrapper */
 
 .tagsList {
   display: flex;
