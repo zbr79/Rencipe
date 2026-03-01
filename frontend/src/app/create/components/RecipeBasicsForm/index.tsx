@@ -50,21 +50,6 @@ export default function RecipeBasicsForm({
             rows={4}
           />
         </div>
-
-        <div className={styles.formGroup}>
-          <label htmlFor="servings" className={styles.label}>
-            份数
-          </label>
-          <input
-            id="servings"
-            type="number"
-            placeholder="4"
-            value={servings}
-            onChange={(e) => onServingsChange(Number(e.target.value))}
-            min="1"
-            className={styles.input}
-          />
-        </div>
       </section>
     </>
   );

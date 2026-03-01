@@ -14,6 +14,7 @@ interface StepsSectionProps {
   onStepsChange: (steps: Step[]) => void;
   onStepImageChange: (e: React.ChangeEvent<HTMLInputElement>, stepNumber: number) => void;
   onRemoveStep: (index: number) => void;
+  onRemoveStepImage?: (stepNumber: number) => void;
   onAddStep: () => void;
 }
 
@@ -23,6 +24,7 @@ export default function StepsSection({
   onStepsChange,
   onStepImageChange,
   onRemoveStep,
+  onRemoveStepImage,
   onAddStep,
 }: StepsSectionProps) {
   const handleInstructionChange = (index: number, instruction: string) => {
@@ -62,9 +64,20 @@ export default function StepsSection({
                       alt={`Step ${step.stepNumber}`}
                       className={styles.stepImage}
                     />
-                    <label htmlFor={`file-${idx}`} className={styles.changeImageLabel}>
-                      更换图片
-                    </label>
+                    <div className={styles.imageActions}>
+                      <label htmlFor={`file-${idx}`} className={styles.changeImageLabel}>
+                        更换图片
+                      </label>
+                      {onRemoveStepImage && (
+                        <button
+                          type="button"
+                          onClick={() => onRemoveStepImage(step.stepNumber)}
+                          className={styles.removeImageBtn}
+                        >
+                          删除图片
+                        </button>
+                      )}
+                    </div>
                     <input
                       id={`file-${idx}`}
                       type="file"

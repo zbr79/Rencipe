@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./page.module.css";
 
@@ -34,13 +34,13 @@ interface Recipe {
 
 export default function RecipeDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const recipeId = params.id as string;
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<"ingredients" | "directions">("ingredients");
-  const [userRating, setUserRating] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchRecipe();
@@ -67,6 +67,34 @@ export default function RecipeDetailPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!confirm("确定要删除这个食谱吗？此操作无法撤销。")) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const response = await fetch(`${apiUrl}/recipes/${recipeId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("删除食谱失败");
+      }
+
+      // Redirect to home page after successful deletion
+      router.push("/");
+    } catch (err: any) {
+      alert("删除失败: " + (err.message || "未知错误"));
+      setIsDeleting(false);
+    }
+  };
+
+  const handleEdit = () => {
+    router.push(`/edit/${recipeId}`);
+  };
+
   if (loading) {
     return <div className={styles.loading}>加载中...</div>;
   }
@@ -91,15 +119,30 @@ export default function RecipeDetailPage() {
         <Link href="/" className={styles.backButtonNormal}>
           ← 返回
         </Link>
+        <div className={styles.actionButtons}>
+          <button 
+            onClick={handleEdit}
+            className={styles.editBtn}
+          >
+            编辑
+          </button>
+          <button 
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className={styles.deleteBtn}
+          >
+            {isDeleting ? "删除中..." : "删除"}
+          </button>
+        </div>
       </div>
 
       {/* Recipe Image */}
       {recipe.image && (
-        <div style={{ width: "100%", height: "400px", overflow: "hidden", borderRadius: "8px", marginBottom: "20px" }}>
+        <div className={styles.imageContainer}>
           <img
             src={recipe.image}
             alt={recipe.title}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            className={styles.recipeImage}
           />
         </div>
       )}
@@ -136,62 +179,45 @@ export default function RecipeDetailPage() {
         )}
       </div>
 
-      {/* Tabs */}
-      <div className={styles.tabsContainer}>
-        <button
-          className={`${styles.tab} ${activeTab === "ingredients" ? styles.tabActive : ""}`}
-          onClick={() => setActiveTab("ingredients")}
-        >
-          配料
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === "directions" ? styles.tabActive : ""}`}
-          onClick={() => setActiveTab("directions")}
-        >
-          步骤
-        </button>
-      </div>
-
       {/* Content */}
       <div className={styles.content}>
-        {activeTab === "ingredients" && (
-          <div className={styles.ingredientsSection}>
-            <h3 className={styles.sectionTitle}>配料</h3>
-            <ul className={styles.ingredientsList}>
-              {recipe.ingredients.map((ing, idx) => (
-                <li key={idx} className={styles.ingredientItem}>
-                  <input type="checkbox" id={`ing-${idx}`} />
-                  <label htmlFor={`ing-${idx}`}>
-                    <strong>{ing.quantity} {ing.unit}</strong> {ing.name}
-                    {ing.note && <span className={styles.note}> • {ing.note}</span>}
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {/* Ingredients Section */}
+        <div className={styles.ingredientsSection}>
+          <h3 className={styles.sectionTitle}>用料</h3>
+          <ul className={styles.ingredientsList}>
+            {recipe.ingredients.map((ing, idx) => (
+              <li key={idx} className={styles.ingredientItem}>
+                <input type="checkbox" id={`ing-${idx}`} />
+                <label htmlFor={`ing-${idx}`}>
+                  <strong>{ing.quantity}</strong> {ing.name}
+                  {ing.note && <span className={styles.note}> • {ing.note}</span>}
+                </label>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        {activeTab === "directions" && (
-          <div className={styles.directionsSection}>
-            <ol className={styles.stepsList}>
-              {recipe.steps.map((step, idx) => (
-                <li key={idx} className={styles.step}>
-                  <div className={styles.stepNumber}>{step.stepNumber}</div>
-                  <div>
-                    <p>{step.instruction}</p>
-                    {step.image && (
-                      <img
-                        src={step.image}
-                        alt={`Step ${step.stepNumber}`}
-                        style={{ maxWidth: "300px", marginTop: "12px", borderRadius: "8px" }}
-                      />
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
+        {/* Steps Section */}
+        <div className={styles.directionsSection}>
+          <h3 className={styles.sectionTitle}>步骤</h3>
+          <ol className={styles.stepsList}>
+            {recipe.steps.map((step, idx) => (
+              <li key={idx} className={styles.step}>
+                <div className={styles.stepNumber}>{step.stepNumber}</div>
+                <div>
+                  <p>{step.instruction}</p>
+                  {step.image && (
+                    <img
+                      src={step.image}
+                      alt={`Step ${step.stepNumber}`}
+                      className={styles.stepImage}
+                    />
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
     </div>
   );

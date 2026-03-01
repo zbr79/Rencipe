@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Recipe, { IRecipe } from "../models/Recipe";
 import mongoose from "mongoose";
-import { uploadToCloudinary } from "../utils/cloudinary";
+import { uploadToCloudinary, deleteFromCloudinary, extractPublicIdFromUrl } from "../utils/cloudinary";
 import fs from "fs";
 import path from "path";
 
@@ -167,6 +167,28 @@ export async function deleteRecipe(req: Request, res: Response) {
     const doc = await Recipe.findByIdAndDelete(id);
 
     if (!doc) return res.status(404).json({ error: "recipe not found" });
+
+    // Delete images from Cloudinary
+    const imagesToDelete: string[] = [];
+
+    // Add main recipe image
+    if (doc.image) {
+      const publicId = extractPublicIdFromUrl(doc.image);
+      if (publicId) imagesToDelete.push(publicId);
+    }
+
+    // Add step images
+    if (doc.steps && doc.steps.length > 0) {
+      for (const step of doc.steps) {
+        if (step.image) {
+          const publicId = extractPublicIdFromUrl(step.image);
+          if (publicId) imagesToDelete.push(publicId);
+        }
+      }
+    }
+
+    // Delete all images from Cloudinary in parallel
+    await Promise.all(imagesToDelete.map(publicId => deleteFromCloudinary(publicId)));
 
     res.json({ message: "recipe deleted successfully" });
   } catch (e: any) {

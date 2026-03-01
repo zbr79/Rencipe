@@ -140,6 +140,19 @@ export default function CreatePage() {
     }));
   };
 
+  const removeStepImage = (stepNumber: number) => {
+    setStepImages((prev) => {
+      const updated = { ...prev };
+      delete updated[stepNumber];
+      return updated;
+    });
+    setStepImageFiles((prev) => {
+      const updated = { ...prev };
+      delete updated[stepNumber];
+      return updated;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -287,6 +300,7 @@ export default function CreatePage() {
             onStepImageChange={handleStepImageChange}
             onAddStep={addStep}
             onRemoveStep={removeStep}
+            onRemoveStepImage={removeStepImage}
           />
 
           <TagsSection
