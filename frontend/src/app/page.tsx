@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import Link from "next/link";
 import styles from "./page.module.css";
 
 type Recipe = {
   id: string;
   title: string;
-  content: string;
+  description: string;
+  image?: string;
+  likes: number;
+  views: number;
+  ratingAverage: number;
+  ratingCount: number;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -25,8 +29,6 @@ function safeJson(text: string) {
 
 export default function HomePage() {
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-  const params = useParams();
-  const locale = params.locale as string;
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,24 +140,28 @@ export default function HomePage() {
           {recipes.map((r) => (
             <Link key={r.id} href={`/recipes/${r.id}`} className={styles.recipeCard}>
               <div className={styles.cardImage}>
-                <div className={styles.imagePlaceholder}>
-                  <span>🍽️</span>
-                </div>
+                {r.image ? (
+                  <img src={r.image} alt={r.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <div className={styles.imagePlaceholder}>
+                    <span>🍽️</span>
+                  </div>
+                )}
               </div>
               
               <div className={styles.cardContent}>
                 <h3 className={styles.cardTitle}>{r.title}</h3>
                 
                 <div className={styles.cardMeta}>
-                  <span className={styles.author}>
-                    <span className={styles.avatarInitial}>C</span>
-                    创作者
-                  </span>
+                  <span>❤️ {r.likes} • 👁️ {r.views}</span>
+                  {r.ratingCount > 0 && (
+                    <span style={{ marginLeft: "8px" }}>⭐ {r.ratingAverage.toFixed(1)}</span>
+                  )}
                 </div>
 
-                {r.content && (
+                {r.description && (
                   <p className={styles.cardDescription}>
-                    {r.content.length > 60 ? r.content.slice(0, 60) + "…" : r.content}
+                    {r.description.length > 60 ? r.description.slice(0, 60) + "…" : r.description}
                   </p>
                 )}
               </div>

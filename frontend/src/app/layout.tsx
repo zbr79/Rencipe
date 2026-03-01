@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
+import TopBar from './components/TopBar';
 import BottomNav from './components/BottomNav';
 import './globals.css';
 
@@ -20,6 +21,7 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>
+          <TopBar />
           {children}
         </ThemeProvider>
         <BottomNav />

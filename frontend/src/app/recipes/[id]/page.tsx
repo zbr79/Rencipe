@@ -22,9 +22,7 @@ interface Recipe {
     instruction: string;
     image?: string;
   }>;
-  difficulty: "Easy" | "Medium" | "Hard";
   servings: number;
-  cuisine: string;
   tags: string[];
   likes: number;
   views: number;
@@ -83,19 +81,6 @@ export default function RecipeDetailPage() {
       }
     } catch (err: any) {
       console.error("", err);
-    }
-  };
-
-  const getDifficultyLabel = (difficulty: string) => {
-    switch (difficulty) {
-      case "Easy":
-        return "简单";
-      case "Medium":
-        return "中等";
-      case "Hard":
-        return "困难";
-      default:
-        return difficulty;
     }
   };
 
@@ -176,15 +161,15 @@ export default function RecipeDetailPage() {
 
         {/* Recipe Meta */}
         <div className={styles.metaRow}>
-          <span>⏱️ 预先 15 分钟</span>
+          <span>❤️ {recipe.likes}</span>
           <span>•</span>
-          <span>🔥 烹饪 {Math.ceil(recipe.servings * 10)} 分钟</span>
-          <span>•</span>
-          <span>⏱️ 总共 {Math.ceil(recipe.servings * 15)} 分钟</span>
-          <span>•</span>
-          <span>🍽️ {recipe.servings} 人份</span>
-          <span>•</span>
-          <span>📊 {getDifficultyLabel(recipe.difficulty || "Easy")}</span>
+          <span>👁️ {recipe.views}</span>
+          {recipe.ratingCount > 0 && (
+            <>
+              <span>•</span>
+              <span>⭐ {recipe.ratingAverage.toFixed(1)} ({recipe.ratingCount})</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -208,10 +193,6 @@ export default function RecipeDetailPage() {
       <div className={styles.content}>
         {activeTab === "ingredients" && (
           <div className={styles.ingredientsSection}>
-            <button className={styles.scaleBtn}>
-              ⚖️ 换算和转换
-            </button>
-
             <h3 className={styles.sectionTitle}>配料</h3>
             <ul className={styles.ingredientsList}>
               {recipe.ingredients.map((ing, idx) => (
@@ -223,13 +204,6 @@ export default function RecipeDetailPage() {
                   </label>
                 </li>
               ))}
-            </ul>
-
-            <h3 className={styles.sectionTitle}>厨具</h3>
-            <ul className={styles.equipmentList}>
-              <li>混合碗</li>
-              <li>打蛋器</li>
-              <li>量杯</li>
             </ul>
           </div>
         )}
@@ -255,14 +229,6 @@ export default function RecipeDetailPage() {
             </ol>
           </div>
         )}
-      </div>
-
-      {/* Nutrition */}
-      <div className={styles.nutritionSection}>
-        <h3 className={styles.sectionTitle}>营养信息</h3>
-        <div className={styles.nutritionInfo}>
-          每份 • 基于典型配料的估计
-        </div>
       </div>
     </div>
   );
