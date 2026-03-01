@@ -58,16 +58,29 @@ export default function StepsSection({
               {/* Image Upload Area */}
               <div className={styles.imageUploadArea}>
                 {stepImages[step.stepNumber] ? (
-                  <div className={styles.imageContainer}>
-                    <img 
-                      src={stepImages[step.stepNumber]} 
-                      alt={`Step ${step.stepNumber}`}
-                      className={styles.stepImage}
-                    />
+                  <>
+                    <div className={styles.imageContainer}>
+                      <img 
+                        src={stepImages[step.stepNumber]} 
+                        alt={`Step ${step.stepNumber}`}
+                        className={styles.stepImage}
+                      />
+                    </div>
                     <div className={styles.imageActions}>
-                      <label htmlFor={`file-${idx}`} className={styles.changeImageLabel}>
+                      <input
+                        id={`file-${idx}`}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => onStepImageChange(e, step.stepNumber)}
+                        style={{ display: "none" }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById(`file-${idx}`)?.click()}
+                        className={styles.changeImageBtn}
+                      >
                         更换图片
-                      </label>
+                      </button>
                       {onRemoveStepImage && (
                         <button
                           type="button"
@@ -78,14 +91,7 @@ export default function StepsSection({
                         </button>
                       )}
                     </div>
-                    <input
-                      id={`file-${idx}`}
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => onStepImageChange(e, step.stepNumber)}
-                      style={{ display: "none" }}
-                    />
-                  </div>
+                  </>
                 ) : (
                   <label htmlFor={`file-${idx}`} className={styles.uploadPlaceholder}>
                     <div className={styles.uploadIcon}>+ 步骤图</div>
