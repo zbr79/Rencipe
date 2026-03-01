@@ -10,6 +10,7 @@ interface Recipe {
   title: string;
   description: string;
   authorId: string;
+  image?: string;
   ingredients: Array<{
     name: string;
     quantity: number;
@@ -19,6 +20,7 @@ interface Recipe {
   steps: Array<{
     stepNumber: number;
     instruction: string;
+    image?: string;
   }>;
   difficulty: "Easy" | "Medium" | "Hard";
   servings: number;
@@ -138,6 +140,17 @@ export default function RecipeDetailPage() {
         </div>
       </header>
 
+      {/* Recipe Image */}
+      {recipe.image && (
+        <div style={{ width: "100%", height: "400px", overflow: "hidden" }}>
+          <img
+            src={recipe.image}
+            alt={recipe.title}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </div>
+      )}
+
       {/* Recipe Info */}
       <div className={styles.recipeInfo}>
         <h2 className={styles.recipeTitle}>{recipe.title}</h2>
@@ -227,7 +240,16 @@ export default function RecipeDetailPage() {
               {recipe.steps.map((step, idx) => (
                 <li key={idx} className={styles.step}>
                   <div className={styles.stepNumber}>{step.stepNumber}</div>
-                  <p>{step.instruction}</p>
+                  <div>
+                    <p>{step.instruction}</p>
+                    {step.image && (
+                      <img
+                        src={step.image}
+                        alt={`Step ${step.stepNumber}`}
+                        style={{ maxWidth: "300px", marginTop: "12px", borderRadius: "8px" }}
+                      />
+                    )}
+                  </div>
                 </li>
               ))}
             </ol>

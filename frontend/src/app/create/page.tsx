@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import styles from "./page.module.css";
 
 interface Ingredient {
@@ -13,6 +14,7 @@ interface Ingredient {
 interface Step {
   stepNumber: number;
   instruction: string;
+  image?: string;
 }
 
 export default function CreatePage() {
@@ -26,6 +28,9 @@ export default function CreatePage() {
     tags: [] as string[],
   });
 
+  const [recipeImage, setRecipeImage] = useState<string | null>(null);
+  const [recipeImageFile, setRecipeImageFile] = useState<File | null>(null);
+
   const [currentIngredient, setCurrentIngredient] = useState<Ingredient>({
     name: "",
     quantity: 0,
@@ -37,6 +42,9 @@ export default function CreatePage() {
     stepNumber: (formData.steps?.length || 0) + 1,
     instruction: "",
   });
+
+  const [stepImages, setStepImages] = useState<{ [key: number]: string }>({});
+  const [stepImageFiles, setStepImageFiles] = useState<{ [key: number]: File }>({});
 
   const [tagsInput, setTagsInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,6 +59,30 @@ export default function CreatePage() {
       ...prev,
       [name]: name === "servings" ? Number(value) : value,
     }));
+  };
+
+  const handleRecipeImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setRecipeImageFile(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setRecipeImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleStepImageChange = (e: React.ChangeEvent<HTMLInputElement>, stepNumber: number) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setStepImageFiles((prev) => ({ ...prev, [stepNumber]: file }));
+      const reader = new FileReader();
+      reader.onload = () => {
+        setStepImages((prev) => ({ ...prev, [stepNumber]: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const addIngredient = () => {
@@ -129,10 +161,32 @@ export default function CreatePage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "");
+        throw new Error(error.error || "创建食谱失败");
       }
 
       const data = await response.json();
+      const recipeId = data.recipe.id;
+
+      // Upload recipe image if exists
+      if (recipeImageFile) {
+        const imageFormData = new FormData();
+        imageFormData.append("image", recipeImageFile);
+        await fetch(`${apiUrl}/recipes/${recipeId}/upload-image`, {
+          method: "POST",
+          body: imageFormData,
+        });
+      }
+
+      // Upload step images if exist
+      for (const [stepNumber, file] of Object.entries(stepImageFiles)) {
+        const stepFormData = new FormData();
+        stepFormData.append("image", file);
+        await fetch(`${apiUrl}/recipes/${recipeId}/steps/${stepNumber}/upload-image`, {
+          method: "POST",
+          body: stepFormData,
+        });
+      }
+
       setMessage(`✓ 食谱已创建`);
       setMessageType("success");
 
@@ -145,9 +199,13 @@ export default function CreatePage() {
         servings: 1,
         tags: [],
       });
+      setRecipeImage(null);
+      setRecipeImageFile(null);
+      setStepImages({});
+      setStepImageFiles({});
 
       setTimeout(() => {
-        window.location.href = `/recipes/${data.recipe.id}`;
+        window.location.href = `/recipes/${recipeId}`;
       }, 1500);
     } catch (error: any) {
       setMessage(`✗ ${error.message}`);
@@ -208,6 +266,24 @@ export default function CreatePage() {
               className={styles.textarea}
               rows={4}
             />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="recipeImage" className={styles.label}>
+              食谱封面图片
+            </label>
+            <input
+              id="recipeImage"
+              type="file"
+              accept="image/*"
+              onChange={handleRecipeImageChange}
+              className={styles.input}
+            />
+            {recipeImage && (
+              <div style={{ marginTop: "16px" }}>
+                <img src={recipeImage} alt="Recipe preview" style={{ maxWidth: "200px", borderRadius: "8px" }} />
+              </div>
+            )}
           </div>
         </section>
 
@@ -338,6 +414,24 @@ export default function CreatePage() {
               className={styles.textarea}
               rows={2}
             />
+            <div style={{ marginTop: "12px" }}>
+              <label style={{ display: "block", fontSize: "14px", marginBottom: "8px" }}>
+                步骤图片 (可选)
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleStepImageChange(e, currentStep.stepNumber)}
+                className={styles.input}
+              />
+              {stepImages[currentStep.stepNumber] && (
+                <img 
+                  src={stepImages[currentStep.stepNumber]} 
+                  alt="Step preview" 
+                  style={{ maxWidth: "150px", marginTop: "8px", borderRadius: "4px" }} 
+                />
+              )}
+            </div>
             <button type="button" onClick={addStep} className={styles.addBtn}>
               + 添加步骤
             </button>
@@ -349,7 +443,16 @@ export default function CreatePage() {
                 {formData.steps.map((step, idx) => (
                   <div key={idx} className={styles.stepItem}>
                     <span className={styles.stepCircle}>{step.stepNumber}</span>
-                    <span className={styles.stepText}>{step.instruction}</span>
+                    <div style={{ flex: 1 }}>
+                      <span className={styles.stepText}>{step.instruction}</span>
+                      {stepImages[step.stepNumber] && (
+                        <img 
+                          src={stepImages[step.stepNumber]} 
+                          alt={`Step ${step.stepNumber}`} 
+                          style={{ maxWidth: "120px", marginTop: "8px", display: "block", borderRadius: "4px" }} 
+                        />
+                      )}
+                    </div>
                     <button
                       type="button"
                       onClick={() => removeStep(idx)}

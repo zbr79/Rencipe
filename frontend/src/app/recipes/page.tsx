@@ -15,6 +15,7 @@ interface Recipe {
   ratingAverage: number;
   ratingCount: number;
   createdAt: string;
+  image?: string;
 }
 
 export default function RecipesPage() {
@@ -119,6 +120,15 @@ export default function RecipesPage() {
             href={`/recipes/${recipe.id}`}
             className={styles.card}
           >
+            {recipe.image && (
+              <div style={{ width: "100%", height: "200px", overflow: "hidden", borderRadius: "8px 8px 0 0" }}>
+                <img
+                  src={recipe.image}
+                  alt={recipe.title}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
+            )}
             <div className={styles.cardHeader}>
               <h3>{recipe.title}</h3>
             </div>

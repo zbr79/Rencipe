@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import Recipe, { IRecipe } from "../models/Recipe";
 import mongoose from "mongoose";
+import { uploadToCloudinary } from "../utils/cloudinary";
+import fs from "fs";
+import path from "path";
 
 function pickRecipe(doc: IRecipe) {
   return {
@@ -8,6 +11,7 @@ function pickRecipe(doc: IRecipe) {
     title: doc.title,
     description: doc.description,
     authorId: doc.authorId,
+    image: doc.image,
     ingredients: doc.ingredients,
     steps: doc.steps,
     servings: doc.servings,
@@ -226,5 +230,86 @@ export async function rateRecipe(req: Request, res: Response) {
     res.json({ recipe: pickRecipe(updated!) });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Failed to rate recipe" });
+  }
+}
+
+/**
+ * POST /recipes/:id/upload-image
+ * Upload recipe main image
+ */
+export async function uploadRecipeImage(req: Request, res: Response) {
+  try {
+    const id = String(req.params.id || "").trim();
+    if (!id) return res.status(400).json({ error: "id is required" });
+
+    if (!req.file) return res.status(400).json({ error: "No image file provided" });
+
+    // Create temp file from buffer
+    const tempDir = path.join(process.cwd(), "temp");
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+    
+    const tempFilePath = path.join(tempDir, `upload-${Date.now()}`);
+    fs.writeFileSync(tempFilePath, req.file.buffer);
+
+    // Upload to Cloudinary
+    const imageUrl = await uploadToCloudinary(tempFilePath, "recipes");
+    
+    // Clean up temp file
+    fs.unlinkSync(tempFilePath);
+
+    // Update recipe with image URL
+    const doc = await Recipe.findByIdAndUpdate(
+      id,
+      { image: imageUrl },
+      { new: true }
+    );
+
+    if (!doc) return res.status(404).json({ error: "recipe not found" });
+
+    res.json({ recipe: pickRecipe(doc), imageUrl });
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || "Failed to upload image" });
+  }
+}
+
+/**
+ * POST /recipes/:id/steps/:stepNumber/upload-image
+ * Upload step image
+ */
+export async function uploadStepImage(req: Request, res: Response) {
+  try {
+    const id = String(req.params.id || "").trim();
+    const stepNumber = Number(req.params.stepNumber || 0);
+
+    if (!id) return res.status(400).json({ error: "id is required" });
+    if (!stepNumber) return res.status(400).json({ error: "stepNumber is required" });
+    if (!req.file) return res.status(400).json({ error: "No image file provided" });
+
+    // Create temp file from buffer
+    const tempDir = path.join(process.cwd(), "temp");
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+    
+    const tempFilePath = path.join(tempDir, `upload-${Date.now()}`);
+    fs.writeFileSync(tempFilePath, req.file.buffer);
+
+    // Upload to Cloudinary
+    const imageUrl = await uploadToCloudinary(tempFilePath, `recipes/steps`);
+    
+    // Clean up temp file
+    fs.unlinkSync(tempFilePath);
+
+    // Update step with image URL
+    const doc = await Recipe.findById(id);
+    if (!doc) return res.status(404).json({ error: "recipe not found" });
+
+    const step = doc.steps.find(s => s.stepNumber === stepNumber);
+    if (!step) return res.status(404).json({ error: "step not found" });
+
+    step.image = imageUrl;
+    await doc.save();
+
+    res.json({ recipe: pickRecipe(doc), imageUrl });
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || "Failed to upload step image" });
   }
 }

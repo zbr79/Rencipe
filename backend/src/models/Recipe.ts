@@ -4,6 +4,7 @@ export interface IRecipe extends Document {
   title: string;
   description: string;
   authorId: mongoose.Types.ObjectId;
+  image?: string; // Cloudinary image URL
 
   ingredients: {
     name: string;
@@ -15,6 +16,7 @@ export interface IRecipe extends Document {
   steps: {
     stepNumber: number;
     instruction: string;
+    image?: string; // Cloudinary image URL for step
   }[];
 
   servings: number;
@@ -35,6 +37,7 @@ const RecipeSchema = new Schema<IRecipe>(
     title: { type: String, required: true, trim: true },
     description: { type: String, required: true, trim: true },
     authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    image: String,
 
     ingredients: [
       {
@@ -49,6 +52,7 @@ const RecipeSchema = new Schema<IRecipe>(
       {
         stepNumber: Number,
         instruction: String,
+        image: String,
       },
     ],
 
