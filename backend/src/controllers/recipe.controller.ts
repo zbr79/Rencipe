@@ -1,5 +1,15 @@
 import { Request, Response } from "express";
 import Recipe from "../models/Recipe";
+import { v2 as cloudinary } from "cloudinary";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 function pickRecipe(doc: any) {
   return {
@@ -151,5 +161,109 @@ export async function deleteRecipe(req: Request, res: Response) {
     res.json({ success: true, message: "recipe deleted" });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Failed to delete recipe" });
+  }
+}
+
+/**
+ * POST /recipes/:id/upload-image
+ * Upload recipe image to Cloudinary
+ */
+export async function uploadRecipeImage(req: Request, res: Response) {
+  try {
+    const id = String(req.params.id || "").trim();
+    if (!id) return res.status(400).json({ error: "id is required" });
+
+    const file = (req as any).file;
+    if (!file) return res.status(400).json({ error: "image file is required" });
+
+    // Upload buffer to Cloudinary
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: `rencipe/recipes/${id}`,
+        resource_type: "auto",
+        quality: "auto",
+        fetch_format: "auto",
+      },
+      async (error: any, result: any) => {
+        if (error) {
+          return res
+            .status(500)
+            .json({ error: "Failed to upload image to Cloudinary" });
+        }
+
+        const imageUrl = result.secure_url;
+
+        const doc = await Recipe.findByIdAndUpdate(
+          id,
+          { image: imageUrl },
+          { new: true }
+        );
+
+        if (!doc) return res.status(404).json({ error: "recipe not found" });
+
+        res.json({ recipe: pickRecipe(doc) });
+      }
+    );
+
+    uploadStream.end(file.buffer);
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || "Failed to upload recipe image" });
+  }
+}
+
+/**
+ * POST /recipes/:id/steps/:stepNumber/upload-image
+ * Upload step image to Cloudinary
+ */
+export async function uploadStepImage(req: Request, res: Response) {
+  try {
+    const id = String(req.params.id || "").trim();
+    const stepNumber = parseInt(req.params.stepNumber || "0");
+
+    if (!id) return res.status(400).json({ error: "id is required" });
+    if (!stepNumber) return res.status(400).json({ error: "stepNumber is required" });
+
+    const file = (req as any).file;
+    if (!file) return res.status(400).json({ error: "image file is required" });
+
+    // Upload buffer to Cloudinary
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: `rencipe/recipes/${id}/steps`,
+        resource_type: "auto",
+        quality: "auto",
+        fetch_format: "auto",
+      },
+      async (error: any, result: any) => {
+        if (error) {
+          return res
+            .status(500)
+            .json({ error: "Failed to upload image to Cloudinary" });
+        }
+
+        const imageUrl = result.secure_url;
+
+        const doc = await Recipe.findByIdAndUpdate(
+          id,
+          {
+            $set: {
+              "steps.$[elem].image": imageUrl,
+            },
+          },
+          {
+            arrayFilters: [{ "elem.stepNumber": stepNumber }],
+            new: true,
+          }
+        );
+
+        if (!doc) return res.status(404).json({ error: "recipe not found" });
+
+        res.json({ recipe: pickRecipe(doc) });
+      }
+    );
+
+    uploadStream.end(file.buffer);
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || "Failed to upload step image" });
   }
 }
