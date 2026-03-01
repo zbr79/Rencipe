@@ -13,7 +13,14 @@ type Recipe = {
 };
 
 type ListRes = { recipes: Recipe[] };
-type CreateRes = { recipe: Recipe };
+
+function safeJson(text: string) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
 
 export default function HomePage() {
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -21,6 +28,7 @@ export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("recommended");
 
   async function fetchRecipes() {
     setLoading(true);
@@ -53,67 +61,104 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchRecipes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const tabs = [
+    { id: "following", label: "Following" },
+    { id: "recommended", label: "Recommended" },
+    { id: "trending", label: "Trending" },
+    { id: "categories", label: "Categories" },
+  ];
 
   return (
     <main className={styles.container}>
-      <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Rencipe</h1>
-          <div className={styles.sub}>
-            API: <span className={styles.mono}>{API}</span>
-          </div>
+      {/* Search Bar */}
+      <div className={styles.searchSection}>
+        <div className={styles.searchInput}>
+          <span className={styles.searchIcon}>search</span>
+          <input 
+            type="text" 
+            placeholder="Search recipes..." 
+            readOnly
+          />
         </div>
-        <div className={styles.headerActions}>
-          <Link href="/recipes" className={styles.btn}>
-            View All Recipes
-          </Link>
-          <Link href="/create" className={styles.primaryBtn}>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className={styles.tabs}>
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Featured Banner */}
+      <div className={styles.banner}>
+        <div className={styles.bannerContent}>
+          <h3 className={styles.bannerTitle}>Featured Recipes</h3>
+          <p className={styles.bannerSubtitle}>Discover today</p>
+        </div>
+        <span className={styles.bannerArrow}>→</span>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className={styles.errorBanner}>
+          <span>⚠️ {error}</span>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading ? (
+        <div className={styles.loadingState}>
+          <div className={styles.loadingSpinner}></div>
+        </div>
+      ) : recipes.length === 0 ? (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>🍳</div>
+          <h3 className={styles.emptyTitle}>No recipes yet.</h3>
+          <p className={styles.emptyDescription}>
+            Be the first to share a recipe!
+          </p>
+          <Link href="/en/create" className={styles.emptyButton}>
             + Create Recipe
           </Link>
         </div>
-      </header>
-
-      {error && <div className={styles.error}>❌ {error}</div>}
-
-      {loading ? (
-        <div className={styles.muted}>Loading…</div>
-      ) : recipes.length === 0 ? (
-        <div className={styles.muted}>No recipes yet.</div>
       ) : (
-        <div className={styles.list}>
+        <div className={styles.recipeGrid}>
           {recipes.map((r) => (
-            <article key={r.id} className={styles.card}>
-              <div className={styles.cardTitle}>{r.title}</div>
-
-              {(r.updatedAt || r.createdAt) && (
-                <div className={styles.meta}>
-                  {r.updatedAt
-                    ? `Updated: ${new Date(r.updatedAt).toLocaleString()}`
-                    : `Created: ${new Date(r.createdAt!).toLocaleString()}`}
+            <Link key={r.id} href={`/recipes/${r.id}`} className={styles.recipeCard}>
+              <div className={styles.cardImage}>
+                <div className={styles.imagePlaceholder}>
+                  <span>🍽️</span>
                 </div>
-              )}
-
-              <div className={styles.preview}>
-                {r.content?.length > 260 ? r.content.slice(0, 260) + "…" : r.content}
               </div>
+              
+              <div className={styles.cardContent}>
+                <h3 className={styles.cardTitle}>{r.title}</h3>
+                
+                <div className={styles.cardMeta}>
+                  <span className={styles.author}>
+                    <span className={styles.avatarInitial}>C</span>
+                    Creator
+                  </span>
+                </div>
 
-              <div className={styles.idRow}>
-                id: <span className={styles.mono}>{r.id}</span>
+                {r.content && (
+                  <p className={styles.cardDescription}>
+                    {r.content.length > 60 ? r.content.slice(0, 60) + "…" : r.content}
+                  </p>
+                )}
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       )}
     </main>
   );
-}
-
-function safeJson(text: string) {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
 }
