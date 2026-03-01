@@ -67,23 +67,6 @@ export default function RecipeDetailPage() {
     }
   };
 
-  const handleLike = async () => {
-    if (!recipe) return;
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await fetch(`${apiUrl}/recipes/${recipeId}/like`, {
-        method: "PATCH",
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setRecipe(data.recipe);
-      }
-    } catch (err: any) {
-      console.error("", err);
-    }
-  };
-
   if (loading) {
     return <div className={styles.loading}>加载中...</div>;
   }
@@ -103,31 +86,16 @@ export default function RecipeDetailPage() {
 
   return (
     <div className={styles.container}>
-      {/* Red Header Bar */}
-      <header className={styles.topHeader}>
-        <Link href="/" className={styles.backBtn}>
-          <span>arrow_back</span>
+      {/* Back Button - Top */}
+      <div className={styles.backButtonContainer}>
+        <Link href="/" className={styles.backButtonNormal}>
+          ← 返回
         </Link>
-        <h1 className={styles.headerTitle}>{recipe.title}</h1>
-        <div className={styles.headerActions}>
-          <button className={styles.actionBtn} title="Share">
-            <span className={styles.icon}>share</span>
-          </button>
-          <button className={styles.actionBtn} title="Add">
-            <span className={styles.icon}>add_circle</span>
-          </button>
-          <button className={styles.actionBtn} onClick={handleLike} title="Like">
-            <span className={styles.icon}>favorite</span>
-          </button>
-          <button className={styles.actionBtn} title="More">
-            <span className={styles.icon}>more_vert</span>
-          </button>
-        </div>
-      </header>
+      </div>
 
       {/* Recipe Image */}
       {recipe.image && (
-        <div style={{ width: "100%", height: "400px", overflow: "hidden" }}>
+        <div style={{ width: "100%", height: "400px", overflow: "hidden", borderRadius: "8px", marginBottom: "20px" }}>
           <img
             src={recipe.image}
             alt={recipe.title}
@@ -136,41 +104,36 @@ export default function RecipeDetailPage() {
         </div>
       )}
 
+      {/* Recipe Title */}
+      <h1 className={styles.recipeTitle}>{recipe.title}</h1>
+
       {/* Recipe Info */}
       <div className={styles.recipeInfo}>
-        <h2 className={styles.recipeTitle}>{recipe.title}</h2>
-        
-        {/* Rating */}
-        {recipe.ratingCount > 0 && (
-          <div className={styles.ratingRow}>
-            <span className={styles.stars}>★★★★★</span>
-            <span className={styles.ratingText}>
-              {recipe.ratingAverage.toFixed(1)} ({recipe.ratingCount})
-            </span>
+        {/* Rating and View Count Row */}
+        <div className={styles.infoHeader}>
+          {/* Rating */}
+          {recipe.ratingCount > 0 && (
+            <div className={styles.ratingRow}>
+              <span className={styles.stars}>★★★★★</span>
+              <span className={styles.ratingText}>
+                {recipe.ratingAverage.toFixed(1)} ({recipe.ratingCount})
+              </span>
+            </div>
+          )}
+          {/* View Count - Right aligned */}
+          <div className={styles.viewCount}>
+            {recipe.views} 次浏览
           </div>
-        )}
+        </div>
 
         {/* Tags */}
         {recipe.tags.length > 0 && (
           <div className={styles.tagsRow}>
             {recipe.tags.map((tag) => (
-              <span key={tag} className={styles.categoryTag}>{tag}</span>
+              <span key={tag} className={styles.tag}>{tag}</span>
             ))}
           </div>
         )}
-
-        {/* Recipe Meta */}
-        <div className={styles.metaRow}>
-          <span>❤️ {recipe.likes}</span>
-          <span>•</span>
-          <span>👁️ {recipe.views}</span>
-          {recipe.ratingCount > 0 && (
-            <>
-              <span>•</span>
-              <span>⭐ {recipe.ratingAverage.toFixed(1)} ({recipe.ratingCount})</span>
-            </>
-          )}
-        </div>
       </div>
 
       {/* Tabs */}

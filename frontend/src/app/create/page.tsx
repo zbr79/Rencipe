@@ -232,13 +232,9 @@ export default function CreatePage() {
       <form onSubmit={handleSubmit} className={styles.form}>
         {/* Recipe Basics */}
         <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2>📝 基本信息</h2>
-          </div>
-
           <div className={styles.formGroup}>
             <label htmlFor="title" className={styles.label}>
-              食谱名称 *
+              食谱名称
             </label>
             <input
               id="title"
@@ -254,12 +250,12 @@ export default function CreatePage() {
 
           <div className={styles.formGroup}>
             <label htmlFor="description" className={styles.label}>
-              描述 *
+              简介
             </label>
             <textarea
               id="description"
               name="description"
-              placeholder="描述这个食谱..."
+              placeholder="菜谱简介..."
               value={formData.description}
               onChange={handleInputChange}
               required
@@ -290,7 +286,7 @@ export default function CreatePage() {
         {/* Recipe Details */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2>⚙️ 详细信息</h2>
+            <h2>详细信息</h2>
           </div>
 
           <div className={styles.detailsGrid}>
@@ -317,7 +313,7 @@ export default function CreatePage() {
         {/* Ingredients */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2>🥘 配料</h2>
+            <h2>配料</h2>
           </div>
 
           <div className={styles.ingredientForm}>
@@ -401,7 +397,7 @@ export default function CreatePage() {
         {/* Cooking Steps */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2>👨‍🍳 烹饪步骤</h2>
+            <h2>烹饪步骤</h2>
           </div>
 
           <div className={styles.stepForm}>
@@ -470,7 +466,7 @@ export default function CreatePage() {
         {/* Tags */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2>🏷️ 标签</h2>
+            <h2>标签</h2>
           </div>
 
           <div className={styles.tagsForm}>
