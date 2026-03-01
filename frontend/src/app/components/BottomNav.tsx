@@ -6,14 +6,13 @@ import styles from "./bottom-nav.module.css";
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const locale = pathname.split('/')[1] || 'en';
 
   const navItems = [
-    { href: `/${locale}`, icon: "home", label: "Home" },
-    { href: `/${locale}/search`, icon: "search", label: "Search" },
-    { href: `/${locale}/create`, icon: "add_circle", label: "Create" },
-    { href: `/${locale}/saved`, icon: "favorite", label: "Saved" },
-    { href: `/${locale}/settings`, icon: "settings", label: "Settings" },
+    { href: `/`, icon: "home", label: "Home" },
+    { href: `/search`, icon: "search", label: "Search" },
+    { href: `/create`, icon: "add_circle", label: "Create" },
+    { href: `/saved`, icon: "favorite", label: "Saved" },
+    { href: `/settings`, icon: "settings", label: "Settings" },
   ];
 
   return (

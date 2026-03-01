@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import styles from "./page.module.css";
 
@@ -24,6 +25,8 @@ function safeJson(text: string) {
 
 export default function HomePage() {
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const params = useParams();
+  const locale = params.locale as string;
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +55,7 @@ export default function HomePage() {
       const parsed = data as ListRes;
       setRecipes(Array.isArray(parsed?.recipes) ? parsed.recipes : []);
     } catch (e: any) {
-      setError(e?.message || "Failed to fetch recipes");
+      setError(e?.message || "");
       setRecipes([]);
     } finally {
       setLoading(false);
@@ -61,13 +64,14 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchRecipes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const tabs = [
-    { id: "following", label: "Following" },
-    { id: "recommended", label: "Recommended" },
-    { id: "trending", label: "Trending" },
-    { id: "categories", label: "Categories" },
+    { id: "following", label: "关注" },
+    { id: "recommended", label: "推荐" },
+    { id: "trending", label: "热门" },
+    { id: "categories", label: "分类" },
   ];
 
   return (
@@ -78,7 +82,7 @@ export default function HomePage() {
           <span className={styles.searchIcon}>search</span>
           <input 
             type="text" 
-            placeholder="Search recipes..." 
+            placeholder="搜索食谱..." 
             readOnly
           />
         </div>
@@ -100,8 +104,8 @@ export default function HomePage() {
       {/* Featured Banner */}
       <div className={styles.banner}>
         <div className={styles.bannerContent}>
-          <h3 className={styles.bannerTitle}>Featured Recipes</h3>
-          <p className={styles.bannerSubtitle}>Discover today</p>
+          <h3 className={styles.bannerTitle}>精选食谱</h3>
+          <p className={styles.bannerSubtitle}>今日发现</p>
         </div>
         <span className={styles.bannerArrow}>→</span>
       </div>
@@ -121,12 +125,12 @@ export default function HomePage() {
       ) : recipes.length === 0 ? (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>🍳</div>
-          <h3 className={styles.emptyTitle}>No recipes yet.</h3>
+          <h3 className={styles.emptyTitle}>尚无食谱</h3>
           <p className={styles.emptyDescription}>
-            Be the first to share a recipe!
+            成为第一个分享食谱的人！
           </p>
-          <Link href="/en/create" className={styles.emptyButton}>
-            + Create Recipe
+          <Link href="/create" className={styles.emptyButton}>
+            + 创建食谱
           </Link>
         </div>
       ) : (
@@ -145,7 +149,7 @@ export default function HomePage() {
                 <div className={styles.cardMeta}>
                   <span className={styles.author}>
                     <span className={styles.avatarInitial}>C</span>
-                    Creator
+                    创作者
                   </span>
                 </div>
 

@@ -1,27 +1,27 @@
-import "./globals.css";
-import BottomNav from "./components/BottomNav";
+import type { ReactNode } from 'react';
+import { ThemeProvider } from './contexts/ThemeContext';
+import BottomNav from './components/BottomNav';
+import './globals.css';
 
 export const metadata = {
   title: 'Rencipe',
-  description: 'A recipe sharing platform',
+  description: '食谱分享平台',
 };
-
-export const viewport = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no';
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="zh" suppressHydrationWarning>
       <head>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
       </head>
       <body>
-        {children}
-        
-        {/* BOTTOM NAV - MOVED TO ROOT LAYOUT WHERE IT RENDERS */}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
         <BottomNav />
       </body>
     </html>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import styles from "./recipes.module.css";
+import styles from "./page.module.css";
 
 interface Recipe {
   id: string;
@@ -37,7 +37,7 @@ export default function RecipesPage() {
       const response = await fetch(`${apiUrl}/recipes?limit=100`);
 
       if (!response.ok) {
-        throw new Error("Failed to fetch recipes");
+        throw new Error("获取食谱失败");
       }
 
       const data = await response.json();
@@ -63,19 +63,21 @@ export default function RecipesPage() {
 
 
 
+
+
   return (
     <div className={styles.container}>
-      <h1>Recipes</h1>
+      <h1>食谱</h1>
 
-      {error && <div className={styles.error}>Error: {error}</div>}
+      {error && <div className={styles.error}>错误: {error}</div>}
 
       {/* Filters */}
       <div className={styles.filtersSection}>
-        <h2>Filters</h2>
+        <h2>筛选</h2>
         <div className={styles.filters}>
           <input
             type="text"
-            placeholder="Search recipes..."
+            placeholder="搜索食谱..."
             value={filters.searchTerm}
             onChange={(e) =>
               setFilters({ ...filters, searchTerm: e.target.value })
@@ -86,25 +88,25 @@ export default function RecipesPage() {
 
 
           <button onClick={fetchRecipes} className={styles.refreshBtn}>
-            Refresh
+            刷新
           </button>
         </div>
       </div>
 
       {/* Recipes Count */}
       <div className={styles.count}>
-        Showing {filteredRecipes.length} of {recipes.length} recipes
+        找到 {filteredRecipes.length} / {recipes.length} 个食谱
       </div>
 
       {/* Loading State */}
-      {loading && <p className={styles.loading}>Loading recipes...</p>}
+      {loading && <p className={styles.loading}>加载中...</p>}
 
       {/* Empty State */}
       {!loading && filteredRecipes.length === 0 && (
         <div className={styles.empty}>
-          <p>No recipes found. Try adjusting your filters.</p>
+          <p>尚无食谱</p>
           <Link href="/create" className={styles.createLink}>
-            Create Your First Recipe
+            创建食谱
           </Link>
         </div>
       )}
@@ -121,10 +123,14 @@ export default function RecipesPage() {
               <h3>{recipe.title}</h3>
             </div>
 
-            <p className={styles.description}>{recipe.description || "No description provided"}</p>
+            <p className={styles.description}>
+              {recipe.description || ""}
+            </p>
 
             <div className={styles.meta}>
-              <span className={styles.metaItem}>🍽️ {recipe.servings || 1} servings</span>
+              <span className={styles.metaItem}>
+                🍽️ {recipe.servings || 1} 人份
+              </span>
             </div>
 
             {recipe.tags.length > 0 && (
@@ -135,7 +141,9 @@ export default function RecipesPage() {
                   </span>
                 ))}
                 {recipe.tags.length > 3 && (
-                  <span className={styles.tag}>+{recipe.tags.length - 3}</span>
+                  <span className={styles.tag}>
+                    +{recipe.tags.length - 3}
+                  </span>
                 )}
               </div>
             )}
