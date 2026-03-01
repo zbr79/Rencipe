@@ -28,8 +28,6 @@ function safeJson(text: string) {
 }
 
 export default function HomePage() {
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +38,7 @@ export default function HomePage() {
     setError(null);
 
     try {
-      const res = await fetch(`${API}/recipes`, {
+      const res = await fetch(`/api/recipes`, {
         method: "GET",
         credentials: "include",
       });

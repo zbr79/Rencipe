@@ -34,8 +34,7 @@ export default function RecipesPage() {
     setLoading(true);
     setError("");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await fetch(`${apiUrl}/recipes?limit=100`);
+      const response = await fetch(`/api/recipes?limit=100`);
 
       if (!response.ok) {
         throw new Error("获取食谱失败");

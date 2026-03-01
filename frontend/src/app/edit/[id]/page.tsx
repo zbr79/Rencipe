@@ -72,8 +72,7 @@ export default function EditPage() {
       setLoading(true);
       setError("");
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const response = await fetch(`${apiUrl}/recipes/${recipeId}`);
+        const response = await fetch(`/api/recipes/${recipeId}`);
 
         if (!response.ok) {
           throw new Error("加载食谱失败");
@@ -223,10 +222,8 @@ export default function EditPage() {
 
     setSubmitting(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
       // Update recipe basics
-      const updateResponse = await fetch(`${apiUrl}/recipes/${recipeId}`, {
+      const updateResponse = await fetch(`/api/recipes/${recipeId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -250,7 +247,7 @@ export default function EditPage() {
         const imageFormData = new FormData();
         imageFormData.append("image", recipeImageFile);
 
-        const imageResponse = await fetch(`${apiUrl}/recipes/${recipeId}/upload-image`, {
+        const imageResponse = await fetch(`/api/recipes/${recipeId}/upload-image`, {
           method: "POST",
           body: imageFormData,
         });
@@ -265,7 +262,7 @@ export default function EditPage() {
         const stepFormData = new FormData();
         stepFormData.append("image", file);
 
-        await fetch(`${apiUrl}/recipes/${recipeId}/steps/${stepNumber}/upload-image`, {
+        await fetch(`/api/recipes/${recipeId}/steps/${stepNumber}/upload-image`, {
           method: "POST",
           body: stepFormData,
         });

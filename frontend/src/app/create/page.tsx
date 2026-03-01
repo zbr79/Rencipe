@@ -290,8 +290,7 @@ export default function CreatePage() {
     setMessageType("");
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await fetch(`${apiUrl}/recipes`, {
+      const response = await fetch(`/api/recipes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -311,7 +310,7 @@ export default function CreatePage() {
       if (recipeImageFile) {
         const imageFormData = new FormData();
         imageFormData.append("image", recipeImageFile);
-        await fetch(`${apiUrl}/recipes/${recipeId}/upload-image`, {
+        await fetch(`/api/recipes/${recipeId}/upload-image`, {
           method: "POST",
           body: imageFormData,
         });
@@ -321,7 +320,7 @@ export default function CreatePage() {
       for (const [stepNumber, file] of Object.entries(stepImageFiles)) {
         const stepFormData = new FormData();
         stepFormData.append("image", file);
-        await fetch(`${apiUrl}/recipes/${recipeId}/steps/${stepNumber}/upload-image`, {
+        await fetch(`/api/recipes/${recipeId}/steps/${stepNumber}/upload-image`, {
           method: "POST",
           body: stepFormData,
         });

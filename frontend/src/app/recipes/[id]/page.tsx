@@ -50,8 +50,7 @@ export default function RecipeDetailPage() {
     setLoading(true);
     setError("");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await fetch(`${apiUrl}/recipes/${recipeId}`);
+      const response = await fetch(`/api/recipes/${recipeId}`);
 
       if (!response.ok) {
         throw new Error("加载食谱失败");
@@ -74,8 +73,7 @@ export default function RecipeDetailPage() {
 
     setIsDeleting(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await fetch(`${apiUrl}/recipes/${recipeId}`, {
+      const response = await fetch(`/api/recipes/${recipeId}`, {
         method: "DELETE",
       });
 
