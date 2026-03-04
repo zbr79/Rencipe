@@ -3,8 +3,17 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useCart } from "../../../app/contexts/CartContext";
+import { useSaved } from "../../../app/contexts/SavedContext";
 import styles from "./page.module.css";
+
+interface MealPlan {
+  _id: string;
+  userId: string;
+  name: string;
+  recipes: any[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface Recipe {
   id: string;
@@ -37,13 +46,17 @@ export default function RecipeDetailPage() {
   const params = useParams();
   const router = useRouter();
   const recipeId = params.id as string;
-  const { addToCart } = useCart();
+  const { isSaved, addFavorite, removeFavorite, mealPlans, fetchMealPlans, addRecipeToMealPlan } = useSaved();
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isSavingRecipe, setIsSavingRecipe] = useState(false);
+  const [showPlanSelector, setShowPlanSelector] = useState(false);
+  const [loadingPlans, setLoadingPlans] = useState(false);
+  const [addingToPlan, setAddingToPlan] = useState<string | null>(null);
+  const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
 
   useEffect(() => {
     fetchRecipe();
@@ -96,19 +109,47 @@ export default function RecipeDetailPage() {
     router.push(`/edit/${recipeId}`);
   };
 
-  const handleAddToCart = async () => {
-    const testUserId = "507f1f77bcf86cd799439011"; // Mock user ID for testing
-    setIsAddingToCart(true);
+  const handleOpenPlanSelector = async () => {
+    setShowPlanSelector(true);
+    setLoadingPlans(true);
     try {
-      await addToCart(testUserId, recipeId);
-      alert("已添加到购物车！");
-    } catch (err: any) {
-      alert("添加到购物车失败: " + err.message);
+      await fetchMealPlans(userId);
+    } catch (err) {
+      console.error("Failed to fetch meal plans:", err);
     } finally {
-      setIsAddingToCart(false);
+      setLoadingPlans(false);
     }
   };
 
+  const handleAddToPlan = async (planId: string) => {
+    setAddingToPlan(planId);
+    try {
+      await addRecipeToMealPlan(planId, recipeId);
+      alert("已添加到计划！");
+      setShowPlanSelector(false);
+    } catch (err: any) {
+      alert("添加失败: " + err.message);
+    } finally {
+      setAddingToPlan(null);
+    }
+  };
+
+  const handleSaveRecipe = async () => {
+    setIsSavingRecipe(true);
+    try {
+      if (isSaved(recipeId)) {
+        await removeFavorite(userId, recipeId);
+        alert("已取消保存");
+      } else {
+        await addFavorite(userId, recipeId);
+        alert("已保存此食谱！");
+      }
+    } catch (err: any) {
+      alert("保存失败: " + err.message);
+    } finally {
+      setIsSavingRecipe(false);
+    }
+  };
   if (loading) {
     return <div className={styles.loading}>加载中...</div>;
   }
@@ -135,11 +176,19 @@ export default function RecipeDetailPage() {
         </Link>
         <div className={styles.actionButtons}>
           <button 
-            onClick={handleAddToCart}
-            disabled={isAddingToCart}
-            className={styles.addToCartBtn}
+            onClick={handleSaveRecipe}
+            disabled={isSavingRecipe}
+            className={styles.saveBtn}
+            title={isSaved(recipeId) ? "已保存" : "保存此食谱"}
           >
-            {isAddingToCart ? "添加中..." : "🛒 添加到购物车"}
+            {isSavingRecipe ? "保存中..." : (isSaved(recipeId) ? "❤️ 已保存" : "🤍 保存")}
+          </button>
+          <button 
+            onClick={handleOpenPlanSelector}
+            className={styles.addToPlanBtn}
+            title="添加到计划"
+          >
+            📋 添加到计划
           </button>
           <button 
             onClick={handleEdit}
@@ -240,6 +289,102 @@ export default function RecipeDetailPage() {
           </ol>
         </div>
       </div>
+
+      {/* Meal Plan Selector Modal */}
+      {showPlanSelector && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => setShowPlanSelector(false)}
+        >
+          <div
+            style={{
+              background: "var(--card-bg)",
+              borderRadius: "8px",
+              padding: "20px",
+              maxWidth: "400px",
+              maxHeight: "80vh",
+              overflow: "auto",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ marginTop: 0, marginBottom: "16px" }}>选择计划</h2>
+
+            {loadingPlans ? (
+              <p>加载中...</p>
+            ) : mealPlans && mealPlans.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {mealPlans.map((plan) => (
+                  <button
+                    key={plan._id}
+                    onClick={() => handleAddToPlan(plan._id)}
+                    disabled={addingToPlan === plan._id}
+                    style={{
+                      padding: "12px",
+                      background: "var(--card-bg)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      transition: "all 0.2s ease",
+                      opacity: addingToPlan === plan._id ? 0.6 : 1,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (addingToPlan !== plan._id) {
+                        e.currentTarget.style.background = "var(--border)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "var(--card-bg)";
+                    }}
+                  >
+                    <div style={{ fontWeight: "600", marginBottom: "4px" }}>
+                      {plan.name}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                      {plan.recipes?.length || 0} 道食谱
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p style={{ color: "var(--text-secondary)" }}>
+                您还没有创建任何计划。
+                <br />
+                <Link href="/saved" style={{ color: "#3b82f6", textDecoration: "none" }}>
+                  去创建计划 →
+                </Link>
+              </p>
+            )}
+
+            <button
+              onClick={() => setShowPlanSelector(false)}
+              style={{
+                marginTop: "16px",
+                width: "100%",
+                padding: "10px",
+                background: "transparent",
+                border: "1px solid var(--border)",
+                borderRadius: "6px",
+                cursor: "pointer",
+                color: "var(--text-secondary)",
+              }}
+            >
+              关闭
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

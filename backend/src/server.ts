@@ -6,6 +6,8 @@ import multer from "multer";
 import recipeRoutes from "./routes/recipe.routes";
 import draftRoutes from "./routes/draft.routes";
 import cartRoutes from "./routes/cart.routes";
+import favoriteRoutes from "./routes/favorite.routes";
+import mealPlanRoutes from "./routes/mealplan.routes";
 dotenv.config();
 
 const app = express();
@@ -26,6 +28,8 @@ const PORT = process.env.PORT || 5000;
 app.use(recipeRoutes);
 app.use("/drafts", draftRoutes);
 app.use(cartRoutes);
+app.use(favoriteRoutes);
+app.use(mealPlanRoutes);
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", backend: "running" });
 });

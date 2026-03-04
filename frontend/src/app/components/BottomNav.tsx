@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCreateForm } from "../contexts/CreateFormContext";
-import { useCart } from "../contexts/CartContext";
+import { useSaved } from "../contexts/SavedContext";
 import styles from "./bottom-nav.module.css";
 
 interface NavItem {
@@ -17,13 +17,14 @@ interface NavItem {
 export default function BottomNav() {
   const pathname = usePathname();
   const { openCreateForm } = useCreateForm();
-  const { cartCount } = useCart();
+  const { savedCount, mealPlans } = useSaved();
+  const totalSavedCount = savedCount + mealPlans.length;
 
   const navItems: NavItem[] = [
     { href: `/`, icon: "home", label: "Home" },
     { href: `/search`, icon: "search", label: "Search" },
     { href: null, icon: "add_circle", label: "Create", action: openCreateForm },
-    { href: `/cart`, icon: "shopping_cart", label: "Cart", badge: cartCount },
+    { href: `/saved`, icon: "bookmark", label: "Saved", badge: totalSavedCount },
     { href: `/settings`, icon: "settings", label: "Settings" },
   ];
 

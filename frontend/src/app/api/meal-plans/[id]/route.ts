@@ -9,10 +9,10 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const response = await fetch(`${BACKEND_URL}/recipes/${id}`);
+    const response = await fetch(`${BACKEND_URL}/meal-plans/${id}`);
 
     if (!response.ok) {
-      throw new Error("Failed to fetch recipe from backend");
+      throw new Error("Failed to fetch meal plan from backend");
     }
 
     const data = await response.json();
@@ -31,14 +31,14 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
-    const response = await fetch(`${BACKEND_URL}/recipes/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/meal-plans/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to update recipe");
+      throw new Error("Failed to update meal plan");
     }
 
     const data = await response.json();
@@ -56,12 +56,12 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    const response = await fetch(`${BACKEND_URL}/recipes/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/meal-plans/${id}`, {
       method: "DELETE",
     });
 
     if (!response.ok) {
-      throw new Error("Failed to delete recipe");
+      throw new Error("Failed to delete meal plan");
     }
 
     const data = await response.json();

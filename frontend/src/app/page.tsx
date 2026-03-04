@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
+import { useSaved } from "./contexts/SavedContext";
 
 type Recipe = {
   id: string;
+  _id?: string;
   title: string;
   description: string;
   image?: string;
@@ -32,6 +34,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("recommended");
+  const { isSaved, addFavorite, removeFavorite } = useSaved();
+  const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
 
   async function fetchRecipes() {
     setLoading(true);
@@ -136,34 +140,68 @@ export default function HomePage() {
       ) : (
         <div className={styles.recipeGrid}>
           {recipes.map((r) => (
-            <Link key={r.id} href={`/recipes/${r.id}`} className={styles.recipeCard}>
-              <div className={styles.cardImage}>
-                {r.image ? (
-                  <img src={r.image} alt={r.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : (
-                  <div className={styles.imagePlaceholder}>
-                    <span>🍽️</span>
-                  </div>
-                )}
-              </div>
-              
-              <div className={styles.cardContent}>
-                <h3 className={styles.cardTitle}>{r.title}</h3>
-                
-                <div className={styles.cardMeta}>
-                  <span>❤️ {r.likes} • 👁️ {r.views}</span>
-                  {r.ratingCount > 0 && (
-                    <span style={{ marginLeft: "8px" }}>⭐ {r.ratingAverage.toFixed(1)}</span>
+            <div key={r._id || r.id} className={styles.recipeCardWrapper}>
+              <Link href={`/recipes/${r._id || r.id}`} className={styles.recipeCard}>
+                <div className={styles.cardImage}>
+                  {r.image ? (
+                    <img src={r.image} alt={r.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    <div className={styles.imagePlaceholder}>
+                      <span>🍽️</span>
+                    </div>
                   )}
                 </div>
+                
+                <div className={styles.cardContent}>
+                  <h3 className={styles.cardTitle}>{r.title}</h3>
+                  
+                  <div className={styles.cardMeta}>
+                    <span>❤️ {r.likes} • 👁️ {r.views}</span>
+                    {r.ratingCount > 0 && (
+                      <span style={{ marginLeft: "8px" }}>⭐ {r.ratingAverage.toFixed(1)}</span>
+                    )}
+                  </div>
 
-                {r.description && (
-                  <p className={styles.cardDescription}>
-                    {r.description.length > 60 ? r.description.slice(0, 60) + "…" : r.description}
-                  </p>
-                )}
-              </div>
-            </Link>
+                  {r.description && (
+                    <p className={styles.cardDescription}>
+                      {r.description.length > 60 ? r.description.slice(0, 60) + "…" : r.description}
+                    </p>
+                  )}
+                </div>
+              </Link>
+              
+              {/* Save Button */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  const saved = isSaved(r._id || r.id);
+                  if (saved) {
+                    removeFavorite(userId, r._id || r.id);
+                  } else {
+                    addFavorite(userId, r._id || r.id);
+                  }
+                }}
+                style={{
+                  position: "absolute",
+                  top: "8px",
+                  right: "8px",
+                  background: "rgba(255, 255, 255, 0.9)",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "40px",
+                  height: "40px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  fontSize: "20px",
+                  zIndex: 10,
+                }}
+                title={isSaved(r._id || r.id) ? "取消保存" : "保存食谱"}
+              >
+                {isSaved(r._id || r.id) ? "❤️" : "🤍"}
+              </button>
+            </div>
           ))}
         </div>
       )}

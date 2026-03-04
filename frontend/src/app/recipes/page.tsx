@@ -6,6 +6,7 @@ import styles from "./page.module.css";
 
 interface Recipe {
   id: string;
+  _id?: string;
   title: string;
   description: string;
   servings: number;
@@ -22,8 +23,10 @@ export default function RecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [allTags, setAllTags] = useState<string[]>([]);
   const [filters, setFilters] = useState({
     searchTerm: "",
+    selectedTags: [] as string[],
   });
 
   useEffect(() => {
@@ -42,6 +45,13 @@ export default function RecipesPage() {
 
       const data = await response.json();
       setRecipes(data.recipes);
+
+      // Extract all unique tags
+      const tags = new Set<string>();
+      data.recipes?.forEach((recipe: Recipe) => {
+        recipe.tags?.forEach((tag) => tags.add(tag));
+      });
+      setAllTags(Array.from(tags).sort());
     } catch (err: any) {
       setError(err.message);
       console.error(err);
@@ -58,12 +68,12 @@ export default function RecipesPage() {
         .toLowerCase()
         .includes(filters.searchTerm.toLowerCase());
 
-    return matchesSearch;
+    const matchesTags =
+      filters.selectedTags.length === 0 ||
+      filters.selectedTags.every((tag) => recipe.tags.includes(tag));
+
+    return matchesSearch && matchesTags;
   });
-
-
-
-
 
   return (
     <div className={styles.container}>
@@ -85,7 +95,38 @@ export default function RecipesPage() {
             className={styles.searchInput}
           />
 
-
+          {/* Tags Filter */}
+          {allTags.length > 0 && (
+            <div style={{ marginTop: "12px" }}>
+              <h3 style={{ marginBottom: "8px", fontSize: "14px" }}>按标签筛选</h3>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {allTags.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => {
+                      setFilters((prev) => ({
+                        ...prev,
+                        selectedTags: prev.selectedTags.includes(tag)
+                          ? prev.selectedTags.filter((t) => t !== tag)
+                          : [...prev.selectedTags, tag],
+                      }));
+                    }}
+                    style={{
+                      padding: "8px 12px",
+                      background: filters.selectedTags.includes(tag) ? "#667eea" : "#f0f0f0",
+                      color: filters.selectedTags.includes(tag) ? "white" : "black",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <button onClick={fetchRecipes} className={styles.refreshBtn}>
             刷新

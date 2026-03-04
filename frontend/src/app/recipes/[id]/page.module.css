@@ -52,7 +52,9 @@
 
 .editBtn,
 .deleteBtn,
-.addToCartBtn {
+.addToCartBtn,
+.addToPlanBtn,
+.saveBtn {
   padding: 8px 16px;
   border: none;
   border-radius: 6px;
@@ -88,6 +90,34 @@
 .editBtn:hover {
   background-color: #2563eb;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.addToPlanBtn {
+  background-color: #8b5cf6;
+}
+
+.addToPlanBtn:hover:not(:disabled) {
+  background-color: #7c3aed;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+}
+
+.addToPlanBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.saveBtn {
+  background-color: #ec4899;
+}
+
+.saveBtn:hover:not(:disabled) {
+  background-color: #be185d;
+  box-shadow: 0 2px 8px rgba(190, 24, 93, 0.3);
+}
+
+.saveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .deleteBtn {

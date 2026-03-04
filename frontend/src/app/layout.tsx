@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { CreateFormProvider } from './contexts/CreateFormContext';
 import { CartProvider } from './contexts/CartContext';
+import { SavedProvider } from './contexts/SavedContext';
 import TopBar from './components/TopBar';
 import BottomNav from './components/BottomNav';
 import CreateFormModal from './components/CreateFormModal';
@@ -25,12 +26,14 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <CartProvider>
-            <CreateFormProvider>
-              <TopBar />
-              {children}
-              <BottomNav />
-              <CreateFormModal />
-            </CreateFormProvider>
+            <SavedProvider>
+              <CreateFormProvider>
+                <TopBar />
+                {children}
+                <BottomNav />
+                <CreateFormModal />
+              </CreateFormProvider>
+            </SavedProvider>
           </CartProvider>
         </ThemeProvider>
       </body>

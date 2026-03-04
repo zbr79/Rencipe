@@ -236,6 +236,10 @@ html.dark .tabActive {
   padding: 12px;
 }
 
+.recipeCardWrapper {
+  position: relative;
+}
+
 .recipeCard {
   display: flex;
   flex-direction: column;
