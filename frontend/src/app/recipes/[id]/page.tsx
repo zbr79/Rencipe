@@ -21,7 +21,13 @@ interface Recipe {
   description: string;
   authorId: string;
   image?: string;
-  ingredients: Array<{
+  mainIngredients: Array<{
+    name: string;
+    quantity: number;
+    unit: string;
+    note?: string;
+  }>;
+  seasonings: Array<{
     name: string;
     quantity: number;
     unit: string;
@@ -254,17 +260,46 @@ export default function RecipeDetailPage() {
         {/* Ingredients Section */}
         <div className={styles.ingredientsSection}>
           <h3 className={styles.sectionTitle}>用料</h3>
-          <ul className={styles.ingredientsList}>
-            {recipe.ingredients.map((ing, idx) => (
-              <li key={idx} className={styles.ingredientItem}>
-                <input type="checkbox" id={`ing-${idx}`} />
-                <label htmlFor={`ing-${idx}`}>
-                  <strong>{ing.quantity}</strong> {ing.name}
-                  {ing.note && <span className={styles.note}> • {ing.note}</span>}
-                </label>
-              </li>
-            ))}
-          </ul>
+          
+          {/* Main Ingredients */}
+          {recipe.mainIngredients && recipe.mainIngredients.length > 0 && (
+            <div style={{ marginBottom: "16px" }}>
+              <h4 style={{ fontSize: "13px", fontWeight: "600", color: "#666", marginBottom: "8px" }}>
+                主料
+              </h4>
+              <ul className={styles.ingredientsList}>
+                {recipe.mainIngredients.map((ing, idx) => (
+                  <li key={idx} className={styles.ingredientItem}>
+                    <input type="checkbox" id={`main-ing-${idx}`} />
+                    <label htmlFor={`main-ing-${idx}`}>
+                      <strong>{ing.quantity}</strong> {ing.name}
+                      {ing.note && <span className={styles.note}> • {ing.note}</span>}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Seasonings */}
+          {recipe.seasonings && recipe.seasonings.length > 0 && (
+            <div>
+              <h4 style={{ fontSize: "13px", fontWeight: "600", color: "#666", marginBottom: "8px" }}>
+                调料
+              </h4>
+              <ul className={styles.ingredientsList}>
+                {recipe.seasonings.map((ing, idx) => (
+                  <li key={idx} className={styles.ingredientItem}>
+                    <input type="checkbox" id={`seasoning-${idx}`} />
+                    <label htmlFor={`seasoning-${idx}`}>
+                      <strong>{ing.quantity}</strong> {ing.name}
+                      {ing.note && <span className={styles.note}> • {ing.note}</span>}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Steps Section */}

@@ -18,7 +18,8 @@ function pickRecipe(doc: any) {
     description: doc.description,
     image: doc.image ?? null,
     authorId: doc.authorId ?? null,
-    ingredients: doc.ingredients ?? [],
+    mainIngredients: doc.mainIngredients ?? [],
+    seasonings: doc.seasonings ?? [],
     steps: doc.steps ?? [],
     servings: doc.servings ?? 1,
     tags: doc.tags ?? [],
@@ -50,7 +51,7 @@ export async function listRecipes(req: Request, res: Response) {
 
 /**
  * POST /recipes
- * body: { title, description, authorId, ingredients, steps, servings, tags, image }
+ * body: { title, description, authorId, mainIngredients, seasonings, steps, servings, tags, image }
  */
 export async function createRecipe(req: Request, res: Response) {
   try {
@@ -58,7 +59,8 @@ export async function createRecipe(req: Request, res: Response) {
       title,
       description,
       authorId,
-      ingredients,
+      mainIngredients,
+      seasonings,
       steps,
       servings,
       tags,
@@ -75,7 +77,8 @@ export async function createRecipe(req: Request, res: Response) {
       title,
       description,
       authorId,
-      ingredients: ingredients || [],
+      mainIngredients: mainIngredients || [],
+      seasonings: seasonings || [],
       steps: steps || [],
       servings: servings || 1,
       tags: tags || [],
@@ -117,7 +120,8 @@ export async function updateRecipe(req: Request, res: Response) {
     const {
       title,
       description,
-      ingredients,
+      mainIngredients,
+      seasonings,
       steps,
       servings,
       tags,
@@ -129,7 +133,8 @@ export async function updateRecipe(req: Request, res: Response) {
       {
         title,
         description,
-        ingredients: ingredients || [],
+        mainIngredients: mainIngredients || [],
+        seasonings: seasonings || [],
         steps: steps || [],
         servings: servings || 1,
         tags: tags || [],

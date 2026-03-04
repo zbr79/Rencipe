@@ -46,7 +46,13 @@ export default function CreatePage() {
     title: "",
     description: "",
     authorId: "507f1f77bcf86cd799439011",
-    ingredients: [
+    mainIngredients: [
+      {
+        name: "",
+        quantity: "",
+      },
+    ] as Ingredient[],
+    seasonings: [
       {
         name: "",
         quantity: "",
@@ -160,7 +166,8 @@ export default function CreatePage() {
       title: draft.title,
       description: draft.description,
       authorId: "507f1f77bcf86cd799439011",
-      ingredients: draft.ingredients || [],
+      mainIngredients: draft.mainIngredients || [],
+      seasonings: draft.seasonings || [],
       steps: draft.steps || [],
       servings: draft.servings || 1,
       tags: draft.tags || [],
@@ -187,7 +194,8 @@ export default function CreatePage() {
         title: formData.title,
         description: formData.description,
         image: recipeImage || undefined,
-        ingredients: formData.ingredients,
+        mainIngredients: formData.mainIngredients,
+        seasonings: formData.seasonings,
         steps: formData.steps,
         servings: formData.servings,
         tags: formData.tags,
@@ -215,7 +223,8 @@ export default function CreatePage() {
       title: formData.title,
       description: formData.description,
       image: recipeImage || undefined,
-      ingredients: formData.ingredients,
+      mainIngredients: formData.mainIngredients,
+      seasonings: formData.seasonings,
       steps: formData.steps,
       servings: formData.servings,
       tags: formData.tags,
@@ -224,17 +233,31 @@ export default function CreatePage() {
     saveDraft(draftData);
   }, [formData, recipeImage, stepImages, tagsInput, draftLoaded, saveDraft, updateHasChanges]);
 
-  const addIngredient = () => {
+  const addMainIngredient = () => {
     setFormData((prev) => ({
       ...prev,
-      ingredients: [...(prev.ingredients || []), { name: "", quantity: "" }],
+      mainIngredients: [...(prev.mainIngredients || []), { name: "", quantity: "" }],
     }));
   };
 
-  const removeIngredient = (index: number) => {
+  const removeMainIngredient = (index: number) => {
     setFormData((prev) => ({
       ...prev,
-      ingredients: prev.ingredients.filter((_, i) => i !== index),
+      mainIngredients: prev.mainIngredients.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addSeasonings = () => {
+    setFormData((prev) => ({
+      ...prev,
+      seasonings: [...(prev.seasonings || []), { name: "", quantity: "" }],
+    }));
+  };
+
+  const removeSeasonings = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      seasonings: prev.seasonings.filter((_, i) => i !== index),
     }));
   };
 
@@ -333,7 +356,8 @@ export default function CreatePage() {
         title: "",
         description: "",
         authorId: "507f1f77bcf86cd799439011",
-        ingredients: [],
+        mainIngredients: [],
+        seasonings: [],
         steps: [],
         servings: 1,
         tags: [],
@@ -450,10 +474,14 @@ export default function CreatePage() {
           />
 
           <IngredientsSection
-            ingredients={formData.ingredients}
-            onIngredientsChange={(ingredients) => setFormData({ ...formData, ingredients })}
-            onAddIngredient={addIngredient}
-            onRemoveIngredient={removeIngredient}
+            mainIngredients={formData.mainIngredients}
+            seasonings={formData.seasonings}
+            onMainIngredientsChange={(mainIngredients) => setFormData({ ...formData, mainIngredients })}
+            onSeasoningsChange={(seasonings) => setFormData({ ...formData, seasonings })}
+            onAddMainIngredient={addMainIngredient}
+            onRemoveMainIngredient={removeMainIngredient}
+            onAddSeasonings={addSeasonings}
+            onRemoveSeasonings={removeSeasonings}
           />
 
           <StepsSection

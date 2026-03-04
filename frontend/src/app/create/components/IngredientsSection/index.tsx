@@ -8,22 +8,36 @@ interface Ingredient {
 }
 
 interface IngredientsSectionProps {
-  ingredients: Ingredient[];
-  onIngredientsChange: (ingredients: Ingredient[]) => void;
-  onRemoveIngredient: (index: number) => void;
-  onAddIngredient: () => void;
+  mainIngredients: Ingredient[];
+  seasonings: Ingredient[];
+  onMainIngredientsChange: (ingredients: Ingredient[]) => void;
+  onSeasoningsChange: (ingredients: Ingredient[]) => void;
+  onRemoveMainIngredient: (index: number) => void;
+  onAddMainIngredient: () => void;
+  onRemoveSeasonings: (index: number) => void;
+  onAddSeasonings: () => void;
 }
 
 export default function IngredientsSection({
-  ingredients,
-  onIngredientsChange,
-  onRemoveIngredient,
-  onAddIngredient,
+  mainIngredients,
+  seasonings,
+  onMainIngredientsChange,
+  onSeasoningsChange,
+  onRemoveMainIngredient,
+  onAddMainIngredient,
+  onRemoveSeasonings,
+  onAddSeasonings,
 }: IngredientsSectionProps) {
-  const handleEditChange = (index: number, field: keyof Ingredient, value: any) => {
-    const updated = [...ingredients];
+  const handleMainEditChange = (index: number, field: keyof Ingredient, value: any) => {
+    const updated = [...mainIngredients];
     updated[index] = { ...updated[index], [field]: value };
-    onIngredientsChange(updated);
+    onMainIngredientsChange(updated);
+  };
+
+  const handleSeasoningEditChange = (index: number, field: keyof Ingredient, value: any) => {
+    const updated = [...seasonings];
+    updated[index] = { ...updated[index], [field]: value };
+    onSeasoningsChange(updated);
   };
 
   return (
@@ -33,37 +47,81 @@ export default function IngredientsSection({
         <span className={styles.infoIcon}>ⓘ</span>
       </div>
 
-      <div className={styles.ingredientsList}>
-        {ingredients.map((ing, idx) => (
-          <div key={idx} className={styles.ingredientRow}>
-            <input
-              type="text"
-              placeholder="材料"
-              value={ing.name}
-              onChange={(e) => handleEditChange(idx, "name", e.target.value)}
-              className={styles.input}
-            />
-            <input
-              type="text"
-              placeholder="用量"
-              value={ing.quantity}
-              onChange={(e) => handleEditChange(idx, "quantity", e.target.value)}
-              className={styles.input}
-            />
-            <button
-              type="button"
-              onClick={() => onRemoveIngredient(idx)}
-              className={styles.removeBtn}
-            >
-              ✕
-            </button>
-          </div>
-        ))}
+      {/* Main Ingredients Section */}
+      <div style={{ marginBottom: "24px" }}>
+        <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "#666" }}>
+          主料
+        </h3>
+        <div className={styles.ingredientsList}>
+          {mainIngredients.map((ing, idx) => (
+            <div key={idx} className={styles.ingredientRow}>
+              <input
+                type="text"
+                placeholder="材料"
+                value={ing.name}
+                onChange={(e) => handleMainEditChange(idx, "name", e.target.value)}
+                className={styles.input}
+              />
+              <input
+                type="text"
+                placeholder="用量"
+                value={ing.quantity}
+                onChange={(e) => handleMainEditChange(idx, "quantity", e.target.value)}
+                className={styles.input}
+              />
+              <button
+                type="button"
+                onClick={() => onRemoveMainIngredient(idx)}
+                className={styles.removeBtn}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <button type="button" onClick={onAddMainIngredient} className={styles.addBtn}>
+          + 添加主料
+        </button>
       </div>
 
-      <button type="button" onClick={onAddIngredient} className={styles.addBtn}>
-        + 添加配料
-      </button>
+      {/* Seasonings Section */}
+      <div>
+        <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "#666" }}>
+          调料
+        </h3>
+        <div className={styles.ingredientsList}>
+          {seasonings.map((ing, idx) => (
+            <div key={idx} className={styles.ingredientRow}>
+              <input
+                type="text"
+                placeholder="材料"
+                value={ing.name}
+                onChange={(e) => handleSeasoningEditChange(idx, "name", e.target.value)}
+                className={styles.input}
+              />
+              <input
+                type="text"
+                placeholder="用量"
+                value={ing.quantity}
+                onChange={(e) => handleSeasoningEditChange(idx, "quantity", e.target.value)}
+                className={styles.input}
+              />
+              <button
+                type="button"
+                onClick={() => onRemoveSeasonings(idx)}
+                className={styles.removeBtn}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <button type="button" onClick={onAddSeasonings} className={styles.addBtn}>
+          + 添加调料
+        </button>
+      </div>
     </section>
   );
 }

@@ -6,7 +6,12 @@ export interface IRecipe extends Document {
   authorId: mongoose.Types.ObjectId;
   image?: string; // Cloudinary image URL
 
-  ingredients: {
+  mainIngredients: {
+    name: string;
+    quantity: string;
+  }[];
+
+  seasonings: {
     name: string;
     quantity: string;
   }[];
@@ -37,7 +42,14 @@ const RecipeSchema = new Schema<IRecipe>(
     authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     image: String,
 
-    ingredients: [
+    mainIngredients: [
+      {
+        name: String,
+        quantity: String,
+      },
+    ],
+
+    seasonings: [
       {
         name: String,
         quantity: String,

@@ -9,7 +9,11 @@ interface SavedRecipe {
   description: string;
   servings: number;
   image?: string;
-  ingredients: Array<{
+  mainIngredients: Array<{
+    name: string;
+    quantity: string;
+  }>;
+  seasonings: Array<{
     name: string;
     quantity: string;
   }>;

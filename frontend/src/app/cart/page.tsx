@@ -30,7 +30,16 @@ export default function CartPage() {
     const ingredientMap: { [key: string]: string[] } = {};
 
     cartRecipes.forEach((recipe: any) => {
-      recipe.ingredients?.forEach((ing: Ingredient) => {
+      // Aggregate main ingredients
+      recipe.mainIngredients?.forEach((ing: Ingredient) => {
+        if (!ingredientMap[ing.name]) {
+          ingredientMap[ing.name] = [];
+        }
+        ingredientMap[ing.name].push(ing.quantity);
+      });
+
+      // Aggregate seasonings
+      recipe.seasonings?.forEach((ing: Ingredient) => {
         if (!ingredientMap[ing.name]) {
           ingredientMap[ing.name] = [];
         }

@@ -8,7 +8,7 @@ import mongoose from "mongoose";
  */
 export async function saveDraft(req: Request, res: Response) {
   try {
-    const { authorId, title, description, image, ingredients, steps, servings, tags } = req.body;
+    const { authorId, title, description, image, mainIngredients, seasonings, steps, servings, tags } = req.body;
 
     if (!authorId) {
       return res.status(400).json({ error: "authorId is required" });
@@ -25,7 +25,8 @@ export async function saveDraft(req: Request, res: Response) {
         title: title || "",
         description: description || "",
         image: image || undefined,
-        ingredients: ingredients || [],
+        mainIngredients: mainIngredients || [],
+        seasonings: seasonings || [],
         steps: steps || [],
         servings: servings || 1,
         tags: tags || [],

@@ -5,7 +5,8 @@ export interface IDraft extends Document {
   title: string;
   description: string;
   image?: string;
-  ingredients: Array<{ name: string; quantity: string }>;
+  mainIngredients: Array<{ name: string; quantity: string }>;
+  seasonings: Array<{ name: string; quantity: string }>;
   steps: Array<{ stepNumber: number; instruction: string; image?: string }>;
   servings: number;
   tags: string[];
@@ -19,7 +20,13 @@ const DraftSchema = new Schema<IDraft>(
     title: { type: String, default: "" },
     description: { type: String, default: "" },
     image: { type: String, default: undefined },
-    ingredients: [
+    mainIngredients: [
+      {
+        name: { type: String, default: "" },
+        quantity: { type: String, default: "" },
+      },
+    ],
+    seasonings: [
       {
         name: { type: String, default: "" },
         quantity: { type: String, default: "" },

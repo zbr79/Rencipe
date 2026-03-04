@@ -117,8 +117,25 @@ export default function MealPlanDetailPage({
     const ingredientMap: { [key: string]: AggregatedIngredient } = {};
 
     plan.recipes.forEach((recipe) => {
-      if (recipe.ingredients && Array.isArray(recipe.ingredients)) {
-        recipe.ingredients.forEach((ingredient: any) => {
+      // Aggregate main ingredients
+      if (recipe.mainIngredients && Array.isArray(recipe.mainIngredients)) {
+        recipe.mainIngredients.forEach((ingredient: any) => {
+          const key = ingredient.name.toLowerCase();
+          if (!ingredientMap[key]) {
+            ingredientMap[key] = {
+              name: ingredient.name,
+              quantity: ingredient.quantity,
+            };
+          } else {
+            // Try to aggregate quantities if they have the same unit
+            ingredientMap[key].quantity += `; ${ingredient.quantity}`;
+          }
+        });
+      }
+
+      // Aggregate seasonings
+      if (recipe.seasonings && Array.isArray(recipe.seasonings)) {
+        recipe.seasonings.forEach((ingredient: any) => {
           const key = ingredient.name.toLowerCase();
           if (!ingredientMap[key]) {
             ingredientMap[key] = {
