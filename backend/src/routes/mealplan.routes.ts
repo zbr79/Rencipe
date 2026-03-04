@@ -7,6 +7,7 @@ import {
   deleteMealPlan,
   addRecipeToMealPlan,
   removeRecipeFromMealPlan,
+  toggleIngredientCheckStatus,
 } from "../controllers/mealplan.controller";
 
 const router = express.Router();
@@ -18,5 +19,6 @@ router.put("/meal-plans/:id", renameMealPlan);
 router.delete("/meal-plans/:id", deleteMealPlan);
 router.post("/meal-plans/:id/recipes", addRecipeToMealPlan);
 router.delete("/meal-plans/:id/recipes/:recipeId", removeRecipeFromMealPlan);
+router.patch("/meal-plans/:id/ingredients", toggleIngredientCheckStatus);
 
 export default router;

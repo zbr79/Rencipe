@@ -223,3 +223,53 @@ export const removeRecipeFromMealPlan = async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+/**
+ * Toggle ingredient check status
+ * params: { id }
+ * body: { ingredientName, checked }
+ */
+export const toggleIngredientCheckStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { ingredientName, checked } = req.body;
+
+    if (!ingredientName) {
+      return res.status(400).json({ error: "ingredientName is required" });
+    }
+
+    if (typeof checked !== "boolean") {
+      return res.status(400).json({ error: "checked must be a boolean" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid meal plan ID" });
+    }
+
+    const plan = await MealPlan.findById(id);
+    if (!plan) {
+      return res.status(404).json({ error: "Meal plan not found" });
+    }
+
+    // Update checked ingredients array
+    if (checked) {
+      // Add to checked list if not already there
+      if (!plan.checkedIngredients.includes(ingredientName)) {
+        plan.checkedIngredients.push(ingredientName);
+      }
+    } else {
+      // Remove from checked list
+      plan.checkedIngredients = plan.checkedIngredients.filter(
+        (ing) => ing !== ingredientName
+      );
+    }
+
+    await plan.save();
+    await plan.populate("recipes");
+
+    res.json({ plan });
+  } catch (err: any) {
+    console.error("Error toggling ingredient check status:", err);
+    res.status(500).json({ error: err.message });
+  }
+};

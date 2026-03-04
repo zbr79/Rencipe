@@ -4,6 +4,7 @@ export interface IMealPlan extends Document {
   userId: mongoose.Types.ObjectId;
   name: string;
   recipes: mongoose.Types.ObjectId[];
+  checkedIngredients: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,6 +27,10 @@ const mealPlanSchema = new Schema<IMealPlan>(
         ref: "Recipe",
       },
     ],
+    checkedIngredients: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );

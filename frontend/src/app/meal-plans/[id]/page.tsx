@@ -91,6 +91,25 @@ export default function MealPlanDetailPage({
     }
   };
 
+  const handleCheckIngredient = async (ingredientName: string, checked: boolean) => {
+    if (!plan) return;
+
+    try {
+      const response = await fetch(`/api/meal-plans/${plan._id}/ingredients`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ingredientName, checked }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPlan(data.plan);
+      }
+    } catch (error) {
+      console.error("Failed to toggle ingredient check:", error);
+    }
+  };
+
   // Aggregate ingredients from all recipes
   const aggregateIngredients = () => {
     if (!plan || !plan.recipes) return [];
@@ -161,12 +180,14 @@ export default function MealPlanDetailPage({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "24px",
+          marginBottom: "32px",
+          paddingBottom: "20px",
+          borderBottom: "2px solid var(--border)",
         }}
       >
         <div style={{ flex: 1 }}>
           {isRenaming ? (
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
               <input
                 type="text"
                 value={newName}
@@ -174,10 +195,13 @@ export default function MealPlanDetailPage({
                 autoFocus
                 style={{
                   flex: 1,
-                  padding: "8px",
-                  border: "1px solid var(--border)",
-                  borderRadius: "4px",
+                  padding: "12px 16px",
+                  border: "1.5px solid #3b82f6",
+                  borderRadius: "6px",
                   fontSize: "16px",
+                  fontWeight: "600",
+                  background: "var(--card-bg)",
+                  color: "var(--foreground)",
                 }}
               />
               <button
@@ -186,136 +210,204 @@ export default function MealPlanDetailPage({
                   background: "#3b82f6",
                   color: "white",
                   border: "none",
-                  padding: "8px 12px",
-                  borderRadius: "4px",
+                  padding: "10px 16px",
+                  borderRadius: "6px",
                   cursor: "pointer",
                   fontWeight: "600",
+                  transition: "all 0.2s ease",
+                  boxShadow: "0 2px 8px rgba(59, 130, 246, 0.2)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(59, 130, 246, 0.2)";
                 }}
               >
-                保存
+                ✓ 保存
               </button>
               <button
                 onClick={() => setIsRenaming(false)}
                 style={{
-                  background: "transparent",
-                  color: "var(--text-secondary)",
-                  border: "1px solid var(--border)",
-                  padding: "8px 12px",
-                  borderRadius: "4px",
+                  background: "#f3f4f6",
+                  color: "var(--foreground)",
+                  border: "1px solid #e5e7eb",
+                  padding: "10px 16px",
+                  borderRadius: "6px",
                   cursor: "pointer",
+                  fontWeight: "600",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#e5e7eb";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#f3f4f6";
                 }}
               >
-                取消
+                ✕ 取消
               </button>
             </div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <h1 style={{ margin: 0 }}>{plan.name}</h1>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <h1 style={{ margin: 0, fontSize: "28px", fontWeight: "700" }}>📋 {plan.name}</h1>
               <button
                 onClick={() => setIsRenaming(true)}
                 style={{
-                  background: "transparent",
-                  border: "1px solid var(--border)",
-                  borderRadius: "4px",
-                  padding: "6px 12px",
+                  background: "#f3f4f6",
+                  color: "#667eea",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "6px",
+                  padding: "8px 14px",
                   cursor: "pointer",
                   fontSize: "12px",
-                  color: "var(--text-secondary)",
+                  fontWeight: "600",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#667eea";
+                  e.currentTarget.style.color = "white";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#f3f4f6";
+                  e.currentTarget.style.color = "#667eea";
                 }}
               >
-                编辑名称
+                ✏️ 编辑名称
               </button>
             </div>
           )}
         </div>
-        <Link href="/saved" style={{ color: "var(--text-secondary)" }}>
-          ← 返回
+        <Link
+          href="/saved"
+          style={{
+            color: "#3b82f6",
+            textDecoration: "none",
+            fontWeight: "600",
+            padding: "8px 12px",
+            borderRadius: "6px",
+            transition: "all 0.2s ease",
+            display: "inline-block",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(59, 130, 246, 0.1)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+          }}
+        >
+          ← 返回已保存
         </Link>
       </div>
 
       {/* Recipes in Plan */}
-      <div style={{ marginBottom: "32px" }}>
-        <h2 style={{ marginBottom: "16px" }}>
-          食谱 ({plan.recipes?.length || 0})
+      <div style={{ marginBottom: "40px" }}>
+        <h2 style={{ marginBottom: "20px", fontSize: "22px", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
+          🍽️ 食谱 ({plan.recipes?.length || 0})
         </h2>
 
         {plan.recipes && plan.recipes.length > 0 ? (
-          <div className={styles.grid}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+              gap: "16px",
+            }}
+          >
             {plan.recipes.map((recipe) => (
               <div
                 key={recipe._id}
                 style={{
-                  background: "var(--card-bg)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
-                {recipe.image && (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "200px",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <img
-                      src={recipe.image}
-                      alt={recipe.title}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  </div>
-                )}
-                <div style={{ padding: "12px" }}>
-                  <h3 style={{ margin: "0 0 8px 0", fontSize: "14px" }}>
-                    {recipe.title}
-                  </h3>
-                  <p
-                    style={{
-                      margin: "0 0 12px 0",
-                      fontSize: "12px",
-                      color: "var(--text-secondary)",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {recipe.description}
-                  </p>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <Link
-                      href={`/recipes/${recipe._id}`}
+                <Link
+                  href={`/recipes/${recipe._id}`}
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    background: "var(--card-bg)",
+                    border: "1.5px solid var(--border)",
+                    borderRadius: "10px",
+                    overflow: "hidden",
+                    transition: "all 0.2s ease",
+                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+                    textDecoration: "none",
+                    cursor: "pointer",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "#8b5cf6";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(139, 92, 246, 0.15)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "var(--border)";
+                    e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  {recipe.image && (
+                    <div
                       style={{
-                        flex: 1,
-                        padding: "6px",
-                        background: "#3b82f6",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        textAlign: "center",
-                        textDecoration: "none",
-                        fontSize: "12px",
+                        width: "100%",
+                        height: "160px",
+                        overflow: "hidden",
                       }}
                     >
-                      查看
-                    </Link>
-                    <button
-                      onClick={() => handleRemoveRecipe(recipe._id)}
+                      <img
+                        src={recipe.image}
+                        alt={recipe.title}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    </div>
+                  )}
+                  <div style={{ padding: "14px", flex: 1, display: "flex", flexDirection: "column" }}>
+                    <h3 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600" }}>
+                      {recipe.title}
+                    </h3>
+                    <p
                       style={{
-                        flex: 1,
-                        padding: "6px",
-                        background: "transparent",
-                        color: "#ef4444",
-                        border: "1px solid #ef4444",
-                        borderRadius: "4px",
-                        cursor: "pointer",
+                        margin: 0,
                         fontSize: "12px",
+                        color: "var(--text-secondary)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        lineHeight: "1.4",
+                        flex: 1,
                       }}
                     >
-                      移除
-                    </button>
+                      {recipe.description}
+                    </p>
                   </div>
+                </Link>
+                <div style={{ padding: "8px 14px 14px", display: "flex", justifyContent: "flex-end" }}>
+                  <button
+                    onClick={() => handleRemoveRecipe(recipe._id)}
+                    style={{
+                      padding: "6px 12px",
+                      background: "#fee2e2",
+                      color: "#ef4444",
+                      border: "1px solid #fecaca",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                      transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#ef4444";
+                      e.currentTarget.style.color = "white";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "#fee2e2";
+                      e.currentTarget.style.color = "#ef4444";
+                    }}
+                  >
+                    🗑️ 移除
+                  </button>
                 </div>
               </div>
             ))}
@@ -332,14 +424,26 @@ export default function MealPlanDetailPage({
 
       {/* Ingredient Aggregation */}
       {plan.recipes && plan.recipes.length > 0 && (
-        <div>
-          <h2 style={{ marginBottom: "16px" }}>购物清单</h2>
+        <div style={{ marginTop: "32px", borderTop: "1px solid var(--border)", paddingTop: "32px" }}>
+          <h2 style={{ 
+            marginBottom: "20px",
+            fontSize: "24px",
+            fontWeight: "700",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            paddingBottom: "12px",
+            borderBottom: "2px solid #8b5cf6",
+          }}>
+            🛒 购物清单
+          </h2>
           <div
             style={{
               background: "var(--card-bg)",
-              border: "1px solid var(--border)",
-              borderRadius: "8px",
-              padding: "16px",
+              border: "1.5px solid #e5e7eb",
+              borderRadius: "10px",
+              padding: "20px",
+              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
             }}
           >
             {aggregatedIngredients.length > 0 ? (
@@ -350,36 +454,76 @@ export default function MealPlanDetailPage({
                   listStyle: "none",
                 }}
               >
-                {aggregatedIngredients.map((ingredient, index) => (
-                  <li
-                    key={index}
-                    style={{
-                      padding: "12px 0",
-                      borderBottom:
-                        index < aggregatedIngredients.length - 1
-                          ? "1px solid var(--border)"
-                          : "none",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span style={{ fontWeight: "500" }}>
-                      {ingredient.name}
-                    </span>
-                    <span
+                {aggregatedIngredients.map((ingredient, index) => {
+                  const isChecked = plan?.checkedIngredients?.includes(ingredient.name) ?? false;
+                  return (
+                    <li
+                      key={index}
                       style={{
-                        color: "var(--text-secondary)",
-                        fontSize: "14px",
+                        padding: "14px 0",
+                        borderBottom:
+                          index < aggregatedIngredients.length - 1
+                            ? "1px solid #f3f4f6"
+                            : "none",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        transition: "background-color 0.2s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#f9fafb";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
                       }}
                     >
-                      {ingredient.quantity}
-                    </span>
-                  </li>
-                ))}
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1 }}>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => handleCheckIngredient(ingredient.name, e.target.checked)}
+                          style={{
+                            width: "18px",
+                            height: "18px",
+                            cursor: "pointer",
+                            accentColor: "#8b5cf6",
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontWeight: "500",
+                            fontSize: "15px",
+                            color: isChecked ? "#c4b5fd" : "var(--text-primary)",
+                            textDecoration: isChecked ? "line-through" : "none",
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          {ingredient.name}
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          background: "#f3f4f6",
+                          color: "#6b7280",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          padding: "6px 12px",
+                          borderRadius: "20px",
+                        }}
+                      >
+                        {ingredient.quantity}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
-              <p style={{ margin: 0, color: "var(--text-secondary)" }}>
+              <p style={{ 
+                margin: 0, 
+                color: "var(--text-secondary)",
+                textAlign: "center",
+                padding: "20px",
+              }}>
                 没有食材
               </p>
             )}

@@ -90,72 +90,94 @@ export default function SavedPage() {
 
   return (
     <div className={styles.container}>
-      <h1>已保存</h1>
+      <h1 style={{ marginBottom: "24px" }}>已保存</h1>
 
       {/* Tabs */}
       <div
         style={{
           display: "flex",
           gap: "0",
-          borderBottom: "1px solid var(--border)",
-          marginBottom: "16px",
+          borderBottom: "2px solid var(--border)",
+          marginBottom: "24px",
         }}
       >
         <button
           onClick={() => setActiveTab("recipes")}
           style={{
             flex: 1,
-            padding: "12px",
-            background: activeTab === "recipes" ? "var(--card-bg)" : "transparent",
+            padding: "14px 16px",
+            background: "transparent",
             border: "none",
             borderBottom:
-              activeTab === "recipes" ? "2px solid #3b82f6" : "none",
+              activeTab === "recipes" ? "3px solid #3b82f6" : "3px solid transparent",
             cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: "600",
+            fontSize: "15px",
+            fontWeight: activeTab === "recipes" ? "700" : "500",
             color:
               activeTab === "recipes"
                 ? "#3b82f6"
                 : "var(--text-secondary)",
+            transition: "all 0.2s ease",
           }}
         >
-          菜谱 ({savedRecipes.length})
+          🍽️ 菜谱 ({savedRecipes.length})
         </button>
         <button
           onClick={() => setActiveTab("plans")}
           style={{
             flex: 1,
-            padding: "12px",
-            background: activeTab === "plans" ? "var(--card-bg)" : "transparent",
+            padding: "14px 16px",
+            background: "transparent",
             border: "none",
             borderBottom:
-              activeTab === "plans" ? "2px solid #3b82f6" : "none",
+              activeTab === "plans" ? "3px solid #8b5cf6" : "3px solid transparent",
             cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: "600",
+            fontSize: "15px",
+            fontWeight: activeTab === "plans" ? "700" : "500",
             color:
-              activeTab === "plans" ? "#3b82f6" : "var(--text-secondary)",
+              activeTab === "plans" ? "#8b5cf6" : "var(--text-secondary)",
+            transition: "all 0.2s ease",
           }}
         >
-          计划 ({mealPlans.length})
+          📋 计划 ({mealPlans.length})
         </button>
       </div>
 
       {/* Filters */}
-      <div className={styles.filtersSection}>
-        <div className={styles.filters}>
-          <input
-            type="text"
-            placeholder={
-              activeTab === "recipes" ? "搜索已保存食谱..." : "搜索计划..."
-            }
-            value={filters.searchTerm}
-            onChange={(e) =>
-              setFilters({ ...filters, searchTerm: e.target.value })
-            }
-            className={styles.searchInput}
-          />
-        </div>
+      <div
+        style={{
+          marginBottom: "20px",
+        }}
+      >
+        <input
+          type="text"
+          placeholder={
+            activeTab === "recipes" ? "🔍 搜索已保存食谱..." : "🔍 搜索计划..."
+          }
+          value={filters.searchTerm}
+          onChange={(e) =>
+            setFilters({ ...filters, searchTerm: e.target.value })
+          }
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            border: "1.5px solid var(--border)",
+            borderRadius: "8px",
+            fontSize: "14px",
+            background: "var(--card-bg)",
+            color: "var(--foreground)",
+            transition: "all 0.2s ease",
+            boxSizing: "border-box",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "#3b82f6";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.boxShadow = "none";
+          }}
+        />
       </div>
 
       {/* ===== 菜谱 Tab ===== */}
@@ -258,25 +280,48 @@ export default function SavedPage() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: "16px",
+              marginBottom: "20px",
+              paddingBottom: "16px",
+              borderBottom: "1px solid var(--border)",
             }}
           >
-            <div className={styles.count}>共有 {filteredPlans.length} 个计划</div>
+            <div
+              style={{
+                fontSize: "13px",
+                color: "var(--text-secondary)",
+                fontWeight: "500",
+              }}
+            >
+              共有 {filteredPlans.length} 个计划
+            </div>
             <button
               onClick={handleCreateMealPlan}
               disabled={isCreatingPlan}
               style={{
-                background: "#10b981",
+                background: "linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)",
                 color: "white",
                 border: "none",
-                padding: "8px 16px",
+                padding: "10px 18px",
                 borderRadius: "6px",
-                cursor: "pointer",
+                cursor: isCreatingPlan ? "not-allowed" : "pointer",
                 fontSize: "14px",
                 fontWeight: "600",
+                transition: "all 0.2s ease",
+                opacity: isCreatingPlan ? 0.6 : 1,
+                boxShadow: "0 2px 8px rgba(139, 92, 246, 0.2)",
+              }}
+              onMouseEnter={(e) => {
+                if (!isCreatingPlan) {
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(139, 92, 246, 0.3)";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = "0 2px 8px rgba(139, 92, 246, 0.2)";
+                e.currentTarget.style.transform = "translateY(0)";
               }}
             >
-              {isCreatingPlan ? "创建中..." : "+ 新建计划"}
+              ✨ 新建计划
             </button>
           </div>
 
@@ -308,23 +353,26 @@ export default function SavedPage() {
                 href={`/meal-plans/${plan._id}`}
                 style={{
                   background: "var(--card-bg)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  padding: "16px",
+                  border: "1.5px solid var(--border)",
+                  borderRadius: "10px",
+                  padding: "18px",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   cursor: "pointer",
                   textDecoration: "none",
                   transition: "all 0.2s ease",
+                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#3b82f6";
-                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(59, 130, 246, 0.1)";
+                  e.currentTarget.style.borderColor = "#8b5cf6";
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(139, 92, 246, 0.15)";
+                  e.currentTarget.style.transform = "translateY(-2px)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = "var(--border)";
-                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                  e.currentTarget.style.transform = "translateY(0)";
                 }}
               >
                 <div style={{ flex: 1 }}>
@@ -384,15 +432,16 @@ export default function SavedPage() {
                     </div>
                   ) : (
                     <div>
-                      <h3 style={{ margin: "0 0 4px 0", color: "var(--foreground)" }}>{plan.name}</h3>
+                      <h3 style={{ margin: "0 0 6px 0", color: "var(--foreground)", fontSize: "16px", fontWeight: "600" }}>{plan.name}</h3>
                       <p
                         style={{
                           margin: "0",
-                          fontSize: "12px",
+                          fontSize: "13px",
                           color: "var(--text-secondary)",
+                          fontWeight: "500",
                         }}
                       >
-                        {plan.recipes.length} 道食谱
+                        📚 {plan.recipes.length} 道食谱
                       </p>
                     </div>
                   )}
@@ -411,17 +460,26 @@ export default function SavedPage() {
                         setRenamingPlanName(plan.name);
                       }}
                       style={{
-                        background: "#667eea",
-                        color: "white",
-                        border: "none",
-                        padding: "8px 12px",
-                        borderRadius: "4px",
+                        background: "#f3f4f6",
+                        color: "#667eea",
+                        border: "1px solid #e5e7eb",
+                        padding: "8px 14px",
+                        borderRadius: "6px",
                         cursor: "pointer",
                         fontSize: "12px",
                         fontWeight: "600",
+                        transition: "all 0.2s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "#667eea";
+                        e.currentTarget.style.color = "white";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "#f3f4f6";
+                        e.currentTarget.style.color = "#667eea";
                       }}
                     >
-                      编辑
+                      ✏️ 编辑
                     </button>
                     <button
                       onClick={(e) => {
@@ -430,17 +488,26 @@ export default function SavedPage() {
                         handleDeletePlan(plan._id);
                       }}
                       style={{
-                        background: "#ef4444",
-                        color: "white",
-                        border: "none",
-                        padding: "8px 12px",
-                        borderRadius: "4px",
+                        background: "#fee2e2",
+                        color: "#ef4444",
+                        border: "1px solid #fecaca",
+                        padding: "8px 14px",
+                        borderRadius: "6px",
                         cursor: "pointer",
                         fontSize: "12px",
                         fontWeight: "600",
+                        transition: "all 0.2s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "#ef4444";
+                        e.currentTarget.style.color = "white";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "#fee2e2";
+                        e.currentTarget.style.color = "#ef4444";
                       }}
                     >
-                      删除
+                      🗑️ 删除
                     </button>
                   </div>
                 )}
