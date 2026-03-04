@@ -3,17 +3,27 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCreateForm } from "../contexts/CreateFormContext";
+import { useCart } from "../contexts/CartContext";
 import styles from "./bottom-nav.module.css";
+
+interface NavItem {
+  href: string | null;
+  icon: string;
+  label: string;
+  action?: () => void;
+  badge?: number;
+}
 
 export default function BottomNav() {
   const pathname = usePathname();
   const { openCreateForm } = useCreateForm();
+  const { cartCount } = useCart();
 
-  const navItems = [
+  const navItems: NavItem[] = [
     { href: `/`, icon: "home", label: "Home" },
     { href: `/search`, icon: "search", label: "Search" },
     { href: null, icon: "add_circle", label: "Create", action: openCreateForm },
-    { href: `/saved`, icon: "favorite", label: "Saved" },
+    { href: `/cart`, icon: "shopping_cart", label: "Cart", badge: cartCount },
     { href: `/settings`, icon: "settings", label: "Settings" },
   ];
 
@@ -48,6 +58,9 @@ export default function BottomNav() {
               <span className={`material-symbols-outlined ${styles.icon}`}>
                 {item.icon}
               </span>
+              {item.badge !== undefined && item.badge > 0 && (
+                <span className={styles.badge}>{item.badge}</span>
+              )}
             </Link>
           );
         })}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useCart } from "../../../app/contexts/CartContext";
 import styles from "./page.module.css";
 
 interface Recipe {
@@ -36,11 +37,13 @@ export default function RecipeDetailPage() {
   const params = useParams();
   const router = useRouter();
   const recipeId = params.id as string;
+  const { addToCart } = useCart();
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   useEffect(() => {
     fetchRecipe();
@@ -93,6 +96,19 @@ export default function RecipeDetailPage() {
     router.push(`/edit/${recipeId}`);
   };
 
+  const handleAddToCart = async () => {
+    const testUserId = "507f1f77bcf86cd799439011"; // Mock user ID for testing
+    setIsAddingToCart(true);
+    try {
+      await addToCart(testUserId, recipeId);
+      alert("已添加到购物车！");
+    } catch (err: any) {
+      alert("添加到购物车失败: " + err.message);
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
   if (loading) {
     return <div className={styles.loading}>加载中...</div>;
   }
@@ -118,6 +134,13 @@ export default function RecipeDetailPage() {
           ← 返回
         </Link>
         <div className={styles.actionButtons}>
+          <button 
+            onClick={handleAddToCart}
+            disabled={isAddingToCart}
+            className={styles.addToCartBtn}
+          >
+            {isAddingToCart ? "添加中..." : "🛒 添加到购物车"}
+          </button>
           <button 
             onClick={handleEdit}
             className={styles.editBtn}

@@ -51,7 +51,8 @@
 }
 
 .editBtn,
-.deleteBtn {
+.deleteBtn,
+.addToCartBtn {
   padding: 8px 16px;
   border: none;
   border-radius: 6px;
@@ -64,6 +65,20 @@
   align-items: center;
   justify-content: center;
   min-width: 60px;
+}
+
+.addToCartBtn {
+  background-color: #10b981;
+}
+
+.addToCartBtn:hover:not(:disabled) {
+  background-color: #059669;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+}
+
+.addToCartBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .editBtn {
