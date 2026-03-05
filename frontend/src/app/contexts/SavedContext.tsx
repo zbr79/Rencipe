@@ -31,6 +31,11 @@ interface SavedRecipe {
   ratingCount: number;
 }
 
+interface Person {
+  name: string;
+  modifier: number;
+}
+
 interface MealCombination {
   meatRecipeId: SavedRecipe;
   vegeRecipeId: SavedRecipe;
@@ -43,7 +48,7 @@ interface MealPlan {
   id?: string;
   userId: string;
   name: string;
-  numberOfPeople: number;
+  people: Person[];
   numberOfDays: number;
   mealTypes: ('lunch' | 'dinner')[];
   totalMealsNeeded: number;

@@ -16,6 +16,11 @@ interface Recipe {
   seasonings: Array<{ name: string; quantity: string }>;
 }
 
+interface Person {
+  name: string;
+  modifier: number;
+}
+
 interface MealCombination {
   meatRecipeId: Recipe;
   vegeRecipeId: Recipe;
@@ -27,7 +32,7 @@ interface MealPlan {
   _id: string;
   userId: string;
   name: string;
-  numberOfPeople: number;
+  people: Person[];
   numberOfDays: number;
   mealTypes: ('lunch' | 'dinner')[];
   totalMealsNeeded: number;
@@ -76,7 +81,7 @@ export default function MealPlanDetailPage({
   
   // Edit plan details modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editPeople, setEditPeople] = useState(0);
+  const [editPeople, setEditPeople] = useState<Person[]>([]);
   const [editDays, setEditDays] = useState(0);
   const [editMealTypes, setEditMealTypes] = useState<('lunch' | 'dinner')[]>([]);
   const [editTotalMeals, setEditTotalMeals] = useState(0);
@@ -88,6 +93,7 @@ export default function MealPlanDetailPage({
   const [editComboVege, setEditComboVege] = useState("");
   const [editComboSide, setEditComboSide] = useState("");
   const [editComboPortions, setEditComboPortions] = useState(1);
+  const [editComboModifier, setEditComboModifier] = useState(1.0);
 
 
   useEffect(() => {
@@ -272,21 +278,28 @@ export default function MealPlanDetailPage({
     if (!plan) return;
 
     // Validate inputs
-    const people = editPeople === "" ? plan.numberOfPeople : parseInt(String(editPeople));
-    const days = editDays === "" ? plan.numberOfDays : parseInt(String(editDays));
-
-    if (isNaN(people) || people < 1) {
-      alert("人数必须是大于0的数字");
+    if (!Array.isArray(editPeople) || editPeople.length === 0) {
+      alert("需要至少一个人");
       return;
     }
+    const days = editDays === "" ? plan.numberOfDays : parseInt(String(editDays));
+
     if (isNaN(days) || days < 1) {
       alert("天数必须是大于0的数字");
       return;
     }
 
+    // Validate people have names and modifiers
+    for (const person of editPeople) {
+      if (!person.name || !person.modifier || person.modifier < 0.1 || person.modifier > 5.0) {
+        alert("每个人必须有名字和有效的系数 (0.1-5.0)");
+        return;
+      }
+    }
+
     try {
       const updateBody: any = {
-        numberOfPeople: people,
+        people: editPeople,
         numberOfDays: days,
         mealTypes: editMealTypes,
       };
@@ -314,7 +327,7 @@ export default function MealPlanDetailPage({
 
   const openEditModal = () => {
     if (plan) {
-      setEditPeople(plan.numberOfPeople);
+      setEditPeople([...plan.people]);
       setEditDays(plan.numberOfDays);
       setEditMealTypes(plan.mealTypes);
       setEditTotalMeals(plan.totalMealsNeeded);
@@ -358,7 +371,7 @@ export default function MealPlanDetailPage({
 
   // Calculate total ingredients needed
   const calculateTotalIngredients = (): AggregatedIngredient[] => {
-    if (!plan || !plan.combinations) return [];
+    if (!plan || !plan.combinations || !plan.people) return [];
 
     const ingredientMap: { [key: string]: AggregatedIngredient } = {};
 
@@ -375,14 +388,33 @@ export default function MealPlanDetailPage({
         const ingredients = [...(recipe.mainIngredients || []), ...(recipe.seasonings || [])];
         ingredients.forEach((ing) => {
           const key = ing.name.toLowerCase();
+          
+          // Parse quantity (e.g., "600g" -> {number: 600, unit: "g"})
+          const match = ing.quantity.match(/^([\d.]+)(.*)$/);
+          const baseNum = match ? parseFloat(match[1]) : 1;
+          const unit = match ? match[2] : "";
+          
+          // Calculate total for all people with modifiers applied
+          const total = combo.portions * plan.people.reduce((sum, person) => 
+            sum + baseNum * person.modifier, 0
+          );
+          
+          const quantityStr = `${Math.round(total)}${unit}`;
+          
           if (!ingredientMap[key]) {
             ingredientMap[key] = {
               name: ing.name,
-              quantity: `${combo.portions} x ${ing.quantity}`,
+              quantity: quantityStr,
               sources: [`${recipe.title} (${type})`],
             };
           } else {
-            ingredientMap[key].quantity += `; ${combo.portions} x ${ing.quantity}`;
+            // Sum quantities from multiple sources
+            const existingMatch = ingredientMap[key].quantity.match(/^([\d.]+)(.*)/);
+            const existingNum = existingMatch ? parseFloat(existingMatch[1]) : 0;
+            const existingUnit = existingMatch ? existingMatch[2] : unit;
+            const summedTotal = existingNum + total;
+            ingredientMap[key].quantity = `${Math.round(summedTotal)}${existingUnit}`;
+            
             if (!ingredientMap[key].sources.includes(`${recipe.title} (${type})`)) {
               ingredientMap[key].sources.push(`${recipe.title} (${type})`);
             }
@@ -459,7 +491,7 @@ export default function MealPlanDetailPage({
           <div style={{ display: "flex", gap: "24px", alignItems: "center", fontSize: "13px", color: "#666" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span>👥</span>
-              <span>{plan.numberOfPeople} 人</span>
+              <span>{plan.people.length} 人</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span>📅</span>
@@ -1026,21 +1058,75 @@ export default function MealPlanDetailPage({
             {/* Edit People */}
             <div style={{ marginBottom: "16px" }}>
               <label style={{ display: "block", marginBottom: "6px", fontWeight: "500", fontSize: "13px", color: "#666" }}>
-                👥 人数
+                👥 家庭成员设置
               </label>
-              <input
-                type="number"
-                value={editPeople}
-                onChange={(e) => setEditPeople(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
+              <div style={{ marginBottom: "12px", maxHeight: "300px", overflowY: "auto" }}>
+                {Array.isArray(editPeople) && editPeople.map((person, idx) => (
+                  <div key={idx} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-end" }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: "block", fontSize: "11px", color: "#999", marginBottom: "4px" }}>名字</label>
+                      <input
+                        type="text"
+                        value={person.name}
+                        onChange={(e) => {
+                          const newPeople = [...editPeople];
+                          newPeople[idx].name = e.target.value;
+                          setEditPeople(newPeople);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "8px",
+                          borderRadius: "4px",
+                          border: "1px solid #ddd",
+                          fontSize: "13px",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                    <div style={{ width: "80px" }}>
+                      <label style={{ display: "block", fontSize: "11px", color: "#999", marginBottom: "4px" }}>系数</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        max="5.0"
+                        value={person.modifier}
+                        onChange={(e) => {
+                          const newPeople = [...editPeople];
+                          newPeople[idx].modifier = parseFloat(e.target.value) || 1.0;
+                          setEditPeople(newPeople);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "8px",
+                          borderRadius: "4px",
+                          border: "1px solid #ddd",
+                          fontSize: "13px",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  if (Array.isArray(editPeople)) {
+                    setEditPeople([...editPeople, { name: `Person ${editPeople.length + 1}`, modifier: 1.0 }]);
+                  }
+                }}
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
-                  borderRadius: "4px",
+                  padding: "8px",
+                  backgroundColor: "#f0f0f0",
                   border: "1px solid #ddd",
-                  fontSize: "14px",
-                  boxSizing: "border-box",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "13px",
                 }}
-              />
+              >
+                + 新增成员
+              </button>
             </div>
 
             {/* Edit Days */}

@@ -66,11 +66,11 @@ export const getMealPlanById = async (req: Request, res: Response) => {
 
 /**
  * Create a new meal plan
- * body: { userId, numberOfPeople, numberOfDays, mealTypes: ['lunch', 'dinner'], name? }
+ * body: { userId, numberOfPeople, numberOfDays, mealTypes: ['lunch', 'dinner'], name?, people?: [{name, modifier}, ...] }
  */
 export const createMealPlan = async (req: Request, res: Response) => {
   try {
-    const { userId, numberOfPeople, numberOfDays, mealTypes, name } = req.body;
+    const { userId, numberOfPeople, numberOfDays, mealTypes, name, people } = req.body;
 
     if (!userId || numberOfPeople === undefined || numberOfDays === undefined || !mealTypes) {
       return res.status(400).json({
@@ -98,13 +98,32 @@ export const createMealPlan = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "numberOfPeople and numberOfDays must be at least 1" });
     }
 
-    // Calculate total meals needed: numberOfPeople * numberOfDays * number of meal types
-    const totalMealsNeeded = numberOfPeople * numberOfDays * mealTypes.length;
+    // Create people array - either from provided data or default
+    let peopleArray = [];
+    if (people && Array.isArray(people) && people.length > 0) {
+      // Validate and use provided people data
+      peopleArray = people.map((p: any) => ({
+        name: p.name || `Person ${peopleArray.length + 1}`,
+        modifier: Math.max(0.1, Math.min(5.0, p.modifier || 1.0)),
+      }));
+    } else {
+      // Create default people with 1.0 modifier
+      for (let i = 0; i < numberOfPeople; i++) {
+        peopleArray.push({
+          name: `Person ${i + 1}`,
+          modifier: 1.0,
+        });
+      }
+    }
+
+    // Calculate total meals needed: numberOfDays * number of meal types
+    // Modifiers only affect ingredient quantities, not the number of meal occasions
+    const totalMealsNeeded = numberOfDays * mealTypes.length;
 
     const plan = new MealPlan({
       userId: new mongoose.Types.ObjectId(userId),
-      name: name || "新建计划",
-      numberOfPeople,
+      name: name || `${numberOfPeople}人${numberOfDays}天计划`,
+      people: peopleArray,
       numberOfDays,
       mealTypes,
       totalMealsNeeded,
@@ -112,6 +131,7 @@ export const createMealPlan = async (req: Request, res: Response) => {
     });
 
     await plan.save();
+
 
     res.status(201).json({ plan });
   } catch (err: any) {
@@ -121,14 +141,14 @@ export const createMealPlan = async (req: Request, res: Response) => {
 };
 
 /**
- * Update a meal plan (name, numberOfPeople, numberOfDays, mealTypes)
+ * Update a meal plan (name, people, numberOfDays, mealTypes)
  * params: { id }
- * body: { name?, numberOfPeople?, numberOfDays?, mealTypes? }
+ * body: { name?, people?: [{name, modifier}, ...], numberOfDays?, mealTypes? }
  */
 export const renameMealPlan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, numberOfPeople, numberOfDays, mealTypes } = req.body;
+    const { name, people, numberOfDays, mealTypes } = req.body;
 
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
@@ -142,11 +162,14 @@ export const renameMealPlan = async (req: Request, res: Response) => {
       updateData.name = name;
     }
     
-    if (numberOfPeople !== undefined) {
-      if (numberOfPeople < 1) {
-        return res.status(400).json({ error: "numberOfPeople must be at least 1" });
+    if (people !== undefined && Array.isArray(people)) {
+      if (people.length === 0) {
+        return res.status(400).json({ error: "Plan must have at least one person" });
       }
-      updateData.numberOfPeople = numberOfPeople;
+      updateData.people = people.map((p: any) => ({
+        name: p.name || `Person ${people.indexOf(p) + 1}`,
+        modifier: Math.max(0.1, Math.min(5.0, p.modifier || 1.0)),
+      }));
     }
     
     if (numberOfDays !== undefined) {
@@ -170,17 +193,19 @@ export const renameMealPlan = async (req: Request, res: Response) => {
     }
 
     // If any of the meal calculation fields changed, recalculate totalMealsNeeded
-    if (updateData.numberOfPeople !== undefined || updateData.numberOfDays !== undefined || updateData.mealTypes !== undefined) {
+    if (updateData.people !== undefined || updateData.numberOfDays !== undefined || updateData.mealTypes !== undefined) {
       const plan = await MealPlan.findById(idStr);
       if (!plan) {
         return res.status(404).json({ error: "Meal plan not found" });
       }
 
-      const people = updateData.numberOfPeople !== undefined ? updateData.numberOfPeople : plan.numberOfPeople;
+      const planPeople = updateData.people !== undefined ? updateData.people : plan.people;
       const days = updateData.numberOfDays !== undefined ? updateData.numberOfDays : plan.numberOfDays;
       const types = updateData.mealTypes !== undefined ? updateData.mealTypes : plan.mealTypes;
 
-      updateData.totalMealsNeeded = people * days * types.length;
+      // Calculate total: days * number of meal types
+      // Modifiers only affect ingredient quantities, not the number of meal occasions
+      updateData.totalMealsNeeded = days * types.length;
     }
 
     const plan = await MealPlan.findByIdAndUpdate(

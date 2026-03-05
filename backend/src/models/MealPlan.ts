@@ -1,5 +1,10 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+export interface IPerson {
+  name: string;
+  modifier: number; // Individual eating modifier (0.5 = 50%, 1.0 = 100%, 1.8 = 180%)
+}
+
 export interface IMealCombination {
   meatRecipeId: mongoose.Types.ObjectId;
   vegeRecipeId: mongoose.Types.ObjectId;
@@ -10,7 +15,7 @@ export interface IMealCombination {
 export interface IMealPlan extends Document {
   userId: mongoose.Types.ObjectId;
   name: string;
-  numberOfPeople: number;
+  people: IPerson[];
   numberOfDays: number;
   mealTypes: ('lunch' | 'dinner')[];
   totalMealsNeeded: number;
@@ -19,6 +24,23 @@ export interface IMealPlan extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+const personSchema = new Schema<IPerson>(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    modifier: {
+      type: Number,
+      required: true,
+      default: 1.0,
+      min: 0.1,
+      max: 5.0,
+    },
+  },
+  { _id: false }
+);
 
 const mealCombinationSchema = new Schema<IMealCombination>(
   {
@@ -58,10 +80,15 @@ const mealPlanSchema = new Schema<IMealPlan>(
       required: true,
       default: "新建计划",
     },
-    numberOfPeople: {
-      type: Number,
+    people: {
+      type: [personSchema],
       required: true,
-      min: 1,
+      validate: {
+        validator: function(v: IPerson[]) {
+          return v.length > 0;
+        },
+        message: "Plan must have at least one person",
+      },
     },
     numberOfDays: {
       type: Number,

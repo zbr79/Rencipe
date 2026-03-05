@@ -74,7 +74,7 @@ export default function MealPlansPage() {
                     {plan.name}
                   </h3>
                   <p style={{ color: "#666", fontSize: "14px", marginBottom: "8px" }}>
-                    👥 {plan.numberOfPeople} 人 | 📅 {plan.numberOfDays} 天
+                    👥 {plan.people.length} 人 | 📅 {plan.numberOfDays} 天
                   </p>
                   <p style={{ color: "#666", fontSize: "14px", marginBottom: "8px" }}>
                     🍽️ {plan.mealTypes.includes("lunch") ? "午" : ""}{plan.mealTypes.includes("dinner") ? "晚" : ""}
