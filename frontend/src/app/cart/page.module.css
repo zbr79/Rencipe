@@ -1,5 +1,5 @@
 .container {
-  max-width: 800px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0;
   background: var(--background);
@@ -13,11 +13,12 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--success) 0%, var(--success-hover) 100%);
   color: white;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: var(--shadow-md);
 }
 
 .backLink {
@@ -26,12 +27,13 @@
   font-size: 16px;
   font-weight: 600;
   padding: 8px 12px;
-  border-radius: 6px;
-  transition: background 0.2s ease;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
 }
 
 .backLink:hover {
   background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
 }
 
 .title {

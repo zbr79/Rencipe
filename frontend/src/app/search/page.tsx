@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "../recipes/page.module.css";
+import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
+import { matchesPinyinSearch } from "../utils/pinyinSearch";
 
 interface Recipe {
   id: string;
@@ -42,11 +44,13 @@ export default function SearchPage() {
       }
 
       const data = await response.json();
-      setAllRecipes(data.recipes || []);
+      // Enrich with mock images
+      const enrichedRecipes = enrichRecipesWithMockImages(data.recipes || []);
+      setAllRecipes(enrichedRecipes);
 
       // Extract all unique tags
       const tags = new Set<string>();
-      data.recipes?.forEach((recipe: Recipe) => {
+      enrichedRecipes?.forEach((recipe: Recipe) => {
         recipe.tags?.forEach((tag) => tags.add(tag));
       });
       setAllTags(Array.from(tags).sort());
@@ -61,8 +65,8 @@ export default function SearchPage() {
   const filteredRecipes = allRecipes.filter((recipe) => {
     const matchesSearch =
       !searchTerm ||
-      recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
+      matchesPinyinSearch(searchTerm, recipe.title) ||
+      matchesPinyinSearch(searchTerm, recipe.description);
 
     const matchesTags =
       selectedTags.length === 0 ||

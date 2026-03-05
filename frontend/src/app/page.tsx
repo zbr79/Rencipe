@@ -34,6 +34,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("recommended");
+  const [searchTerm, setSearchTerm] = useState("");
   const { isSaved, addFavorite, removeFavorite } = useSaved();
   const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
 
@@ -82,14 +83,23 @@ export default function HomePage() {
     <main className={styles.container}>
       {/* Search Bar */}
       <div className={styles.searchSection}>
-        <div className={styles.searchInput}>
-          <span className={styles.searchIcon}>search</span>
-          <input 
-            type="text" 
-            placeholder="搜索食谱..." 
-            readOnly
-          />
-        </div>
+        <Link href={`/search?q=${encodeURIComponent(searchTerm)}`} style={{ width: "100%" }}>
+          <div className={styles.searchInput} style={{ cursor: "pointer" }}>
+            <span className={styles.searchIcon}>search</span>
+            <input 
+              type="text" 
+              placeholder="搜索食谱..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  window.location.href = `/search?q=${encodeURIComponent(searchTerm)}`;
+                }
+              }}
+              onClick={(e) => e.preventDefault()}
+            />
+          </div>
+        </Link>
       </div>
 
       {/* Tab Navigation */}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSaved } from "../contexts/SavedContext";
 import styles from "../recipes/page.module.css";
+import { matchesPinyinSearch } from "../utils/pinyinSearch";
 
 export default function SavedPage() {
   const {
@@ -36,10 +37,8 @@ export default function SavedPage() {
   const filteredRecipes = savedRecipes.filter((recipe) => {
     const matchesSearch =
       !filters.searchTerm ||
-      recipe.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      recipe.description
-        .toLowerCase()
-        .includes(filters.searchTerm.toLowerCase());
+      matchesPinyinSearch(filters.searchTerm, recipe.title) ||
+      matchesPinyinSearch(filters.searchTerm, recipe.description);
 
     return matchesSearch;
   });
@@ -47,7 +46,7 @@ export default function SavedPage() {
   const filteredPlans = mealPlans.filter((plan) => {
     const matchesSearch =
       !filters.searchTerm ||
-      plan.name.toLowerCase().includes(filters.searchTerm.toLowerCase());
+      matchesPinyinSearch(filters.searchTerm, plan.name);
 
     return matchesSearch;
   });
@@ -181,32 +180,6 @@ export default function SavedPage() {
             e.currentTarget.style.boxShadow = "none";
           }}
         />
-        {activeTab === "plans" && (
-          <Link
-            href="/meal-plans"
-            style={{
-              padding: "12px 20px",
-              backgroundColor: "#4CAF50",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "600",
-              textDecoration: "none",
-              whiteSpace: "nowrap",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#45a049";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#4CAF50";
-            }}
-          >
-            ➕ 新建计划
-          </Link>
-        )}
       </div>
 
       {/* ===== 菜谱 Tab ===== */}
@@ -366,10 +339,31 @@ export default function SavedPage() {
               <button
                 onClick={handleCreateMealPlan}
                 disabled={isCreatingPlan}
-                className={styles.createLink}
-                style={{ background: "none", border: "1px solid #667eea" }}
+                style={{
+                  background: "linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)",
+                  color: "white",
+                  border: "none",
+                  padding: "10px 18px",
+                  borderRadius: "6px",
+                  cursor: isCreatingPlan ? "not-allowed" : "pointer",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  transition: "all 0.2s ease",
+                  opacity: isCreatingPlan ? 0.6 : 1,
+                  boxShadow: "0 2px 8px rgba(139, 92, 246, 0.2)",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isCreatingPlan) {
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(139, 92, 246, 0.3)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(139, 92, 246, 0.2)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
               >
-                {isCreatingPlan ? "创建中..." : "新建第一个计划"}
+                {isCreatingPlan ? "创建中..." : "✨ 新建第一个计划"}
               </button>
             </div>
           )}
@@ -470,7 +464,7 @@ export default function SavedPage() {
                           fontWeight: "500",
                         }}
                       >
-                        📚 {plan.recipes.length} 道食谱
+                        📚 {plan.combinations.length} 道食谱
                       </p>
                     </div>
                   )}
@@ -481,35 +475,6 @@ export default function SavedPage() {
                     style={{ display: "flex", gap: "8px", marginLeft: "16px" }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setRenamingPlanId(plan._id);
-                        setRenamingPlanName(plan.name);
-                      }}
-                      style={{
-                        background: "#f3f4f6",
-                        color: "#667eea",
-                        border: "1px solid #e5e7eb",
-                        padding: "8px 14px",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        fontWeight: "600",
-                        transition: "all 0.2s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#667eea";
-                        e.currentTarget.style.color = "white";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "#f3f4f6";
-                        e.currentTarget.style.color = "#667eea";
-                      }}
-                    >
-                      ✏️ 编辑
-                    </button>
                     <button
                       onClick={(e) => {
                         e.preventDefault();

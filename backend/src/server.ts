@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import multer from "multer";
 import recipeRoutes from "./routes/recipe.routes";
+import imageRoutes from "./routes/image.routes";
 import draftRoutes from "./routes/draft.routes";
 import cartRoutes from "./routes/cart.routes";
 import favoriteRoutes from "./routes/favorite.routes";
@@ -26,6 +27,7 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 const PORT = process.env.PORT || 5000;
 // ...
 app.use(recipeRoutes);
+app.use(imageRoutes);
 app.use("/drafts", draftRoutes);
 app.use(cartRoutes);
 app.use(favoriteRoutes);

@@ -2,10 +2,10 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--bg-primary, #ffffff);
-  border-bottom: 1px solid var(--border-color, #e0e0e0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
 }
 
 .container {
@@ -26,9 +26,9 @@
 
 .logo h1 {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
-  color: var(--text-primary, #000000);
+  color: var(--foreground);
 }
 
 .actions {
@@ -38,20 +38,22 @@
 }
 
 .themeToggle {
-  background: none;
-  border: none;
+  background: transparent;
+  border: 1px solid var(--border);
   font-size: 20px;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--foreground);
 }
 
 .themeToggle:hover {
-  background-color: var(--bg-hover, #f5f5f5);
+  background-color: var(--hover-bg);
+  border-color: var(--text-secondary);
 }
 
 /* Dark mode */

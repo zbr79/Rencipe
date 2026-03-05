@@ -1,5 +1,5 @@
 .container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 20px 16px 100px;
 }
@@ -8,31 +8,33 @@
   font-size: 32px;
   font-weight: bold;
   margin-bottom: 20px;
-  text-align: center;
-  color: #333;
+  text-align: left;
+  color: var(--foreground);
 }
 
 .error {
   padding: 12px 16px;
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-  border-radius: 6px;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-md);
   margin-bottom: 20px;
 }
 
 .filtersSection {
-  background-color: #f5f5f5;
-  border-radius: 8px;
+  background-color: var(--card-bg);
+  border-radius: var(--radius-lg);
   padding: 16px;
   margin-bottom: 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
 .filtersSection h2 {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 12px;
-  color: #333;
+  color: var(--foreground);
 }
 
 .filters {
@@ -45,52 +47,55 @@
 .searchInput,
 .select {
   padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   font-size: 14px;
-  background-color: #fff;
-  color: #333;
+  background-color: var(--input-bg);
+  color: var(--foreground);
 }
 
 .searchInput::placeholder {
-  color: #999;
+  color: var(--text-muted);
 }
 
 .searchInput:focus,
 .select:focus {
   outline: none;
-  border-color: #4caf50;
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .refreshBtn {
   padding: 10px 16px;
-  background-color: #2196f3;
+  background-color: var(--primary);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
 }
 
 .refreshBtn:hover {
-  background-color: #1976d2;
+  background-color: var(--primary-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .count {
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 20px;
-  text-align: center;
+  text-align: left;
 }
 
 .loading {
   text-align: center;
   padding: 40px 20px;
   font-size: 16px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .empty {
@@ -100,23 +105,26 @@
 
 .empty p {
   font-size: 18px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 20px;
 }
 
 .createLink {
   display: inline-block;
   padding: 12px 24px;
-  background-color: #4caf50;
+  background-color: var(--success);
   color: white;
   text-decoration: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-weight: 600;
-  transition: background-color 0.2s;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
 }
 
 .createLink:hover {
-  background-color: #45a049;
+  background-color: var(--success-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .grid {
@@ -127,21 +135,22 @@
 
 .card {
   display: block;
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 16px;
   text-decoration: none;
   color: inherit;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   cursor: pointer;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
-  border-color: #4caf50;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  border-color: var(--primary);
 }
 
 .cardHeader {
@@ -188,7 +197,7 @@
 
 .description {
   font-size: 13px;
-  color: #666;
+  color: var(--text-secondary);
   margin: 0 0 12px 0;
   line-height: 1.4;
   display: -webkit-box;
@@ -228,9 +237,9 @@
 .tag {
   display: inline-block;
   padding: 4px 8px;
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  border-radius: 12px;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+  border-radius: var(--radius-full);
   font-size: 11px;
   font-weight: 500;
 }
@@ -240,9 +249,9 @@
   gap: 12px;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--border);
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 @media (max-width: 600px) {

@@ -1,7 +1,10 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { textToPinyin, textToFirstLetters } from "../utils/pinyin";
 
 export interface IRecipe extends Document {
   title: string;
+  titlePinyin?: string; // Full pinyin of title
+  titleFirstLetters?: string; // First-letter abbreviation of title
   description: string;
   authorId: mongoose.Types.ObjectId;
   image?: string; // Cloudinary image URL
@@ -39,6 +42,8 @@ export interface IRecipe extends Document {
 const RecipeSchema = new Schema<IRecipe>(
   {
     title: { type: String, required: true, trim: true },
+    titlePinyin: String, // Auto-generated full pinyin
+    titleFirstLetters: String, // Auto-generated first-letter abbreviation
     description: { type: String, required: true, trim: true },
     authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     image: String,
@@ -77,5 +82,14 @@ const RecipeSchema = new Schema<IRecipe>(
   },
   { timestamps: true }
 );
+
+// Pre-save hook to generate pinyin fields
+RecipeSchema.pre("save", function (next) {
+  if (this.title) {
+    this.titlePinyin = textToPinyin(this.title);
+    this.titleFirstLetters = textToFirstLetters(this.title);
+  }
+  next();
+});
 
 export default mongoose.models.Recipe || mongoose.model<IRecipe>("Recipe", RecipeSchema);

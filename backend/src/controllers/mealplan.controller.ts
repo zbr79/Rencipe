@@ -121,27 +121,71 @@ export const createMealPlan = async (req: Request, res: Response) => {
 };
 
 /**
- * Rename a meal plan
+ * Update a meal plan (name, numberOfPeople, numberOfDays, mealTypes)
  * params: { id }
- * body: { name }
+ * body: { name?, numberOfPeople?, numberOfDays?, mealTypes? }
  */
 export const renameMealPlan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ error: "name is required" });
-    }
+    const { name, numberOfPeople, numberOfDays, mealTypes } = req.body;
 
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
       return res.status(400).json({ error: "Invalid meal plan ID" });
     }
 
+    // Build update object with only provided fields
+    const updateData: any = {};
+    
+    if (name !== undefined) {
+      updateData.name = name;
+    }
+    
+    if (numberOfPeople !== undefined) {
+      if (numberOfPeople < 1) {
+        return res.status(400).json({ error: "numberOfPeople must be at least 1" });
+      }
+      updateData.numberOfPeople = numberOfPeople;
+    }
+    
+    if (numberOfDays !== undefined) {
+      if (numberOfDays < 1) {
+        return res.status(400).json({ error: "numberOfDays must be at least 1" });
+      }
+      updateData.numberOfDays = numberOfDays;
+    }
+    
+    if (mealTypes !== undefined) {
+      if (!Array.isArray(mealTypes) || mealTypes.length === 0) {
+        return res.status(400).json({ error: "mealTypes must be a non-empty array" });
+      }
+      const validMealTypes = ["lunch", "dinner"];
+      for (const type of mealTypes) {
+        if (!validMealTypes.includes(type)) {
+          return res.status(400).json({ error: "mealTypes must contain only 'lunch' or 'dinner'" });
+        }
+      }
+      updateData.mealTypes = mealTypes;
+    }
+
+    // If any of the meal calculation fields changed, recalculate totalMealsNeeded
+    if (updateData.numberOfPeople !== undefined || updateData.numberOfDays !== undefined || updateData.mealTypes !== undefined) {
+      const plan = await MealPlan.findById(idStr);
+      if (!plan) {
+        return res.status(404).json({ error: "Meal plan not found" });
+      }
+
+      const people = updateData.numberOfPeople !== undefined ? updateData.numberOfPeople : plan.numberOfPeople;
+      const days = updateData.numberOfDays !== undefined ? updateData.numberOfDays : plan.numberOfDays;
+      const types = updateData.mealTypes !== undefined ? updateData.mealTypes : plan.mealTypes;
+
+      updateData.totalMealsNeeded = people * days * types.length;
+    }
+
     const plan = await MealPlan.findByIdAndUpdate(
       idStr,
-      { name },
+      updateData,
       { new: true }
     ).populate({
       path: "combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
@@ -154,7 +198,7 @@ export const renameMealPlan = async (req: Request, res: Response) => {
 
     res.json({ plan });
   } catch (err: any) {
-    console.error("Error renaming meal plan:", err);
+    console.error("Error updating meal plan:", err);
     res.status(500).json({ error: err.message });
   }
 };

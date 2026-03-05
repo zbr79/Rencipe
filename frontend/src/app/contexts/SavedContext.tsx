@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
+import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
 
 interface SavedRecipe {
   _id: string;
@@ -105,7 +106,10 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         throw new Error("Failed to fetch favorites");
       }
       const data = await response.json();
-      setSavedRecipes(data.favorites.recipes || []);
+      const recipes = data.favorites.recipes || [];
+      // Enrich with mock images
+      const enrichedRecipes = enrichRecipesWithMockImages(recipes);
+      setSavedRecipes(enrichedRecipes);
     } catch (err: any) {
       console.error("Error fetching favorites:", err);
       setErrorSaved(err.message);
@@ -128,7 +132,10 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      setSavedRecipes(data.favorites.recipes || []);
+      const recipes = data.favorites.recipes || [];
+      // Enrich with mock images
+      const enrichedRecipes = enrichRecipesWithMockImages(recipes);
+      setSavedRecipes(enrichedRecipes);
     } catch (err: any) {
       console.error("Error adding favorite:", err);
       setErrorSaved(err.message);
@@ -148,7 +155,10 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      setSavedRecipes(data.favorites.recipes || []);
+      const recipes = data.favorites.recipes || [];
+      // Enrich with mock images
+      const enrichedRecipes = enrichRecipesWithMockImages(recipes);
+      setSavedRecipes(enrichedRecipes);
     } catch (err: any) {
       console.error("Error removing favorite:", err);
       setErrorSaved(err.message);

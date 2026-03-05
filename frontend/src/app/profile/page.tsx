@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "../recipes/page.module.css";
+import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
+import { matchesPinyinSearch } from "../utils/pinyinSearch";
 
 interface Recipe {
   id: string;
@@ -43,7 +45,9 @@ export default function ProfilePage() {
       const data = await response.json();
       // Filter recipes by user's authorId
       const myRecipes = data.recipes?.filter((recipe: Recipe) => recipe.authorId === userId) || [];
-      setUserRecipes(myRecipes);
+      // Enrich with mock images
+      const enrichedRecipes = enrichRecipesWithMockImages(myRecipes);
+      setUserRecipes(enrichedRecipes);
     } catch (err: any) {
       setError(err.message);
       console.error(err);

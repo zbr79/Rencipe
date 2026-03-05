@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSaved } from "../../../app/contexts/SavedContext";
+import { getRecipeImageUrl } from "../../utils/recipeImageUtils";
 import styles from "./page.module.css";
 
 interface MealPlan {
@@ -79,7 +80,14 @@ export default function RecipeDetailPage() {
       }
 
       const data = await response.json();
-      setRecipe(data.recipe);
+      
+      // Add mock image if recipe doesn't have one
+      const recipeData = data.recipe;
+      if (!recipeData.image) {
+        recipeData.image = getRecipeImageUrl(recipeId);
+      }
+      
+      setRecipe(recipeData);
     } catch (err: any) {
       setError(err.message);
       console.error(err);

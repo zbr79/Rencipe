@@ -1,10 +1,4 @@
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 40px 20px 100px;
-  background-color: var(--background);
-  transition: opacity 0.3s ease;
-}
+.container {\n  max-width: 1280px;\n  margin: 0 auto;\n  padding: 40px 20px 100px;\n  background-color: var(--background);\n  transition: opacity 0.3s ease;\n}", "oldString": ".container {\n  max-width: 800px;\n  margin: 0 auto;\n  padding: 40px 20px 100px;\n  background-color: var(--background);\n  transition: opacity 0.3s ease;\n}"}}]} 
 
 /* Image Display */
 .imageDisplay {
