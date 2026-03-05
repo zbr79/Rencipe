@@ -6,6 +6,7 @@ interface DraftData {
   title: string;
   description: string;
   image?: string;
+  component?: boolean;
   ingredients: Array<{ name: string; quantity: string }>;
   steps: Array<{ stepNumber: number; instruction: string; image?: string }>;
   servings: number;

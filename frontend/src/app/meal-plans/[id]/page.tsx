@@ -9,6 +9,7 @@ interface Recipe {
   id: string;
   title: string;
   description: string;
+  component: boolean;
   mainIngredients: Array<{ name: string; quantity: string }>;
   seasonings: Array<{ name: string; quantity: string }>;
 }
@@ -102,7 +103,9 @@ export default function MealPlanDetailPage({
       const response = await fetch(`/api/recipes`);
       if (response.ok) {
         const data = await response.json();
-        setAllRecipes(data.recipes || []);
+        // Only show recipes marked as components for meal prep
+        const componentRecipes = (data.recipes || []).filter((recipe: Recipe) => recipe.component === true);
+        setAllRecipes(componentRecipes);
       }
     } catch (err) {
       console.error("Error fetching recipes:", err);

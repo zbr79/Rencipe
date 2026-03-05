@@ -4,18 +4,22 @@ interface RecipeBasicsFormProps {
   title: string;
   description: string;
   servings: number;
+  component: boolean;
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onServingsChange: (value: number) => void;
+  onComponentChange: (value: boolean) => void;
 }
 
 export default function RecipeBasicsForm({
   title,
   description,
   servings,
+  component,
   onTitleChange,
   onDescriptionChange,
   onServingsChange,
+  onComponentChange,
 }: RecipeBasicsFormProps) {
   return (
     <>
@@ -49,6 +53,20 @@ export default function RecipeBasicsForm({
             className={styles.textarea}
             rows={4}
           />
+        </div>
+
+        <div className={styles.formGroup} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <input
+            id="component"
+            type="checkbox"
+            checked={component ?? false}
+            onChange={(e) => onComponentChange(e.target.checked)}
+            className={styles.checkbox}
+            style={{ width: "20px", height: "20px", cursor: "pointer" }}
+          />
+          <label htmlFor="component" className={styles.label} style={{ margin: 0, cursor: "pointer" }}>
+            可用作膳食计划的组件
+          </label>
         </div>
       </section>
     </>

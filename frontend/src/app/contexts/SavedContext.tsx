@@ -4,9 +4,10 @@ import { createContext, useContext, useState, ReactNode } from "react";
 
 interface SavedRecipe {
   _id: string;
-  id?: string;
+  id: string;
   title: string;
   description: string;
+  component: boolean;
   servings: number;
   image?: string;
   mainIngredients: Array<{

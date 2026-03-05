@@ -25,6 +25,7 @@ interface RecipeData {
   title: string;
   description: string;
   authorId: string;
+  component: boolean;
   image?: string;
   mainIngredients: Ingredient[];
   seasonings: Ingredient[];
@@ -50,6 +51,7 @@ export default function EditPage() {
     title: string;
     description: string;
     authorId: string;
+    component: boolean;
     mainIngredients: Ingredient[];
     seasonings: Ingredient[];
     steps: Step[];
@@ -59,6 +61,7 @@ export default function EditPage() {
     title: "",
     description: "",
     authorId: "507f1f77bcf86cd799439011",
+    component: false,
     mainIngredients: [{ name: "", quantity: "" }],
     seasonings: [{ name: "", quantity: "" }],
     steps: [{ stepNumber: 1, instruction: "" }],
@@ -88,6 +91,7 @@ export default function EditPage() {
           title: recipe.title,
           description: recipe.description,
           authorId: recipe.authorId,
+          component: recipe.component ?? false,
           mainIngredients: recipe.mainIngredients || [{ name: "", quantity: "" }],
           seasonings: recipe.seasonings || [{ name: "", quantity: "" }],
           steps: recipe.steps || [{ stepNumber: 1, instruction: "" }],
@@ -247,6 +251,7 @@ export default function EditPage() {
         body: JSON.stringify({
           title: formData.title,
           description: formData.description,
+          component: formData.component,
           mainIngredients: formData.mainIngredients,
           seasonings: formData.seasonings,
           steps: formData.steps,
@@ -339,9 +344,11 @@ export default function EditPage() {
           title={formData.title}
           description={formData.description}
           servings={formData.servings}
+          component={formData.component}
           onTitleChange={(title) => setFormData({ ...formData, title })}
           onDescriptionChange={(description) => setFormData({ ...formData, description })}
           onServingsChange={(servings) => setFormData({ ...formData, servings })}
+          onComponentChange={(component) => setFormData({ ...formData, component })}
         />
 
         <IngredientsSection

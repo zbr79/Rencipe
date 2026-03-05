@@ -46,6 +46,7 @@ export default function CreatePage() {
     title: "",
     description: "",
     authorId: "507f1f77bcf86cd799439011",
+    component: false,
     mainIngredients: [
       {
         name: "",
@@ -166,6 +167,7 @@ export default function CreatePage() {
       title: draft.title,
       description: draft.description,
       authorId: "507f1f77bcf86cd799439011",
+      component: draft.component ?? false,
       mainIngredients: draft.mainIngredients || [],
       seasonings: draft.seasonings || [],
       steps: draft.steps || [],
@@ -194,6 +196,7 @@ export default function CreatePage() {
         title: formData.title,
         description: formData.description,
         image: recipeImage || undefined,
+        component: formData.component ?? false,
         mainIngredients: formData.mainIngredients,
         seasonings: formData.seasonings,
         steps: formData.steps,
@@ -223,6 +226,7 @@ export default function CreatePage() {
       title: formData.title,
       description: formData.description,
       image: recipeImage || undefined,
+      component: formData.component ?? false,
       mainIngredients: formData.mainIngredients,
       seasonings: formData.seasonings,
       steps: formData.steps,
@@ -356,6 +360,7 @@ export default function CreatePage() {
         title: "",
         description: "",
         authorId: "507f1f77bcf86cd799439011",
+        component: false,
         mainIngredients: [],
         seasonings: [],
         steps: [],
@@ -468,9 +473,11 @@ export default function CreatePage() {
             title={formData.title}
             description={formData.description}
             servings={formData.servings}
+            component={formData.component}
             onTitleChange={(value) => setFormData({ ...formData, title: value })}
             onDescriptionChange={(value) => setFormData({ ...formData, description: value })}
             onServingsChange={(value) => setFormData({ ...formData, servings: value })}
+            onComponentChange={(value) => setFormData({ ...formData, component: value })}
           />
 
           <IngredientsSection

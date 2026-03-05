@@ -18,6 +18,7 @@ function pickRecipe(doc: any) {
     description: doc.description,
     image: doc.image ?? null,
     authorId: doc.authorId ?? null,
+    component: doc.component ?? false,
     mainIngredients: doc.mainIngredients ?? [],
     seasonings: doc.seasonings ?? [],
     steps: doc.steps ?? [],
@@ -51,7 +52,7 @@ export async function listRecipes(req: Request, res: Response) {
 
 /**
  * POST /recipes
- * body: { title, description, authorId, mainIngredients, seasonings, steps, servings, tags, image }
+ * body: { title, description, authorId, mainIngredients, seasonings, steps, servings, tags, image, component }
  */
 export async function createRecipe(req: Request, res: Response) {
   try {
@@ -65,6 +66,7 @@ export async function createRecipe(req: Request, res: Response) {
       servings,
       tags,
       image,
+      component,
     } = req.body;
 
     if (!title) return res.status(400).json({ error: "title is required" });
@@ -83,6 +85,7 @@ export async function createRecipe(req: Request, res: Response) {
       servings: servings || 1,
       tags: tags || [],
       image: image || undefined,
+      component: component ?? false,
     });
 
     res.status(201).json({ recipe: pickRecipe(doc) });
@@ -126,6 +129,7 @@ export async function updateRecipe(req: Request, res: Response) {
       servings,
       tags,
       image,
+      component,
     } = req.body;
 
     const doc = await Recipe.findByIdAndUpdate(
@@ -139,6 +143,7 @@ export async function updateRecipe(req: Request, res: Response) {
         servings: servings || 1,
         tags: tags || [],
         image: image || undefined,
+        component: component ?? undefined,
       },
       { new: true }
     );
