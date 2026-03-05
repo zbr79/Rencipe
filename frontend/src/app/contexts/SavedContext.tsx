@@ -29,12 +29,24 @@ interface SavedRecipe {
   ratingCount: number;
 }
 
+interface MealCombination {
+  meatRecipeId: SavedRecipe;
+  vegeRecipeId: SavedRecipe;
+  sideRecipeId: SavedRecipe;
+  portions: number;
+}
+
 interface MealPlan {
   _id: string;
   id?: string;
   userId: string;
   name: string;
-  recipes: SavedRecipe[];
+  numberOfPeople: number;
+  numberOfDays: number;
+  mealTypes: ('lunch' | 'dinner')[];
+  totalMealsNeeded: number;
+  combinations: MealCombination[];
+  checkedIngredients: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -55,11 +67,11 @@ interface SavedContextType {
   loadingPlans: boolean;
   errorPlans: string | null;
   fetchMealPlans: (userId: string) => Promise<void>;
-  createMealPlan: (userId: string, name?: string) => Promise<MealPlan>;
+  createMealPlan: (userId: string, numberOfPeople: number, numberOfDays: number, mealTypes: ('lunch' | 'dinner')[], name?: string) => Promise<MealPlan>;
   renameMealPlan: (planId: string, newName: string) => Promise<MealPlan>;
   deleteMealPlan: (planId: string) => Promise<void>;
-  addRecipeToMealPlan: (planId: string, recipeId: string) => Promise<MealPlan>;
-  removeRecipeFromMealPlan: (planId: string, recipeId: string) => Promise<MealPlan>;
+  addMealCombination: (planId: string, meatRecipeId: string, vegeRecipeId: string, sideRecipeId: string, portions: number) => Promise<MealPlan>;
+  removeMealCombination: (planId: string, index: number) => Promise<MealPlan>;
 }
 
 const SavedContext = createContext<SavedContextType | undefined>(undefined);
@@ -173,12 +185,12 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const createMealPlan = async (userId: string, name?: string): Promise<MealPlan> => {
+  const createMealPlan = async (userId: string, numberOfPeople: number, numberOfDays: number, mealTypes: ('lunch' | 'dinner')[], name?: string): Promise<MealPlan> => {
     try {
       const response = await fetch(`/api/meal-plans`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, name }),
+        body: JSON.stringify({ userId, numberOfPeople, numberOfDays, mealTypes, name }),
       });
 
       if (!response.ok) {
@@ -237,16 +249,20 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addRecipeToMealPlan = async (planId: string, recipeId: string): Promise<MealPlan> => {
+  const addMealCombination = async (planId: string, meatRecipeId: string, vegeRecipeId: string, sideRecipeId: string, portions: number): Promise<MealPlan> => {
     try {
-      const response = await fetch(`/api/meal-plans/${planId}/recipes`, {
+      console.log("Adding combination with:", { meatRecipeId, vegeRecipeId, sideRecipeId, portions });
+      const response = await fetch(`/api/meal-plans/${planId}/combinations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipeId }),
+        body: JSON.stringify({ meatRecipeId, vegeRecipeId, sideRecipeId, portions }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add recipe to meal plan");
+        const errorData = await response.json().catch(() => ({}));
+        const errorMsg = errorData.error || `API returned ${response.status}: ${response.statusText}`;
+        console.error("Backend error:", errorMsg, errorData);
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
@@ -255,23 +271,20 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       );
       return data.plan;
     } catch (err: any) {
-      console.error("Error adding recipe to meal plan:", err);
+      console.error("Error adding meal combination:", err);
       setErrorPlans(err.message);
       throw err;
     }
   };
 
-  const removeRecipeFromMealPlan = async (
-    planId: string,
-    recipeId: string
-  ): Promise<MealPlan> => {
+  const removeMealCombination = async (planId: string, index: number): Promise<MealPlan> => {
     try {
-      const response = await fetch(`/api/meal-plans/${planId}/recipes/${recipeId}`, {
+      const response = await fetch(`/api/meal-plans/${planId}/combinations/${index}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error("Failed to remove recipe from meal plan");
+        throw new Error("Failed to remove meal combination");
       }
 
       const data = await response.json();
@@ -280,7 +293,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       );
       return data.plan;
     } catch (err: any) {
-      console.error("Error removing recipe from meal plan:", err);
+      console.error("Error removing meal combination:", err);
       setErrorPlans(err.message);
       throw err;
     }
@@ -306,8 +319,8 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         createMealPlan,
         renameMealPlan,
         deleteMealPlan,
-        addRecipeToMealPlan,
-        removeRecipeFromMealPlan,
+        addMealCombination,
+        removeMealCombination,
       }}
     >
       {children}

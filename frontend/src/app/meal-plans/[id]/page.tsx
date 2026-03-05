@@ -5,11 +5,31 @@ import Link from "next/link";
 import { useSaved } from "../../contexts/SavedContext";
 import styles from "../../recipes/page.module.css";
 
+interface Recipe {
+  id: string;
+  title: string;
+  description: string;
+  mainIngredients: Array<{ name: string; quantity: string }>;
+  seasonings: Array<{ name: string; quantity: string }>;
+}
+
+interface MealCombination {
+  meatRecipeId: Recipe;
+  vegeRecipeId: Recipe;
+  sideRecipeId: Recipe;
+  portions: number;
+}
+
 interface MealPlan {
   _id: string;
   userId: string;
   name: string;
-  recipes: any[];
+  numberOfPeople: number;
+  numberOfDays: number;
+  mealTypes: ('lunch' | 'dinner')[];
+  totalMealsNeeded: number;
+  combinations: MealCombination[];
+  checkedIngredients: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -17,8 +37,7 @@ interface MealPlan {
 interface AggregatedIngredient {
   name: string;
   quantity: string;
-  totalQuantity?: number;
-  unit?: string;
+  sources: string[]; // Which recipes this came from
 }
 
 export default function MealPlanDetailPage({
@@ -26,13 +45,27 @@ export default function MealPlanDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { removeRecipeFromMealPlan, renameMealPlan } = useSaved();
+  const { addMealCombination, removeMealCombination, renameMealPlan } = useSaved();
   const [plan, setPlan] = useState<MealPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [id, setId] = useState<string | null>(null);
+
+  // Add combination form state
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
+  const [loadingRecipes, setLoadingRecipes] = useState(false);
+  const [selectedMeat, setSelectedMeat] = useState<string>("");
+  const [selectedVege, setSelectedVege] = useState<string>("");
+  const [selectedSide, setSelectedSide] = useState<string>("");
+  const [portions, setPortions] = useState(1);
+  const [addingCombination, setAddingCombination] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+
+  // Rename state
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState("");
-  const [id, setId] = useState<string | null>(null);
+
 
   useEffect(() => {
     params.then((p) => setId(p.id));
@@ -63,35 +96,86 @@ export default function MealPlanDetailPage({
     fetchPlan();
   }, [id]);
 
+  const fetchAllRecipes = async () => {
+    setLoadingRecipes(true);
+    try {
+      const response = await fetch(`/api/recipes`);
+      if (response.ok) {
+        const data = await response.json();
+        setAllRecipes(data.recipes || []);
+      }
+    } catch (err) {
+      console.error("Error fetching recipes:", err);
+    } finally {
+      setLoadingRecipes(false);
+    }
+  };
+
+  const handleShowAddForm = async () => {
+    setShowAddForm(true);
+    if (allRecipes.length === 0) {
+      await fetchAllRecipes();
+    }
+  };
+
+  const handleAddCombination = async () => {
+    if (!selectedMeat || !selectedVege || !selectedSide || portions < 1) {
+      setAddError("请填写所有字段");
+      return;
+    }
+
+    if (!plan) return;
+
+    setAddingCombination(true);
+    setAddError(null);
+
+    try {
+      const updatedPlan = await addMealCombination(
+        plan._id,
+        selectedMeat,
+        selectedVege,
+        selectedSide,
+        portions
+      );
+
+      setPlan(updatedPlan);
+      setShowAddForm(false);
+      setSelectedMeat("");
+      setSelectedVege("");
+      setSelectedSide("");
+      setPortions(1);
+    } catch (err: any) {
+      console.error("Error adding combination:", err);
+      setAddError(err.message);
+    } finally {
+      setAddingCombination(false);
+    }
+  };
+
+  const handleRemoveCombination = async (index: number) => {
+    if (!plan) return;
+
+    try {
+      const updatedPlan = await removeMealCombination(plan._id, index);
+      setPlan(updatedPlan);
+    } catch (error) {
+      console.error("Failed to remove combination:", error);
+    }
+  };
+
   const handleRenamePlan = async () => {
     if (!newName.trim() || !plan) return;
 
     try {
-      await renameMealPlan(plan._id, newName);
-      setPlan({ ...plan, name: newName });
+      const updatedPlan = await renameMealPlan(plan._id, newName);
+      setPlan(updatedPlan);
       setIsRenaming(false);
     } catch (error) {
       console.error("Failed to rename plan:", error);
     }
   };
 
-  const handleRemoveRecipe = async (recipeId: string) => {
-    if (!plan) return;
-
-    try {
-      await removeRecipeFromMealPlan(plan._id, recipeId);
-      // Refresh the plan
-      const response = await fetch(`/api/meal-plans/${plan._id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setPlan(data.plan);
-      }
-    } catch (error) {
-      console.error("Failed to remove recipe:", error);
-    }
-  };
-
-  const handleCheckIngredient = async (ingredientName: string, checked: boolean) => {
+  const handleToggleIngredient = async (ingredientName: string, checked: boolean) => {
     if (!plan) return;
 
     try {
@@ -110,50 +194,45 @@ export default function MealPlanDetailPage({
     }
   };
 
-  // Aggregate ingredients from all recipes
-  const aggregateIngredients = () => {
-    if (!plan || !plan.recipes) return [];
+  // Calculate total ingredients needed
+  const calculateTotalIngredients = (): AggregatedIngredient[] => {
+    if (!plan || !plan.combinations) return [];
 
     const ingredientMap: { [key: string]: AggregatedIngredient } = {};
 
-    plan.recipes.forEach((recipe) => {
-      // Aggregate main ingredients
-      if (recipe.mainIngredients && Array.isArray(recipe.mainIngredients)) {
-        recipe.mainIngredients.forEach((ingredient: any) => {
-          const key = ingredient.name.toLowerCase();
-          if (!ingredientMap[key]) {
-            ingredientMap[key] = {
-              name: ingredient.name,
-              quantity: ingredient.quantity,
-            };
-          } else {
-            // Try to aggregate quantities if they have the same unit
-            ingredientMap[key].quantity += `; ${ingredient.quantity}`;
-          }
-        });
-      }
+    plan.combinations.forEach((combo) => {
+      const recipes = [
+        { recipe: combo.meatRecipeId, type: "肉" },
+        { recipe: combo.vegeRecipeId, type: "菜" },
+        { recipe: combo.sideRecipeId, type: "配菜" },
+      ];
 
-      // Aggregate seasonings
-      if (recipe.seasonings && Array.isArray(recipe.seasonings)) {
-        recipe.seasonings.forEach((ingredient: any) => {
-          const key = ingredient.name.toLowerCase();
+      recipes.forEach(({ recipe, type }) => {
+        if (!recipe) return;
+
+        const ingredients = [...(recipe.mainIngredients || []), ...(recipe.seasonings || [])];
+        ingredients.forEach((ing) => {
+          const key = ing.name.toLowerCase();
           if (!ingredientMap[key]) {
             ingredientMap[key] = {
-              name: ingredient.name,
-              quantity: ingredient.quantity,
+              name: ing.name,
+              quantity: `${combo.portions} x ${ing.quantity}`,
+              sources: [`${recipe.title} (${type})`],
             };
           } else {
-            // Try to aggregate quantities if they have the same unit
-            ingredientMap[key].quantity += `; ${ingredient.quantity}`;
+            ingredientMap[key].quantity += `; ${combo.portions} x ${ing.quantity}`;
+            if (!ingredientMap[key].sources.includes(`${recipe.title} (${type})`)) {
+              ingredientMap[key].sources.push(`${recipe.title} (${type})`);
+            }
           }
         });
-      }
+      });
     });
 
     return Object.values(ingredientMap);
   };
 
-  const aggregatedIngredients = aggregateIngredients();
+  const totalIngredients = calculateTotalIngredients();
 
   if (loading) {
     return (
@@ -168,8 +247,8 @@ export default function MealPlanDetailPage({
       <div className={styles.container}>
         <div className={styles.empty}>
           <p>错误: {error}</p>
-          <Link href="/saved" className={styles.createLink}>
-            返回已保存
+          <Link href="/meal-plans" className={styles.createLink}>
+            返回计划列表
           </Link>
         </div>
       </div>
@@ -180,9 +259,9 @@ export default function MealPlanDetailPage({
     return (
       <div className={styles.container}>
         <div className={styles.empty}>
-          <p>找不到这个计划</p>
-          <Link href="/saved" className={styles.createLink}>
-            返回已保存
+          <p>找不到此计划</p>
+          <Link href="/meal-plans" className={styles.createLink}>
+            返回计划列表
           </Link>
         </div>
       </div>
@@ -191,20 +270,11 @@ export default function MealPlanDetailPage({
 
   return (
     <div className={styles.container}>
-      {/* Header with Plan Name */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "32px",
-          paddingBottom: "20px",
-          borderBottom: "2px solid var(--border)",
-        }}
-      >
-        <div style={{ flex: 1 }}>
+      {/* Header */}
+      <div style={{ marginBottom: "32px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
           {isRenaming ? (
-            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "8px", flex: 1 }}>
               <input
                 type="text"
                 value={newName}
@@ -212,339 +282,389 @@ export default function MealPlanDetailPage({
                 autoFocus
                 style={{
                   flex: 1,
-                  padding: "12px 16px",
-                  border: "1.5px solid #3b82f6",
-                  borderRadius: "6px",
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  background: "var(--card-bg)",
-                  color: "var(--foreground)",
+                  padding: "8px",
+                  fontSize: "24px",
+                  fontWeight: "bold",
+                  border: "2px solid #4CAF50",
+                  borderRadius: "4px",
                 }}
               />
               <button
                 onClick={handleRenamePlan}
                 style={{
-                  background: "#3b82f6",
+                  padding: "8px 16px",
+                  backgroundColor: "#4CAF50",
                   color: "white",
                   border: "none",
-                  padding: "10px 16px",
-                  borderRadius: "6px",
+                  borderRadius: "4px",
                   cursor: "pointer",
-                  fontWeight: "600",
-                  transition: "all 0.2s ease",
-                  boxShadow: "0 2px 8px rgba(59, 130, 246, 0.2)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(59, 130, 246, 0.2)";
                 }}
               >
-                ✓ 保存
+                保存
               </button>
               <button
                 onClick={() => setIsRenaming(false)}
                 style={{
-                  background: "#f3f4f6",
-                  color: "var(--foreground)",
-                  border: "1px solid #e5e7eb",
-                  padding: "10px 16px",
-                  borderRadius: "6px",
+                  padding: "8px 16px",
+                  backgroundColor: "#f0f0f0",
+                  color: "#333",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
                   cursor: "pointer",
-                  fontWeight: "600",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#e5e7eb";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#f3f4f6";
                 }}
               >
-                ✕ 取消
+                取消
               </button>
             </div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <h1 style={{ margin: 0, fontSize: "28px", fontWeight: "700" }}>📋 {plan.name}</h1>
+            <>
+              <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>{plan.name}</h1>
               <button
                 onClick={() => setIsRenaming(true)}
                 style={{
-                  background: "#f3f4f6",
-                  color: "#667eea",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "6px",
-                  padding: "8px 14px",
+                  padding: "8px 16px",
+                  backgroundColor: "#f0f0f0",
+                  color: "#333",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
                   cursor: "pointer",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#667eea";
-                  e.currentTarget.style.color = "white";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#f3f4f6";
-                  e.currentTarget.style.color = "#667eea";
                 }}
               >
-                ✏️ 编辑名称
+                重命名
               </button>
-            </div>
+            </>
           )}
         </div>
-        <Link
-          href="/saved"
-          style={{
-            color: "#3b82f6",
-            textDecoration: "none",
-            fontWeight: "600",
-            padding: "8px 12px",
-            borderRadius: "6px",
-            transition: "all 0.2s ease",
-            display: "inline-block",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(59, 130, 246, 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-          }}
-        >
-          ← 返回已保存
-        </Link>
+
+        {/* Plan Info */}
+        <div style={{ backgroundColor: "#f5f5f5", padding: "12px", borderRadius: "4px", marginBottom: "16px" }}>
+          <p style={{ margin: "4px 0", color: "#666" }}>
+            👥 {plan.numberOfPeople} 人 | 📅 {plan.numberOfDays} 天 | 🍽️ {plan.mealTypes.join("/")}
+          </p>
+          <p style={{ margin: "4px 0", color: "#999" }}>
+            总需要: <strong>{plan.totalMealsNeeded}</strong> 份餐
+          </p>
+        </div>
       </div>
 
-      {/* Recipes in Plan */}
-      <div style={{ marginBottom: "40px" }}>
-        <h2 style={{ marginBottom: "20px", fontSize: "22px", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
-          🍽️ 食谱 ({plan.recipes?.length || 0})
-        </h2>
-
-        {plan.recipes && plan.recipes.length > 0 ? (
-          <div
+      {/* Add Combination Section */}
+      <div style={{ marginBottom: "32px" }}>
+        {!showAddForm && (
+          <button
+            onClick={handleShowAddForm}
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-              gap: "16px",
+              padding: "12px 24px",
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "16px",
             }}
           >
-            {plan.recipes.map((recipe) => (
+            + 添加组合
+          </button>
+        )}
+
+        {showAddForm && (
+          <div
+            style={{
+              backgroundColor: "#f9f9f9",
+              border: "1px solid #e0e0e0",
+              borderRadius: "8px",
+              padding: "20px",
+            }}
+          >
+            <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "16px" }}>
+              添加新组合
+            </h2>
+
+            {addError && (
               <div
-                key={recipe._id}
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
+                  backgroundColor: "#ffebee",
+                  color: "#c62828",
+                  padding: "12px",
+                  borderRadius: "4px",
+                  marginBottom: "16px",
                 }}
               >
-                <Link
-                  href={`/recipes/${recipe._id}`}
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    background: "var(--card-bg)",
-                    border: "1.5px solid var(--border)",
-                    borderRadius: "10px",
-                    overflow: "hidden",
-                    transition: "all 0.2s ease",
-                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-                    textDecoration: "none",
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "#8b5cf6";
-                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(139, 92, 246, 0.15)";
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "var(--border)";
-                    e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                >
-                  {recipe.image && (
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "160px",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <img
-                        src={recipe.image}
-                        alt={recipe.title}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      />
-                    </div>
-                  )}
-                  <div style={{ padding: "14px", flex: 1, display: "flex", flexDirection: "column" }}>
-                    <h3 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600" }}>
-                      {recipe.title}
-                    </h3>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: "12px",
-                        color: "var(--text-secondary)",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        lineHeight: "1.4",
-                        flex: 1,
-                      }}
-                    >
-                      {recipe.description}
-                    </p>
-                  </div>
-                </Link>
-                <div style={{ padding: "8px 14px 14px", display: "flex", justifyContent: "flex-end" }}>
-                  <button
-                    onClick={() => handleRemoveRecipe(recipe._id)}
+                {addError}
+              </div>
+            )}
+
+            {loadingRecipes && <p style={{ color: "#999" }}>加载食谱中...</p>}
+
+            {!loadingRecipes && (
+              <>
+                {/* Meat Selection */}
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                    肉类 (必选)
+                  </label>
+                  <select
+                    value={selectedMeat}
+                    onChange={(e) => setSelectedMeat(e.target.value)}
                     style={{
-                      padding: "6px 12px",
-                      background: "#fee2e2",
-                      color: "#ef4444",
-                      border: "1px solid #fecaca",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontSize: "13px",
-                      fontWeight: "600",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#ef4444";
-                      e.currentTarget.style.color = "white";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "#fee2e2";
-                      e.currentTarget.style.color = "#ef4444";
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "4px",
+                      border: "1px solid #ddd",
+                      fontSize: "14px",
                     }}
                   >
-                    🗑️ 移除
+                    <option value="">-- 选择肉类食谱 --</option>
+                    {allRecipes.map((recipe, index) => (
+                      <option key={recipe.id || index} value={recipe.id}>
+                        {recipe.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Vege Selection */}
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                    蔬菜 (必选)
+                  </label>
+                  <select
+                    value={selectedVege}
+                    onChange={(e) => setSelectedVege(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "4px",
+                      border: "1px solid #ddd",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <option value="">-- 选择蔬菜食谱 --</option>
+                    {allRecipes.map((recipe, index) => (
+                      <option key={recipe.id || index} value={recipe.id}>
+                        {recipe.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Side Selection */}
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                    配菜 (必选)
+                  </label>
+                  <select
+                    value={selectedSide}
+                    onChange={(e) => setSelectedSide(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "4px",
+                      border: "1px solid #ddd",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <option value="">-- 选择配菜食谱 --</option>
+                    {allRecipes.map((recipe, index) => (
+                      <option key={recipe.id || index} value={recipe.id}>
+                        {recipe.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Rice (locked) */}
+                <div style={{ marginBottom: "16px", opacity: 0.6 }}>
+                  <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                    主食 (固定: 米饭)
+                  </label>
+                  <input
+                    type="text"
+                    value="米饭"
+                    disabled
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "4px",
+                      border: "1px solid #ddd",
+                      fontSize: "14px",
+                      backgroundColor: "#f5f5f5",
+                    }}
+                  />
+                </div>
+
+                {/* Portions */}
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                    份量数 (需要多少份这个组合?)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={portions}
+                    onChange={(e) => setPortions(Math.max(1, parseInt(e.target.value) || 1))}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "4px",
+                      border: "1px solid #ddd",
+                      fontSize: "14px",
+                    }}
+                  />
+                  <p style={{ fontSize: "12px", color: "#999", margin: "8px 0 0 0" }}>
+                    不能超过所需总份数: {plan.totalMealsNeeded}
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <button
+                    onClick={handleAddCombination}
+                    disabled={addingCombination}
+                    style={{
+                      flex: 1,
+                      padding: "12px",
+                      backgroundColor: "#4CAF50",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: addingCombination ? "not-allowed" : "pointer",
+                      opacity: addingCombination ? 0.6 : 1,
+                      fontSize: "16px",
+                    }}
+                  >
+                    {addingCombination ? "添加中..." : "添加组合"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowAddForm(false);
+                      setAddError(null);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "12px",
+                      backgroundColor: "#f0f0f0",
+                      color: "#333",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "16px",
+                    }}
+                  >
+                    取消
                   </button>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className={styles.empty}>
-            <p>这个计划中还没有食谱</p>
-            <Link href="/recipes" className={styles.createLink}>
-              浏览食谱
-            </Link>
+              </>
+            )}
           </div>
         )}
       </div>
 
-      {/* Ingredient Aggregation */}
-      {plan.recipes && plan.recipes.length > 0 && (
-        <div style={{ marginTop: "32px", borderTop: "1px solid var(--border)", paddingTop: "32px" }}>
-          <h2 style={{ 
-            marginBottom: "20px",
-            fontSize: "24px",
-            fontWeight: "700",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            paddingBottom: "12px",
-            borderBottom: "2px solid #8b5cf6",
-          }}>
-            🛒 购物清单
+      {/* Combinations List */}
+      {plan.combinations.length > 0 && (
+        <div style={{ marginBottom: "32px" }}>
+          <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "16px" }}>
+            已添加的组合 ({plan.combinations.length})
           </h2>
           <div
             style={{
-              background: "var(--card-bg)",
-              border: "1.5px solid #e5e7eb",
-              borderRadius: "10px",
-              padding: "20px",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+              gap: "16px",
             }}
           >
-            {aggregatedIngredients.length > 0 ? (
-              <ul
+            {plan.combinations.map((combo, index) => (
+              <div
+                key={index}
                 style={{
-                  margin: 0,
-                  padding: 0,
-                  listStyle: "none",
+                  backgroundColor: "white",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "8px",
+                  padding: "16px",
                 }}
               >
-                {aggregatedIngredients.map((ingredient, index) => {
-                  const isChecked = plan?.checkedIngredients?.includes(ingredient.name) ?? false;
-                  return (
-                    <li
-                      key={index}
-                      style={{
-                        padding: "14px 0",
-                        borderBottom:
-                          index < aggregatedIngredients.length - 1
-                            ? "1px solid #f3f4f6"
-                            : "none",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        transition: "background-color 0.2s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#f9fafb";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1 }}>
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) => handleCheckIngredient(ingredient.name, e.target.checked)}
-                          style={{
-                            width: "18px",
-                            height: "18px",
-                            cursor: "pointer",
-                            accentColor: "#8b5cf6",
-                          }}
-                        />
-                        <span
-                          style={{
-                            fontWeight: "500",
-                            fontSize: "15px",
-                            color: isChecked ? "#c4b5fd" : "var(--text-primary)",
-                            textDecoration: isChecked ? "line-through" : "none",
-                            transition: "all 0.2s ease",
-                          }}
-                        >
-                          {ingredient.name}
-                        </span>
-                      </div>
-                      <span
-                        style={{
-                          background: "#f3f4f6",
-                          color: "#6b7280",
-                          fontSize: "13px",
-                          fontWeight: "600",
-                          padding: "6px 12px",
-                          borderRadius: "20px",
-                        }}
-                      >
-                        {ingredient.quantity}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p style={{ 
-                margin: 0, 
-                color: "var(--text-secondary)",
-                textAlign: "center",
-                padding: "20px",
-              }}>
-                没有食材
-              </p>
-            )}
+                <div style={{ marginBottom: "12px" }}>
+                  <h3 style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>
+                    组合 #{index + 1} - {combo.portions} 份
+                  </h3>
+                  <p style={{ fontSize: "13px", color: "#666", margin: "4px 0" }}>
+                    <strong>肉:</strong> {combo.meatRecipeId.title}
+                  </p>
+                  <p style={{ fontSize: "13px", color: "#666", margin: "4px 0" }}>
+                    <strong>菜:</strong> {combo.vegeRecipeId.title}
+                  </p>
+                  <p style={{ fontSize: "13px", color: "#666", margin: "4px 0" }}>
+                    <strong>配菜:</strong> {combo.sideRecipeId.title}
+                  </p>
+                  <p style={{ fontSize: "13px", color: "#666", margin: "4px 0" }}>
+                    <strong>主食:</strong> 米饭
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleRemoveCombination(index)}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    backgroundColor: "#ffebee",
+                    color: "#c62828",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                  }}
+                >
+                  删除
+                </button>
+              </div>
+            ))}
           </div>
+        </div>
+      )}
+
+      {/* Total Ingredients */}
+      {totalIngredients.length > 0 && (
+        <div>
+          <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "16px" }}>
+            所需食材清单
+          </h2>
+          <div style={{ backgroundColor: "white", borderRadius: "8px", overflow: "hidden" }}>
+            {totalIngredients.map((ing, index) => (
+              <div
+                key={index}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "12px",
+                  borderBottom: index < totalIngredients.length - 1 ? "1px solid #e0e0e0" : "none",
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: "500", marginBottom: "4px" }}>{ing.name}</p>
+                  <p style={{ fontSize: "12px", color: "#999" }}>
+                    {ing.sources.join(", ")}
+                  </p>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <p style={{ minWidth: "100px", textAlign: "right", fontSize: "14px" }}>
+                    {ing.quantity}
+                  </p>
+                  <input
+                    type="checkbox"
+                    checked={plan.checkedIngredients.includes(ing.name)}
+                    onChange={(e) => handleToggleIngredient(ing.name, e.target.checked)}
+                    style={{ cursor: "pointer" }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {plan.combinations.length === 0 && (
+        <div style={{ textAlign: "center", padding: "40px 0", color: "#999" }}>
+          <p>还没有添加任何组合</p>
+          <p style={{ fontSize: "14px" }}>点击上面的按钮开始添加组合</p>
         </div>
       )}
     </div>

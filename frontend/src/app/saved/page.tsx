@@ -139,7 +139,7 @@ export default function SavedPage() {
             transition: "all 0.2s ease",
           }}
         >
-          📋 计划 ({mealPlans.length})
+          📋 膳食计划 ({mealPlans.length})
         </button>
       </div>
 
@@ -147,6 +147,9 @@ export default function SavedPage() {
       <div
         style={{
           marginBottom: "20px",
+          display: "flex",
+          gap: "12px",
+          alignItems: "center",
         }}
       >
         <input
@@ -159,7 +162,7 @@ export default function SavedPage() {
             setFilters({ ...filters, searchTerm: e.target.value })
           }
           style={{
-            width: "100%",
+            flex: 1,
             padding: "12px 16px",
             border: "1.5px solid var(--border)",
             borderRadius: "8px",
@@ -178,6 +181,32 @@ export default function SavedPage() {
             e.currentTarget.style.boxShadow = "none";
           }}
         />
+        {activeTab === "plans" && (
+          <Link
+            href="/meal-plans"
+            style={{
+              padding: "12px 20px",
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "600",
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#45a049";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#4CAF50";
+            }}
+          >
+            ➕ 新建计划
+          </Link>
+        )}
       </div>
 
       {/* ===== 菜谱 Tab ===== */}

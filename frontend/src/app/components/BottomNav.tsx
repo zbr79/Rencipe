@@ -24,6 +24,7 @@ export default function BottomNav() {
     { href: `/`, icon: "home", label: "Home" },
     { href: `/search`, icon: "search", label: "Search" },
     { href: null, icon: "add_circle", label: "Create", action: openCreateForm },
+    { href: `/meal-plans`, icon: "local_dining", label: "MealPrep" },
     { href: `/saved`, icon: "bookmark", label: "Saved", badge: totalSavedCount },
     { href: `/settings`, icon: "settings", label: "Settings" },
   ];
