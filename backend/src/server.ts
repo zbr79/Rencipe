@@ -9,6 +9,7 @@ import draftRoutes from "./routes/draft.routes";
 import cartRoutes from "./routes/cart.routes";
 import favoriteRoutes from "./routes/favorite.routes";
 import mealPlanRoutes from "./routes/mealplan.routes";
+import weeklyPlanRoutes from "./routes/weeklyplan.routes";
 dotenv.config();
 
 const app = express();
@@ -32,6 +33,7 @@ app.use("/drafts", draftRoutes);
 app.use(cartRoutes);
 app.use(favoriteRoutes);
 app.use(mealPlanRoutes);
+app.use("/weekly-plans", weeklyPlanRoutes);
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", backend: "running" });
 });

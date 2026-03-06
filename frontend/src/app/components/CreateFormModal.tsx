@@ -136,6 +136,10 @@ export default function CreateFormModal() {
             <span className={styles.menuIcon}>📋</span>
             <span className={styles.menuLabel}>新建计划</span>
           </button>
+          <button className={styles.menuOption} onClick={() => { closeCreateForm(); router.push("/weekly-plans/create"); }}>
+            <span className={styles.menuIcon}>📅</span>
+            <span className={styles.menuLabel}>新建周计划</span>
+          </button>
           <button className={styles.menuOption} disabled style={{ opacity: 0.5 }}>
             <span className={styles.menuIcon}>🎨</span>
             <span className={styles.menuLabel}>发布作品</span>
