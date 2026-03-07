@@ -84,12 +84,11 @@ const RecipeSchema = new Schema<IRecipe>(
 );
 
 // Pre-save hook to generate pinyin fields
-RecipeSchema.pre("save", function (next) {
+RecipeSchema.pre<IRecipe>("save", async function() {
   if (this.title) {
     this.titlePinyin = textToPinyin(this.title);
     this.titleFirstLetters = textToFirstLetters(this.title);
   }
-  next();
 });
 
 export default mongoose.models.Recipe || mongoose.model<IRecipe>("Recipe", RecipeSchema);

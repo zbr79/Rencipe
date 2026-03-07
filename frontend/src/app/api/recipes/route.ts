@@ -25,3 +25,26 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    
+    const response = await fetch(`${BACKEND_URL}/recipes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      return NextResponse.json({ error: error.message || "Failed to create recipe" }, { status: response.status });
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error: any) {
+    console.error("Error creating recipe:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

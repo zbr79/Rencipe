@@ -99,29 +99,14 @@ export default function CreatePage() {
   }, [hasUnsavedChanges]);
 
   // Handle router changes (navigation to other pages)
-  useEffect(() => {
-    const handleRouteChange = () => {
-      if (hasUnsavedChanges) {
-        setShowUnsavedChangesModal(true);
-        return;
-      }
-    };
-
-    // This is a simplified version - you may need to use router events
-    const originalPush = router.push;
-    router.push = function(href: string) {
-      if (hasUnsavedChanges) {
-        setPendingAction(() => () => originalPush.call(router, href));
-        setShowUnsavedChangesModal(true);
-      } else {
-        originalPush.call(router, href);
-      }
-    };
-
-    return () => {
-      router.push = originalPush;
-    };
-  }, [hasUnsavedChanges, router]);
+  const handleNavigate = (href: string) => {
+    if (hasUnsavedChanges) {
+      setPendingAction(() => () => router.push(href));
+      setShowUnsavedChangesModal(true);
+    } else {
+      router.push(href);
+    }
+  };
 
   const [stepImages, setStepImages] = useState<{ [key: number]: string }>({});
   const [stepImageFiles, setStepImageFiles] = useState<{ [key: number]: File }>({});
@@ -233,9 +218,8 @@ export default function CreatePage() {
       servings: formData.servings,
       tags: formData.tags,
     };
-    updateHasChanges(draftData);
     saveDraft(draftData);
-  }, [formData, recipeImage, stepImages, tagsInput, draftLoaded, saveDraft, updateHasChanges]);
+  }, [formData, recipeImage, stepImages, tagsInput, draftLoaded, saveDraft]);
 
   const addMainIngredient = () => {
     setFormData((prev) => ({
@@ -317,6 +301,8 @@ export default function CreatePage() {
     setMessageType("");
 
     try {
+      console.log("Creating recipe with data:", formData);
+      
       const response = await fetch(`/api/recipes`, {
         method: "POST",
         headers: {
@@ -332,6 +318,7 @@ export default function CreatePage() {
 
       const data = await response.json();
       const recipeId = data.recipe.id;
+      console.log("Recipe created successfully:", recipeId);
 
       // Upload recipe image if exists
       if (recipeImageFile) {
@@ -344,13 +331,18 @@ export default function CreatePage() {
       }
 
       // Upload step images if exist
-      for (const [stepNumber, file] of Object.entries(stepImageFiles)) {
-        const stepFormData = new FormData();
-        stepFormData.append("image", file);
-        await fetch(`/api/recipes/${recipeId}/steps/${stepNumber}/upload-image`, {
-          method: "POST",
-          body: stepFormData,
-        });
+      const stepNumbers = Object.keys(stepImageFiles);
+      console.log("Uploading step images for steps:", stepNumbers);
+      for (const stepNumber of stepNumbers) {
+        const file = stepImageFiles[Number(stepNumber)];
+        if (file) {
+          const stepFormData = new FormData();
+          stepFormData.append("image", file);
+          await fetch(`/api/recipes/${recipeId}/steps/${stepNumber}/upload-image`, {
+            method: "POST",
+            body: stepFormData,
+          });
+        }
       }
 
       setMessage(`✓ 食谱已创建`);
@@ -379,9 +371,9 @@ export default function CreatePage() {
         window.location.href = `/recipes/${recipeId}`;
       }, 1500);
     } catch (error: any) {
-      setMessage(`✗ ${error.message}`);
+      console.error("Error in handleSubmit:", error);
+      setMessage(`✗ ${error.message || String(error)}`);
       setMessageType("error");
-      console.error(error);
     } finally {
       setLoading(false);
     }

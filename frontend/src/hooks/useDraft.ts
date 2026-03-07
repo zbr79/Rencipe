@@ -7,7 +7,9 @@ interface DraftData {
   description: string;
   image?: string;
   component?: boolean;
-  ingredients: Array<{ name: string; quantity: string }>;
+  mainIngredients?: Array<{ name: string; quantity: string }>;
+  seasonings?: Array<{ name: string; quantity: string }>;
+  ingredients?: Array<{ name: string; quantity: string }>;
   steps: Array<{ stepNumber: number; instruction: string; image?: string }>;
   servings: number;
   tags: string[];
