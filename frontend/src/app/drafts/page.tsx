@@ -49,7 +49,7 @@ export default function DraftsPage() {
   };
 
   const handleDeleteDraft = async (draftId: string) => {
-    if (!confirm("确定要删除这个草稿吗?")) return;
+    if (!confirm("Delete this draft?")) return;
     try {
       const response = await fetch(`/api/drafts?authorId=${userId}&id=${draftId}`, {
         method: "DELETE",
@@ -57,7 +57,7 @@ export default function DraftsPage() {
       if (!response.ok) throw new Error("Failed to delete draft");
       setDrafts(drafts.filter((d) => d._id !== draftId));
     } catch (err: any) {
-      alert("删除失败: " + err.message);
+      alert("Delete failed: " + err.message);
     }
   };
 
@@ -78,7 +78,7 @@ export default function DraftsPage() {
       setDrafts(drafts.map((d) => (d._id === draftId ? { ...d, name: editingName } : d)));
       setEditingId(null);
     } catch (err: any) {
-      alert("重命名失败: " + err.message);
+      alert("Rename failed: " + err.message);
     }
   };
 
@@ -88,155 +88,90 @@ export default function DraftsPage() {
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "900px", margin: "0 auto" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-        <h1>我的草稿</h1>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <div>
+          <p className={styles.kicker}>Recipe Drafts</p>
+          <h1>My Drafts</h1>
+          <p>Resume unfinished recipes without losing work.</p>
+        </div>
         <Link href="/create">
-          <button
-            style={{
-              padding: "10px 20px",
-              backgroundColor: "#10b981",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontSize: "14px",
-            }}
-          >
-            + 新建食谱
+          <button className={`${styles.button} ${styles.buttonPrimary}`}>
+            + New Recipe
           </button>
         </Link>
       </div>
 
-      {loading && <p style={{ textAlign: "center", color: "#999" }}>加载中...</p>}
-      {error && <p style={{ color: "red", textAlign: "center" }}>错误: {error}</p>}
+      {loading && <p className={styles.statusText}>Loading...</p>}
+      {error && <p className={styles.errorText}>Error: {error}</p>}
 
       {!loading && drafts.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "40px 20px" }}>
-          <p style={{ color: "#999", marginBottom: "16px" }}>暂无草稿</p>
+        <div className={styles.emptyState}>
+          <p className={styles.emptyMessage}>No drafts yet</p>
           <Link href="/create">
-            <button
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#3b82f6",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-              }}
-            >
-              开始创建食谱
+            <button className={`${styles.button} ${styles.buttonPrimary}`}>
+              Start a Recipe
             </button>
           </Link>
         </div>
       ) : (
-        <div style={{ display: "grid", gap: "12px" }}>
+        <div className={styles.draftsList}>
           {drafts.map((draft) => (
-            <div
-              key={draft._id}
-              style={{
-                padding: "16px",
-                border: "1px solid #e5e7eb",
-                borderRadius: "8px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div style={{ flex: 1 }}>
+            <div key={draft._id} className={styles.draftItem}>
+              <div className={styles.draftInfo}>
                 {editingId === draft._id ? (
-                  <div style={{ display: "flex", gap: "8px" }}>
+                  <div className={styles.editRow}>
                     <input
                       type="text"
                       value={editingName}
                       onChange={(e) => setEditingName(e.target.value)}
-                      style={{
-                        padding: "6px 8px",
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                        flex: 1,
-                      }}
                       autoFocus
                     />
                     <button
                       onClick={() => handleRenameDraft(draft._id)}
-                      style={{
-                        padding: "6px 12px",
-                        backgroundColor: "#10b981",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
+                      className={`${styles.button} ${styles.buttonSuccess}`}
                     >
-                      保存
+                      Save
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
-                      style={{
-                        padding: "6px 12px",
-                        backgroundColor: "#ccc",
-                        color: "black",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
+                      className={`${styles.button} ${styles.buttonSecondary}`}
                     >
-                      取消
+                      Cancel
                     </button>
                   </div>
                 ) : (
                   <div>
-                    <h3 style={{ margin: "0 0 8px", cursor: "pointer" }} onClick={() => handleOpenDraft(draft._id)}>
+                    <h3 className={styles.draftName} onClick={() => handleOpenDraft(draft._id)}>
                       {draft.name}
                     </h3>
-                    <p style={{ margin: "0 0 4px", color: "#666", fontSize: "12px" }}>
-                      {draft.title || "未命名"}
+                    <p className={styles.draftTitle}>
+                      {draft.title || "Untitled"}
                     </p>
-                    <p style={{ margin: 0, color: "#999", fontSize: "12px" }}>
-                      修改于 {new Date(draft.updatedAt).toLocaleDateString()}
+                    <p className={styles.draftDate}>
+                      Updated {new Date(draft.updatedAt).toLocaleDateString()}
                     </p>
                   </div>
                 )}
               </div>
-              <div style={{ display: "flex", gap: "8px" }}>
+              <div className={styles.draftActions}>
                 <button
                   onClick={() => handleOpenDraft(draft._id)}
-                  style={{
-                    padding: "6px 12px",
-                    backgroundColor: "#3b82f6",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
+                  className={`${styles.button} ${styles.buttonPrimary}`}
                 >
-                  打开
+                  Open
                 </button>
                 <button
                   onClick={() => startEditName(draft)}
-                  style={{
-                    padding: "6px 12px",
-                    backgroundColor: "#e5e7eb",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
+                  className={`${styles.button} ${styles.buttonSecondary}`}
                 >
-                  重命名
+                  Rename
                 </button>
                 <button
                   onClick={() => handleDeleteDraft(draft._id)}
-                  style={{
-                    padding: "6px 12px",
-                    backgroundColor: "#ef4444",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
+                  className={`${styles.button} ${styles.buttonDanger}`}
                 >
-                  删除
+                  Delete
                 </button>
               </div>
             </div>

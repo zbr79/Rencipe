@@ -4,13 +4,15 @@ import { CreateFormProvider } from './contexts/CreateFormContext';
 import { CartProvider } from './contexts/CartContext';
 import { SavedProvider } from './contexts/SavedContext';
 import TopBar from './components/TopBar';
+import GlobalSearchBar from './components/GlobalSearchBar';
 import BottomNav from './components/BottomNav';
 import CreateFormModal from './components/CreateFormModal';
+import AuthGate from './components/AuthGate';
 import './globals.css';
 
 export const metadata = {
   title: 'Rencipe',
-  description: '食谱分享平台',
+  description: 'Recipe sharing and meal planning platform',
 };
 
 export default function RootLayout({
@@ -19,7 +21,7 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="zh" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
       </head>
@@ -28,10 +30,13 @@ export default function RootLayout({
           <CartProvider>
             <SavedProvider>
               <CreateFormProvider>
-                <TopBar />
-                {children}
-                <BottomNav />
-                <CreateFormModal />
+                <AuthGate>
+                  <TopBar />
+                  <GlobalSearchBar />
+                  {children}
+                  <BottomNav />
+                  <CreateFormModal />
+                </AuthGate>
               </CreateFormProvider>
             </SavedProvider>
           </CartProvider>

@@ -6,6 +6,8 @@ Before every response, read [project-goal.md](../project-goal.md) and [experienc
 
 - Respond in English.
 - Phase 1 uses full English language across product UI, demos, documentation, and presentations.
+- Design primarily for phone UI first, then expand carefully to desktop layouts.
+- Use modular design: split large features into clear components, hooks, helpers, and structured data so individual files stay understandable and do not grow unnecessarily long.
 - During development, record meaningful mistakes, findings, deployment notes, and repeatable lessons in [experience.md](../experience.md).
 - The phase-one target is a feature-complete demo suitable for a 20 minute presentation.
 - Frontend runtime port is `4000`.
@@ -19,6 +21,7 @@ Before every response, read [project-goal.md](../project-goal.md) and [experienc
 
 - Answer every question mark from the user prompt explicitly.
 - For every point the user makes, finalize with a report table that includes at least `What was done` and `What to test`.
+- At the end of every work report, include a demo-readiness section/table that says what this round completed and what remains for the Phase 1 demo.
 - After working on code, run backend and frontend builds before returning.
 - Use Playwright to test new features before returning when a browser-visible feature or flow changed.
 - For port/nginx work, verify with Playwright against `https://rencipe.renstoolbox.com` after nginx reload, then separately verify local listeners on `4000` and `6000`.

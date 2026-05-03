@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:6000";
 
+function forwardHeaders(request: NextRequest) {
+  const headers: Record<string, string> = {};
+  const authorization = request.headers.get("authorization");
+  if (authorization) headers.Authorization = authorization;
+  return headers;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -12,7 +19,9 @@ export async function GET(request: NextRequest) {
       url += `?limit=${limit}`;
     }
 
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: forwardHeaders(request),
+    });
 
     if (!response.ok) {
       throw new Error("Failed to fetch recipes from backend");
@@ -32,7 +41,7 @@ export async function POST(request: NextRequest) {
     
     const response = await fetch(`${BACKEND_URL}/recipes`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...forwardHeaders(request) },
       body: JSON.stringify(body),
     });
 

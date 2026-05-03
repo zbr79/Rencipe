@@ -6,6 +6,7 @@ export interface IDraft extends Document {
   title: string;
   description: string;
   image?: string;
+  component: boolean;
   mainIngredients: Array<{ name: string; quantity: string }>;
   seasonings: Array<{ name: string; quantity: string }>;
   steps: Array<{ stepNumber: number; instruction: string; image?: string }>;
@@ -22,6 +23,7 @@ const DraftSchema = new Schema<IDraft>(
     title: { type: String, default: "" },
     description: { type: String, default: "" },
     image: { type: String, default: undefined },
+    component: { type: Boolean, default: false },
     mainIngredients: [
       {
         name: { type: String, default: "" },

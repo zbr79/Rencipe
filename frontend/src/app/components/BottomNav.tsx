@@ -20,9 +20,11 @@ export default function BottomNav() {
   const { savedCount, mealPlans } = useSaved();
   const totalSavedCount = savedCount + mealPlans.length;
 
+  if (pathname === "/login") return null;
+
   const navItems: NavItem[] = [
     { href: `/`, icon: "home", label: "Home" },
-    { href: `/search`, icon: "search", label: "Search" },
+    { href: `/categories`, icon: "category", label: "Browse" },
     { href: null, icon: "add_circle", label: "Create", action: openCreateForm },
     { href: `/saved`, icon: "bookmark", label: "Saved", badge: totalSavedCount },
     { href: `/settings`, icon: "settings", label: "Settings" },
@@ -47,7 +49,7 @@ export default function BottomNav() {
             );
           }
 
-          const active = pathname === item.href;
+          const active = pathname === item.href || (item.href === "/categories" && pathname.startsWith("/categories"));
 
           return (
             <Link

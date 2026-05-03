@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:6000";
 
+function forwardHeaders(request: NextRequest): Record<string, string> {
+  const authorization = request.headers.get("authorization");
+  return authorization ? { Authorization: authorization } : {};
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; stepNumber: string }> }
@@ -12,6 +17,7 @@ export async function POST(
 
     const response = await fetch(`${BACKEND_URL}/recipes/${id}/steps/${stepNumber}/upload-image`, {
       method: "POST",
+      headers: forwardHeaders(request),
       body: formData,
     });
 

@@ -17,7 +17,7 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (err: any) {
-    console.error("Error fetching weekly plan:", err);
+    console.error("Error fetching scheduled meal plan:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
@@ -39,7 +39,7 @@ export async function DELETE(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (err: any) {
-    console.error("Error deleting weekly plan:", err);
+    console.error("Error deleting scheduled meal plan:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
@@ -74,7 +74,7 @@ export async function PATCH(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (err: any) {
-    console.error("Error updating weekly plan:", err);
+    console.error("Error updating scheduled meal plan:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

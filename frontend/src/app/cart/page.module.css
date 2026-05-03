@@ -1,51 +1,57 @@
 .container {
-  max-width: 1280px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 0;
+  padding: 24px 18px 96px;
   background: var(--background);
   color: var(--foreground);
   min-height: 100vh;
-  padding-bottom: 80px;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  background: linear-gradient(135deg, var(--success) 0%, var(--success-hover) 100%);
-  color: white;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: var(--shadow-md);
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 24px;
+  background: var(--card-bg);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
 }
 
 .backLink {
-  color: white;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground);
+  background: var(--hover-bg);
+  border: 1px solid var(--border);
   text-decoration: none;
-  font-size: 16px;
-  font-weight: 600;
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 0 13px;
+  border-radius: 8px;
   transition: all var(--transition-base);
 }
 
 .backLink:hover {
-  background: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
 }
 
 .title {
   margin: 0;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: clamp(32px, 5vw, 50px);
+  font-weight: 900;
+  line-height: 1;
 }
 
 .badge {
-  background: rgba(255, 255, 255, 0.3);
-  color: white;
-  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-radius: 999px;
   width: 36px;
   height: 36px;
   display: flex;
@@ -60,8 +66,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 24px;
+  padding: 64px 24px;
   text-align: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
 }
 
 .emptyIcon {
@@ -83,13 +93,16 @@
 }
 
 .emptyButton {
-  display: inline-block;
-  padding: 12px 32px;
-  background: #10b981;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  background: var(--primary);
   color: white;
   border-radius: 8px;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 800;
   transition: background 0.2s ease;
 }
 
@@ -98,8 +111,12 @@
 }
 
 .section {
-  padding: 24px 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 18px;
+  margin-bottom: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
 }
 
 .sectionTitle {
@@ -107,6 +124,65 @@
   font-size: 20px;
   font-weight: 700;
   color: var(--foreground);
+}
+
+.checkoutPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 18px;
+  background: color-mix(in srgb, var(--primary) 9%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--border));
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.checkoutPanel h2 {
+  margin: 0 0 4px;
+  color: var(--foreground);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.checkoutPanel p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.checkoutButton {
+  min-height: 42px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.checkoutButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.errorBanner {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .ingredientsHeader {
@@ -117,21 +193,11 @@
   gap: 12px;
 }
 
-.seeAllBtn {
-  padding: 10px 16px;
-  background: #10b981;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  white-space: nowrap;
-}
-
-.seeAllBtn:hover {
-  background: #059669;
+.itemCount {
+  flex: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .recipesList {
@@ -144,7 +210,7 @@
   display: flex;
   gap: 12px;
   padding: 12px;
-  background: var(--card-bg);
+  background: color-mix(in srgb, var(--card-bg) 82%, var(--hover-bg));
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
@@ -196,11 +262,12 @@
 }
 
 .removeBtn {
-  padding: 6px 12px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 4px;
+  min-height: 32px;
+  padding: 0 12px;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -240,6 +307,7 @@
 .ingredientItem {
   display: flex;
   align-items: flex-start;
+  gap: 10px;
   padding: 10px 0;
   border-bottom: 1px solid var(--border);
 }
@@ -248,17 +316,18 @@
   border-bottom: none;
 }
 
-.ingredientItem input[type="checkbox"] {
-  margin-right: 12px;
-  margin-top: 4px;
-  cursor: pointer;
-  width: 18px;
-  height: 18px;
+.ingredientDot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--primary);
 }
 
-.ingredientItem label {
+.ingredientItem div {
+  min-width: 0;
   flex: 1;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -277,11 +346,13 @@
 
 @media (max-width: 640px) {
   .container {
-    padding-bottom: 80px;
+    padding: 16px 12px 96px;
   }
 
   .header {
-    padding: 12px;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 20px;
   }
 
   .title {
@@ -306,8 +377,13 @@
     font-size: 14px;
   }
 
-  .seeAllBtn {
-    padding: 8px 12px;
-    font-size: 13px;
+  .checkoutPanel {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .checkoutButton {
+    width: 100%;
   }
 }

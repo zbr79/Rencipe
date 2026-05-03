@@ -10,7 +10,8 @@ import IngredientsSection from "./components/IngredientsSection";
 import StepsSection from "./components/StepsSection";
 import TagsSection from "./components/TagsSection";
 import { useDraft } from "../../hooks/useDraft";
-import UnsavedChangesModal from "../../components/DraftModals";
+import { getHealthTag, withHealthTag } from "../utils/recipeTags";
+import { authFetch } from "../utils/authSession";
 
 interface Ingredient {
   name: string;
@@ -31,14 +32,12 @@ export default function CreatePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Draft management
-  const { draft, draftLoaded, isSaving, hasUnsavedChanges, saveDraft, deleteDraft } = useDraft({
+  const { draft, draftLoaded, isSaving, lastSaved, saveDraft, deleteDraft } = useDraft({
     authorId: "507f1f77bcf86cd799439011",
     draftId: draftId || undefined,
     enabled: true,
   });
 
-  const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [draftName, setDraftName] = useState("Untitled Draft");
 
   const [showPhotoStep, setShowPhotoStep] = useState(false);
@@ -100,27 +99,6 @@ export default function CreatePage() {
     }
   }, [draftLoaded, draft, draftId]);
 
-  // Handle beforeunload (browser back, refresh, tab close)
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Don't block navigation if a form is not being edited
-      return;
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, []);
-
-  // Handle router changes (navigation to other pages)
-  const handleNavigate = (href: string) => {
-    if (hasUnsavedChanges) {
-      setPendingAction(() => () => router.push(href));
-      setShowUnsavedChangesModal(true);
-    } else {
-      router.push(href);
-    }
-  };
-
   const [stepImages, setStepImages] = useState<{ [key: number]: string }>({});
   const [stepImageFiles, setStepImageFiles] = useState<{ [key: number]: File }>({});
 
@@ -158,51 +136,55 @@ export default function CreatePage() {
     }
   };
 
-  // Draft handlers
-  const handleSaveDraftAndLeave = async () => {
-    if (hasUnsavedChanges) {
-      await saveDraft({
-        title: formData.title,
-        description: formData.description,
-        image: recipeImage || undefined,
-        component: formData.component ?? false,
-        mainIngredients: formData.mainIngredients,
-        seasonings: formData.seasonings,
-        steps: formData.steps,
-        servings: formData.servings,
-        tags: formData.tags,
-      }, draftName);
-    }
-    setShowUnsavedChangesModal(false);
-    if (pendingAction) {
-      pendingAction();
-      setPendingAction(null);
-    }
+  const hasDraftContent = () => {
+    return Boolean(
+      formData.title.trim() ||
+      formData.description.trim() ||
+      recipeImage ||
+      formData.tags.length > 0 ||
+      formData.mainIngredients.some((ingredient) => ingredient.name.trim() || ingredient.quantity.trim()) ||
+      formData.seasonings.some((ingredient) => ingredient.name.trim() || ingredient.quantity.trim()) ||
+      formData.steps.some((step) => step.instruction.trim())
+    );
   };
 
-  const handleDiscardChanges = () => {
-    setShowUnsavedChangesModal(false);
-    if (pendingAction) {
-      pendingAction();
-      setPendingAction(null);
+  const getDraftData = () => ({
+    title: formData.title,
+    description: formData.description,
+    image: recipeImage || undefined,
+    component: formData.component ?? false,
+    mainIngredients: formData.mainIngredients,
+    seasonings: formData.seasonings,
+    steps: formData.steps,
+    servings: formData.servings,
+    tags: formData.tags,
+  });
+
+  const getDraftName = () => formData.title.trim() || draftName || "Untitled Draft";
+
+  const handleManualSaveDraft = async () => {
+    if (!hasDraftContent()) {
+      setMessage("Add a title, ingredient, step, or cover image before saving a draft.");
+      setMessageType("error");
+      return;
+    }
+
+    const savedDraft = await saveDraft(getDraftData(), getDraftName(), { immediate: true });
+    if (savedDraft) {
+      setDraftName(savedDraft.name || getDraftName());
+      setMessage("Draft saved to My Drafts.");
+      setMessageType("success");
+    } else {
+      setMessage("Draft could not be saved. Please try again.");
+      setMessageType("error");
     }
   };
 
   // Auto-save draft when form changes
   useEffect(() => {
     if (!draftLoaded || !formData) return;
-    const draftData = {
-      title: formData.title,
-      description: formData.description,
-      image: recipeImage || undefined,
-      component: formData.component ?? false,
-      mainIngredients: formData.mainIngredients,
-      seasonings: formData.seasonings,
-      steps: formData.steps,
-      servings: formData.servings,
-      tags: formData.tags,
-    };
-    saveDraft(draftData, draftName);
+    if (!hasDraftContent()) return;
+    saveDraft(getDraftData(), getDraftName());
   }, [formData, recipeImage, stepImages, tagsInput, draftLoaded, saveDraft, draftName]);
 
   const addMainIngredient = () => {
@@ -258,6 +240,13 @@ export default function CreatePage() {
     setTagsInput("");
   };
 
+  const handleHealthTagChange = (healthTag: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: withHealthTag(prev.tags, healthTag),
+    }));
+  };
+
   const removeTag = (index: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -285,19 +274,29 @@ export default function CreatePage() {
     setMessageType("");
 
     try {
+      if (!recipeImage) {
+        setMessage("Add a cover image before publishing this recipe.");
+        setMessageType("error");
+        setLoading(false);
+        return;
+      }
+
       console.log("Creating recipe with data:", formData);
       
-      const response = await fetch(`/api/recipes`, {
+      const response = await authFetch(`/api/recipes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          image: recipeImageFile ? undefined : recipeImage,
+        }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "创建食谱失败");
+        throw new Error(error.error || "Failed to create recipe");
       }
 
       const data = await response.json();
@@ -308,7 +307,7 @@ export default function CreatePage() {
       if (recipeImageFile) {
         const imageFormData = new FormData();
         imageFormData.append("image", recipeImageFile);
-        await fetch(`/api/recipes/${recipeId}/upload-image`, {
+        await authFetch(`/api/recipes/${recipeId}/upload-image`, {
           method: "POST",
           body: imageFormData,
         });
@@ -322,14 +321,14 @@ export default function CreatePage() {
         if (file) {
           const stepFormData = new FormData();
           stepFormData.append("image", file);
-          await fetch(`/api/recipes/${recipeId}/steps/${stepNumber}/upload-image`, {
+          await authFetch(`/api/recipes/${recipeId}/steps/${stepNumber}/upload-image`, {
             method: "POST",
             body: stepFormData,
           });
         }
       }
 
-      setMessage(`✓ 食谱已创建`);
+      setMessage(`Recipe created successfully`);
       setMessageType("success");
 
       setFormData({
@@ -349,7 +348,7 @@ export default function CreatePage() {
       setStepImageFiles({});
 
       // Delete draft after successful creation
-      deleteDraft();
+      await deleteDraft();
 
       setTimeout(() => {
         window.location.href = `/recipes/${recipeId}`;
@@ -365,25 +364,19 @@ export default function CreatePage() {
 
   return (
     <>
-      <UnsavedChangesModal
-        isOpen={showUnsavedChangesModal}
-        isSaving={isSaving}
-        onDiscard={handleDiscardChanges}
-        onSave={handleSaveDraftAndLeave}
-      />
-
       {/* Draft saved indicator */}
-      {isSaving && (
+      {(isSaving || lastSaved) && (
         <div style={{ position: "fixed", bottom: "20px", right: "20px", zIndex: 1000 }}>
           <div style={{
-            backgroundColor: "var(--primary)",
-            color: "white",
+            backgroundColor: "var(--card-bg)",
+            color: "var(--text-secondary)",
             padding: "8px 12px",
-            borderRadius: "4px",
+            borderRadius: "8px",
+            border: "1px solid var(--border)",
             fontSize: "12px",
-            boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+            boxShadow: "var(--shadow-sm)",
           }}>
-            💾 正在保存草稿...
+            {isSaving ? "Saving draft..." : `Draft saved ${lastSaved}`}
           </div>
         </div>
       )}
@@ -399,6 +392,17 @@ export default function CreatePage() {
       )}
 
       <div className={styles.container} style={{ opacity: showPhotoStep ? 0.3 : 1, pointerEvents: showPhotoStep ? "none" : "auto" }}>
+        <header className={styles.header}>
+          <div>
+            <p className={styles.kicker}>Create</p>
+            <h1>Create Recipe</h1>
+            <p>Start with the recipe details. Add a cover image before publishing.</p>
+          </div>
+          <button type="button" className={styles.saveDraftBtn} onClick={handleManualSaveDraft} disabled={isSaving}>
+            {isSaving ? "Saving..." : "Save Draft"}
+          </button>
+        </header>
+
         {recipeImage && (
           <div className={styles.imageDisplay}>
             <img 
@@ -406,13 +410,6 @@ export default function CreatePage() {
               alt="Recipe cover" 
               className={styles.recipeImage}
               onClick={() => fileInputRef.current?.click()}
-              style={{
-                width: "100%",
-                height: "420px",
-                objectFit: "cover",
-                display: "block",
-                cursor: "pointer",
-              } as React.CSSProperties}
             />
           </div>
         )}
@@ -425,13 +422,13 @@ export default function CreatePage() {
 
         {!recipeImage && (
           <div className={styles.uploadPrompt}>
-            <p className={styles.uploadPromptText}>先上传封面图片再开始</p>
+            <p className={styles.uploadPromptText}>Cover image required before publishing</p>
             <button
               type="button"
               onClick={() => setShowPhotoStep(true)}
               className={styles.uploadPromptBtn}
             >
-              📸 上传图片
+              Add cover
             </button>
           </div>
         )}
@@ -442,10 +439,12 @@ export default function CreatePage() {
             description={formData.description}
             servings={formData.servings}
             component={formData.component}
+            healthTag={getHealthTag(formData.tags)}
             onTitleChange={(value) => setFormData({ ...formData, title: value })}
             onDescriptionChange={(value) => setFormData({ ...formData, description: value })}
             onServingsChange={(value) => setFormData({ ...formData, servings: value })}
             onComponentChange={(value) => setFormData({ ...formData, component: value })}
+            onHealthTagChange={handleHealthTagChange}
           />
 
           <IngredientsSection
@@ -478,8 +477,8 @@ export default function CreatePage() {
           />
 
           <div className={styles.submitContainer}>
-            <button type="submit" disabled={loading || !recipeImage} className={styles.submitBtn}>
-              {loading ? "提交中..." : "创建食谱"}
+            <button type="submit" disabled={loading} className={styles.submitBtn}>
+              {loading ? "Submitting..." : "Create Recipe"}
             </button>
           </div>
         </form>

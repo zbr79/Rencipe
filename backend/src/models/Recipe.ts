@@ -9,6 +9,7 @@ export interface IRecipe extends Document {
   authorId: mongoose.Types.ObjectId;
   image?: string; // Cloudinary image URL
   component: boolean; // Can be used as a component in meal prep
+  isPublic: boolean;
 
   mainIngredients: {
     name: string;
@@ -48,6 +49,7 @@ const RecipeSchema = new Schema<IRecipe>(
     authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     image: String,
     component: { type: Boolean, default: false }, // Can be used as a component in meal prep
+    isPublic: { type: Boolean, default: false },
 
     mainIngredients: [
       {

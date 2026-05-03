@@ -1,4 +1,5 @@
 import styles from "./styles.module.css";
+import { COMPONENT_TAG } from "../../../utils/recipeTags";
 
 interface TagsSectionProps {
   tags: string[];
@@ -18,12 +19,12 @@ export default function TagsSection({
   return (
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
-        <h2>标签</h2>
+        <h2>Tags</h2>
       </div>
 
       <input
         type="text"
-        placeholder="按回车键添加标签"
+        placeholder="Press Enter to add a tag"
         value={tagsInput}
         onChange={(e) => onTagsInputChange(e.target.value)}
         onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), onAddTag())}
@@ -32,7 +33,7 @@ export default function TagsSection({
 
       {tags && tags.length > 0 && (
         <div className={styles.tagsList}>
-          {tags.map((tag, idx) => (
+          {tags.map((tag, idx) => tag === COMPONENT_TAG ? null : (
             <span key={idx} className={styles.tag}>
               {tag}
               <button

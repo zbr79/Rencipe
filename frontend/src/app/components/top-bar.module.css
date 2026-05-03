@@ -1,87 +1,133 @@
 .topBar {
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: var(--card-bg);
+  z-index: 900;
+  background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+  backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
   transition: all var(--transition-base);
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 56px;
+  height: 64px;
+  gap: 20px;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.logo h1 {
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0;
+  gap: 10px;
+  text-decoration: none;
   color: var(--foreground);
 }
 
-.actions {
-  display: flex;
+.logoIcon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 22px;
 }
 
-.themeToggle {
-  background: transparent;
-  border: 1px solid var(--border);
-  font-size: 20px;
-  cursor: pointer;
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-base);
+.logoText {
+  font-size: 21px;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.navLinks {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.navLink {
+  padding: 9px 13px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.navLink:hover,
+.navLinkActive {
   color: var(--foreground);
+  background: var(--hover-bg);
 }
 
-.themeToggle:hover {
-  background-color: var(--hover-bg);
-  border-color: var(--text-secondary);
+.cartButton {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  text-decoration: none;
 }
 
-/* Dark mode */
-:global(.dark) .topBar {
-  background: var(--bg-primary, #1a1a1a);
-  border-bottom-color: var(--border-color, #333333);
+.cartButton span:first-child {
+  font-size: 24px;
 }
 
-:global(.dark) .logo h1 {
-  color: var(--text-primary, #ffffff);
-}
-
-:global(.dark) .themeToggle:hover {
-  background-color: var(--bg-hover, #333333);
+.cartBadge {
+  position: absolute;
+  top: -3px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--error);
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
   .container {
     padding: 0 12px;
-    height: 48px;
+    height: 56px;
   }
 
-  .logo h1 {
-    font-size: 18px;
+  .logoText {
+    font-size: 19px;
   }
 
-  .themeToggle {
-    font-size: 18px;
-    padding: 6px;
+  .logoIcon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .cartButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .navLinks {
+    display: none;
   }
 }

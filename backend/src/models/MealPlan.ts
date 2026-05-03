@@ -19,6 +19,7 @@ export interface IMealPlan extends Document {
   numberOfDays: number;
   mealTypes: ('lunch' | 'dinner')[];
   totalMealsNeeded: number;
+  recipes: mongoose.Types.ObjectId[];
   combinations: IMealCombination[];
   checkedIngredients: string[];
   createdAt: Date;
@@ -78,7 +79,7 @@ const mealPlanSchema = new Schema<IMealPlan>(
     name: {
       type: String,
       required: true,
-      default: "新建计划",
+      default: "New Plan",
     },
     people: {
       type: [personSchema],
@@ -104,6 +105,10 @@ const mealPlanSchema = new Schema<IMealPlan>(
       type: Number,
       required: true,
       min: 1,
+    },
+    recipes: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Recipe" }],
+      default: [],
     },
     combinations: {
       type: [mealCombinationSchema],

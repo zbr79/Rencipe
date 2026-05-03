@@ -11,22 +11,22 @@ export default function PhotoUploadStep({
 }: PhotoUploadStepProps) {
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>上传食谱封面</h1>
-      <p style={styles.subtitle}>从一张精美的照片开始分享你的食谱</p>
+      <h1 style={styles.title}>Upload Recipe Cover</h1>
+      <p style={styles.subtitle}>Start your recipe with a clear cover photo</p>
 
       <div style={styles.uploadArea}>
         {recipeImage ? (
           <div style={styles.previewContainer}>
             <img src={recipeImage} alt="Recipe cover" style={styles.preview} />
             <label htmlFor="photoUpload" style={styles.changeButton}>
-              更改照片
+              Change photo
             </label>
           </div>
         ) : (
           <label htmlFor="photoUpload" style={styles.uploadLabel}>
             <div style={styles.uploadIcon}>📸</div>
-            <p style={styles.uploadText}>点击选择照片或拖放</p>
-            <p style={styles.uploadSubtext}>支持 JPG, PNG, GIF</p>
+            <p style={styles.uploadText}>Click to choose a photo or drag it here</p>
+            <p style={styles.uploadSubtext}>JPG, PNG, and GIF supported</p>
           </label>
         )}
         <input
@@ -47,7 +47,7 @@ export default function PhotoUploadStep({
           cursor: recipeImage ? "pointer" : "not-allowed",
         }}
       >
-        继续
+        Continue
       </button>
     </div>
   );

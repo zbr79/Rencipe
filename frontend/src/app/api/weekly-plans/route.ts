@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (err: any) {
-    console.error("Error fetching weekly plans:", err);
+    console.error("Error fetching scheduled meal plans:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (err: any) {
-    console.error("Error creating weekly plan:", err);
+    console.error("Error creating scheduled meal plan:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

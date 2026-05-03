@@ -167,14 +167,14 @@ export default function WeeklyPlanEditorPage() {
   };
 
   if (isLoading) {
-    return <div style={{ padding: "20px", textAlign: "center" }}>加载中...</div>;
+    return <div style={{ padding: "20px", textAlign: "center" }}>Loading...</div>;
   }
 
   if (loadError || !plan) {
     return (
       <div style={{ padding: "20px", textAlign: "center" }}>
         <p style={{ color: "#ef4444", marginBottom: "16px" }}>
-          {loadError || "无法加载周计划"}
+          {loadError || "Unable to load weekly plan"}
         </p>
         <Link href="/weekly-plans">
           <button
@@ -187,14 +187,14 @@ export default function WeeklyPlanEditorPage() {
               cursor: "pointer",
             }}
           >
-            返回
+            Back
           </button>
         </Link>
       </div>
     );
   }
 
-  const dayLabels = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+  const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
     <div style={{ padding: "20px", maxWidth: "1400px", margin: "0 auto" }}>
@@ -231,7 +231,7 @@ export default function WeeklyPlanEditorPage() {
                 fontSize: "14px",
               }}
             >
-              保存
+              Save
             </button>
             <button
               onClick={handleCancelEditName}
@@ -245,7 +245,7 @@ export default function WeeklyPlanEditorPage() {
                 fontSize: "14px",
               }}
             >
-              取消
+              Cancel
             </button>
           </div>
         ) : (
@@ -261,7 +261,7 @@ export default function WeeklyPlanEditorPage() {
                 cursor: "pointer",
                 fontSize: "16px",
               }}
-              title="编辑名称"
+              title="Edit name"
             >
               ✏️
             </button>
@@ -277,14 +277,14 @@ export default function WeeklyPlanEditorPage() {
               cursor: "pointer",
             }}
           >
-            返回
+            Back
           </button>
         </Link>
       </div>
 
       {/* Meal Type Checkboxes */}
       <div style={{ marginBottom: "24px", display: "flex", gap: "16px", alignItems: "center" }}>
-        <span style={{ fontSize: "14px", fontWeight: "600", color: "#666" }}>选择餐型:</span>
+        <span style={{ fontSize: "14px", fontWeight: "600", color: "#666" }}>Select meal types:</span>
         <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
           <input
             type="checkbox"
@@ -292,7 +292,7 @@ export default function WeeklyPlanEditorPage() {
             onChange={() => handleToggleMealType('breakfast')}
             style={{ cursor: "pointer", width: "16px", height: "16px" }}
           />
-          <span style={{ fontSize: "14px" }}>早餐</span>
+          <span style={{ fontSize: "14px" }}>Breakfast</span>
         </label>
         <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
           <input
@@ -301,7 +301,7 @@ export default function WeeklyPlanEditorPage() {
             onChange={() => handleToggleMealType('lunch')}
             style={{ cursor: "pointer", width: "16px", height: "16px" }}
           />
-          <span style={{ fontSize: "14px" }}>午餐</span>
+          <span style={{ fontSize: "14px" }}>Lunch</span>
         </label>
         <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
           <input
@@ -310,7 +310,7 @@ export default function WeeklyPlanEditorPage() {
             onChange={() => handleToggleMealType('dinner')}
             style={{ cursor: "pointer", width: "16px", height: "16px" }}
           />
-          <span style={{ fontSize: "14px" }}>晚餐</span>
+          <span style={{ fontSize: "14px" }}>Dinner</span>
         </label>
       </div>
 
@@ -329,7 +329,7 @@ export default function WeeklyPlanEditorPage() {
 
             {/* Breakfast */}
             {plan.breakfastEnabled && (
-              <p style={{ margin: "0 0 8px", fontSize: "12px", color: "#666", fontWeight: "500" }}>早餐</p>
+              <p style={{ margin: "0 0 8px", fontSize: "12px", color: "#666", fontWeight: "500" }}>Breakfast</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "8px" }}>
                 {Array.isArray(day.breakfast) && day.breakfast.length > 0 ? (
                   day.breakfast.map((recipeId: any, recipeIdx: number) => {
@@ -337,7 +337,7 @@ export default function WeeklyPlanEditorPage() {
                     return (
                       <div key={recipeIdx} style={{ textAlign: "center" }}>
                         <p style={{ margin: "0 0 6px", fontSize: "11px", fontWeight: "500", minHeight: "20px", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                          {recipe?.title || "未知食谱"}
+                          {recipe?.title || "Unknown recipe"}
                         </p>
                         <div
                           style={{
@@ -380,7 +380,7 @@ export default function WeeklyPlanEditorPage() {
                               justifyContent: "center",
                               lineHeight: "1",
                             }}
-                            title="删除"
+                            title="Delete"
                           >
                             ✕
                           </button>
@@ -414,7 +414,7 @@ export default function WeeklyPlanEditorPage() {
             {/* Lunch */}
             {plan.lunchEnabled && (
             <div style={{ marginBottom: "16px" }}>
-              <p style={{ margin: "0 0 8px", fontSize: "12px", color: "#666", fontWeight: "500" }}>午餐</p>
+              <p style={{ margin: "0 0 8px", fontSize: "12px", color: "#666", fontWeight: "500" }}>Lunch</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "8px" }}>
                 {Array.isArray(day.lunch) && day.lunch.length > 0 ? (
                   day.lunch.map((recipeId: any, recipeIdx: number) => {
@@ -422,7 +422,7 @@ export default function WeeklyPlanEditorPage() {
                     return (
                       <div key={recipeIdx} style={{ textAlign: "center" }}>
                         <p style={{ margin: "0 0 6px", fontSize: "11px", fontWeight: "500", minHeight: "20px", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                          {recipe?.title || "未知食谱"}
+                          {recipe?.title || "Unknown recipe"}
                         </p>
                         <div
                           style={{
@@ -465,7 +465,7 @@ export default function WeeklyPlanEditorPage() {
                               justifyContent: "center",
                               lineHeight: "1",
                             }}
-                            title="删除"
+                            title="Delete"
                           >
                             ✕
                           </button>
@@ -499,7 +499,7 @@ export default function WeeklyPlanEditorPage() {
             {/* Dinner */}
             {plan.dinnerEnabled && (
             <div>
-              <p style={{ margin: "0 0 8px", fontSize: "12px", color: "#666", fontWeight: "500" }}>晚餐</p>
+              <p style={{ margin: "0 0 8px", fontSize: "12px", color: "#666", fontWeight: "500" }}>Dinner</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "8px" }}>
                 {Array.isArray(day.dinner) && day.dinner.length > 0 ? (
                   day.dinner.map((recipeId: any, recipeIdx: number) => {
@@ -507,7 +507,7 @@ export default function WeeklyPlanEditorPage() {
                     return (
                       <div key={recipeIdx} style={{ textAlign: "center" }}>
                         <p style={{ margin: "0 0 6px", fontSize: "11px", fontWeight: "500", minHeight: "20px", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                          {recipe?.title || "未知食谱"}
+                          {recipe?.title || "Unknown recipe"}
                         </p>
                         <div
                           style={{
@@ -550,7 +550,7 @@ export default function WeeklyPlanEditorPage() {
                               justifyContent: "center",
                               lineHeight: "1",
                             }}
-                            title="删除"
+                            title="Delete"
                           >
                             ✕
                           </button>
@@ -613,11 +613,11 @@ export default function WeeklyPlanEditorPage() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 style={{ margin: "0 0 16px", fontSize: "18px" }}>选择{selectedSlot.meal === "lunch" ? "午餐" : "晚餐"}食谱</h2>
+            <h2 style={{ margin: "0 0 16px", fontSize: "18px" }}>Select{selectedSlot.meal === "lunch" ? "Lunch" : "Dinner"}Recipe</h2>
 
             <input
               type="text"
-              placeholder="搜索食谱..."
+              placeholder="Search recipes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
@@ -631,9 +631,9 @@ export default function WeeklyPlanEditorPage() {
             />
 
             {loadingRecipes ? (
-              <p>加载中...</p>
+              <p>Loading...</p>
             ) : filteredRecipes.length === 0 ? (
-              <p style={{ color: "#999" }}>暂无食谱</p>
+              <p style={{ color: "#999" }}>No recipes available</p>
             ) : (
               <div style={{ display: "grid", gap: "12px" }}>
                 {filteredRecipes.map((recipe) => (
@@ -669,7 +669,7 @@ export default function WeeklyPlanEditorPage() {
                 cursor: "pointer",
               }}
             >
-              关闭
+              Close
             </button>
           </div>
         </div>

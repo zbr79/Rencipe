@@ -56,7 +56,7 @@ const WeeklyPlanSchema = new Schema(
     name: {
       type: String,
       required: true,
-      default: "My Weekly Plan",
+      default: "My Scheduled Meal Plan",
     },
     breakfastEnabled: {
       type: Boolean,

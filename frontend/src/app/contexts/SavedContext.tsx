@@ -52,7 +52,7 @@ export interface MealPlan {
   numberOfDays: number;
   mealTypes: ('lunch' | 'dinner')[];
   totalMealsNeeded: number;
-  recipes?: unknown[];
+  recipes?: SavedRecipe[];
   combinations: MealCombination[];
   checkedIngredients: string[];
   createdAt: string;
@@ -106,7 +106,7 @@ interface SavedContextType {
   addMealCombination: (planId: string, meatRecipeId: string, vegeRecipeId: string, sideRecipeId: string, portions: number) => Promise<MealPlan>;
   removeMealCombination: (planId: string, index: number) => Promise<MealPlan>;
 
-  // Weekly Plans
+  // Scheduled meal plans
   weeklyPlans: WeeklyPlan[];
   loadingWeeklyPlans: boolean;
   errorWeeklyPlans: string | null;
@@ -131,7 +131,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   const [loadingPlans, setLoadingPlans] = useState(false);
   const [errorPlans, setErrorPlans] = useState<string | null>(null);
 
-  // Weekly Plans state
+  // Scheduled meal plans state
   const [weeklyPlans, setWeeklyPlans] = useState<WeeklyPlan[]>([]);
   const [loadingWeeklyPlans, setLoadingWeeklyPlans] = useState(false);
   const [errorWeeklyPlans, setErrorWeeklyPlans] = useState<string | null>(null);
@@ -382,7 +382,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   };
 
   // =========================
-  // Weekly Plans Functions
+  // Scheduled meal plan functions
   // =========================
   const fetchWeeklyPlans = async (userId: string) => {
     if (!userId) {
@@ -395,12 +395,12 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     try {
       const response = await fetch(`/api/weekly-plans?userId=${userId}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch weekly plans");
+        throw new Error("Failed to fetch scheduled meal plans");
       }
       const data = await response.json();
       setWeeklyPlans(data.plans || []);
     } catch (err: any) {
-      console.error("Error fetching weekly plans:", err);
+      console.error("Error fetching scheduled meal plans:", err);
       setErrorWeeklyPlans(err.message);
       setWeeklyPlans([]);
     } finally {
@@ -417,14 +417,14 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create weekly plan");
+        throw new Error("Failed to create scheduled meal plan");
       }
 
       const data = await response.json();
       setWeeklyPlans([data.plan, ...weeklyPlans]);
       return data.plan;
     } catch (err: any) {
-      console.error("Error creating weekly plan:", err);
+      console.error("Error creating scheduled meal plan:", err);
       setErrorWeeklyPlans(err.message);
       throw err;
     }
@@ -439,7 +439,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to rename weekly plan");
+        throw new Error("Failed to rename scheduled meal plan");
       }
 
       const data = await response.json();
@@ -448,7 +448,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       );
       return data.plan;
     } catch (err: any) {
-      console.error("Error renaming weekly plan:", err);
+      console.error("Error renaming scheduled meal plan:", err);
       setErrorWeeklyPlans(err.message);
       throw err;
     }
@@ -463,7 +463,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update weekly plan settings");
+        throw new Error("Failed to update scheduled meal plan settings");
       }
 
       const data = await response.json();
@@ -472,7 +472,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       );
       return data.plan;
     } catch (err: any) {
-      console.error("Error updating weekly plan settings:", err);
+      console.error("Error updating scheduled meal plan settings:", err);
       setErrorWeeklyPlans(err.message);
       throw err;
     }
@@ -485,12 +485,12 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete weekly plan");
+        throw new Error("Failed to delete scheduled meal plan");
       }
 
       setWeeklyPlans(weeklyPlans.filter((plan) => plan._id !== planId));
     } catch (err: any) {
-      console.error("Error deleting weekly plan:", err);
+      console.error("Error deleting scheduled meal plan:", err);
       setErrorWeeklyPlans(err.message);
       throw err;
     }
@@ -543,7 +543,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         addRecipeToMealPlan,
         addMealCombination,
         removeMealCombination,
-        // Weekly Plans
+        // Scheduled meal plans
         weeklyPlans,
         loadingWeeklyPlans,
         errorWeeklyPlans,

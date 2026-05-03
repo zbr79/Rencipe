@@ -23,7 +23,7 @@ export async function PATCH(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (err: any) {
-    console.error("Error updating weekly plan settings:", err);
+    console.error("Error updating scheduled meal plan settings:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

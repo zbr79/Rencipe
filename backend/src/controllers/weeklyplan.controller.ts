@@ -45,7 +45,7 @@ export const getWeeklyPlanById = async (req: Request, res: Response) => {
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
 
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
-      return res.status(400).json({ error: "Invalid weekly plan ID" });
+      return res.status(400).json({ error: "Invalid scheduled meal plan ID" });
     }
 
     const plan = await WeeklyPlan.findById(idStr).populate({
@@ -54,7 +54,7 @@ export const getWeeklyPlanById = async (req: Request, res: Response) => {
     });
 
     if (!plan) {
-      return res.status(404).json({ error: "Weekly plan not found" });
+      return res.status(404).json({ error: "Scheduled meal plan not found" });
     }
 
     res.json({ plan });
@@ -91,7 +91,7 @@ export const createWeeklyPlan = async (req: Request, res: Response) => {
 
     const plan = new WeeklyPlan({
       userId: new mongoose.Types.ObjectId(userId),
-      name: name || "My Weekly Plan",
+      name: name || "My Scheduled Meal Plan",
       breakfastEnabled: mealTypes.includes('breakfast'),
       lunchEnabled: mealTypes.includes('lunch'),
       dinnerEnabled: mealTypes.includes('dinner'),
@@ -122,7 +122,7 @@ export const updateMealSlot = async (req: Request, res: Response) => {
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
 
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
-      return res.status(400).json({ error: "Invalid weekly plan ID" });
+      return res.status(400).json({ error: "Invalid scheduled meal plan ID" });
     }
 
     if (!["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"].includes(dayOfWeek)) {
@@ -139,7 +139,7 @@ export const updateMealSlot = async (req: Request, res: Response) => {
 
     const plan = await WeeklyPlan.findById(idStr);
     if (!plan) {
-      return res.status(404).json({ error: "Weekly plan not found" });
+      return res.status(404).json({ error: "Scheduled meal plan not found" });
     }
 
     const dayPlan = plan.days.find((d: any) => d.dayOfWeek === dayOfWeek);
@@ -190,16 +190,16 @@ export const deleteWeeklyPlan = async (req: Request, res: Response) => {
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
 
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
-      return res.status(400).json({ error: "Invalid weekly plan ID" });
+      return res.status(400).json({ error: "Invalid scheduled meal plan ID" });
     }
 
     const result = await WeeklyPlan.findByIdAndDelete(idStr);
 
     if (!result) {
-      return res.status(404).json({ error: "Weekly plan not found" });
+      return res.status(404).json({ error: "Scheduled meal plan not found" });
     }
 
-    res.json({ message: "Weekly plan deleted successfully" });
+    res.json({ message: "Scheduled meal plan deleted successfully" });
   } catch (err: any) {
     console.error("Error deleting weekly plan:", err);
     res.status(500).json({ error: err.message });
@@ -219,7 +219,7 @@ export const renameWeeklyPlan = async (req: Request, res: Response) => {
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
 
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
-      return res.status(400).json({ error: "Invalid weekly plan ID" });
+      return res.status(400).json({ error: "Invalid scheduled meal plan ID" });
     }
 
     if (!name || typeof name !== "string" || name.trim() === "") {
@@ -236,7 +236,7 @@ export const renameWeeklyPlan = async (req: Request, res: Response) => {
     });
 
     if (!plan) {
-      return res.status(404).json({ error: "Weekly plan not found" });
+      return res.status(404).json({ error: "Scheduled meal plan not found" });
     }
 
     res.json({ plan });
@@ -259,7 +259,7 @@ export const updateWeeklyPlanSettings = async (req: Request, res: Response) => {
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
 
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
-      return res.status(400).json({ error: "Invalid weekly plan ID" });
+      return res.status(400).json({ error: "Invalid scheduled meal plan ID" });
     }
 
     if (!Array.isArray(mealTypes)) {
@@ -280,7 +280,7 @@ export const updateWeeklyPlanSettings = async (req: Request, res: Response) => {
     });
 
     if (!plan) {
-      return res.status(404).json({ error: "Weekly plan not found" });
+      return res.status(404).json({ error: "Scheduled meal plan not found" });
     }
 
     res.json({ plan });

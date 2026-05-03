@@ -5,6 +5,8 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
 import { matchesPinyinSearch } from "../utils/pinyinSearch";
+import { getVisibleTags, hasHealthTag } from "../utils/recipeTags";
+import { authFetch } from "../utils/authSession";
 
 interface Recipe {
   id: string;
@@ -39,10 +41,10 @@ export default function RecipesPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`/api/recipes?limit=100`);
+      const response = await authFetch(`/api/recipes?limit=100`);
 
       if (!response.ok) {
-        throw new Error("获取食谱失败");
+        throw new Error("Failed to fetch recipes");
       }
 
       const data = await response.json();
@@ -53,7 +55,7 @@ export default function RecipesPage() {
       // Extract all unique tags
       const tags = new Set<string>();
       enrichedRecipes?.forEach((recipe: Recipe) => {
-        recipe.tags?.forEach((tag) => tags.add(tag));
+        getVisibleTags(recipe.tags).forEach((tag) => tags.add(tag));
       });
       setAllTags(Array.from(tags).sort());
     } catch (err: any) {
@@ -77,19 +79,38 @@ export default function RecipesPage() {
     return matchesSearch && matchesTags;
   });
 
+  const healthCount = recipes.filter((recipe) => hasHealthTag(recipe.tags)).length;
+
   return (
     <div className={styles.container}>
-      <h1>食谱</h1>
+      <header className={styles.header}>
+        <div>
+          <p className={styles.kicker}>Recipe Library</p>
+          <h1>Browse Recipes</h1>
+          <p className={styles.headerMeta}>
+            {recipes.length} recipes, {healthCount} health-tagged
+          </p>
+        </div>
+        <Link href="/create" className={styles.createButton}>
+          <span className="material-symbols-outlined">add</span>
+          Create
+        </Link>
+      </header>
 
-      {error && <div className={styles.error}>错误: {error}</div>}
+      {error && <div className={styles.error}>Error: {error}</div>}
 
-      {/* Filters */}
-      <div className={styles.filtersSection}>
-        <h2>筛选</h2>
+      <section className={styles.filtersSection}>
+        <div className={styles.filtersHeader}>
+          <h2>Filters</h2>
+          <button onClick={fetchRecipes} className={styles.refreshBtn}>
+            <span className="material-symbols-outlined">refresh</span>
+            Refresh
+          </button>
+        </div>
         <div className={styles.filters}>
           <input
             type="text"
-            placeholder="搜索食谱..."
+            placeholder="Search recipes..."
             value={filters.searchTerm}
             onChange={(e) =>
               setFilters({ ...filters, searchTerm: e.target.value })
@@ -99,9 +120,9 @@ export default function RecipesPage() {
 
           {/* Tags Filter */}
           {allTags.length > 0 && (
-            <div style={{ marginTop: "12px" }}>
-              <h3 style={{ marginBottom: "8px", fontSize: "14px" }}>按标签筛选</h3>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+            <div className={styles.tagFilter}>
+              <h3>Tags</h3>
+              <div className={styles.tagList}>
                 {allTags.map((tag) => (
                   <button
                     key={tag}
@@ -113,43 +134,40 @@ export default function RecipesPage() {
                           : [...prev.selectedTags, tag],
                       }));
                     }}
-                    style={{
-                      padding: "8px 12px",
-                      background: filters.selectedTags.includes(tag) ? "#667eea" : "#f0f0f0",
-                      color: filters.selectedTags.includes(tag) ? "white" : "black",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                    }}
+                    className={`${styles.tagButton} ${filters.selectedTags.includes(tag) ? styles.tagButtonActive : ""}`}
                   >
                     {tag}
                   </button>
                 ))}
+                {filters.selectedTags.length > 0 && (
+                  <button
+                    type="button"
+                    className={styles.clearButton}
+                    onClick={() => setFilters((prev) => ({ ...prev, selectedTags: [] }))}
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
             </div>
           )}
-
-          <button onClick={fetchRecipes} className={styles.refreshBtn}>
-            刷新
-          </button>
         </div>
-      </div>
+      </section>
 
       {/* Recipes Count */}
       <div className={styles.count}>
-        找到 {filteredRecipes.length} / {recipes.length} 个食谱
+        Found {filteredRecipes.length} / {recipes.length} recipes
       </div>
 
       {/* Loading State */}
-      {loading && <p className={styles.loading}>加载中...</p>}
+      {loading && <p className={styles.loading}>Loading...</p>}
 
       {/* Empty State */}
       {!loading && filteredRecipes.length === 0 && (
         <div className={styles.empty}>
-          <p>尚无食谱</p>
+          <p>No recipes yet</p>
           <Link href="/create" className={styles.createLink}>
-            创建食谱
+            Create Recipe
           </Link>
         </div>
       )}
@@ -158,17 +176,13 @@ export default function RecipesPage() {
       <div className={styles.grid}>
         {filteredRecipes.map((recipe) => (
           <Link
-            key={recipe.id}
-            href={`/recipes/${recipe.id}`}
+            key={recipe._id || recipe.id}
+            href={`/recipes/${recipe._id || recipe.id}`}
             className={styles.card}
           >
             {recipe.image && (
-              <div style={{ width: "100%", height: "200px", overflow: "hidden", borderRadius: "8px 8px 0 0" }}>
-                <img
-                  src={recipe.image}
-                  alt={recipe.title}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
+              <div className={styles.cardImage}>
+                <img src={recipe.image} alt={recipe.title} />
               </div>
             )}
             <div className={styles.cardHeader}>
@@ -181,30 +195,30 @@ export default function RecipesPage() {
 
             <div className={styles.meta}>
               <span className={styles.metaItem}>
-                🍽️ {recipe.servings || 1} 人份
+                🍽️ {recipe.servings || 1} servings
               </span>
             </div>
 
-            {recipe.tags.length > 0 && (
+            {getVisibleTags(recipe.tags).length > 0 && (
               <div className={styles.tags}>
-                {recipe.tags.slice(0, 3).map((tag) => (
+                {getVisibleTags(recipe.tags).slice(0, 3).map((tag) => (
                   <span key={tag} className={styles.tag}>
                     {tag}
                   </span>
                 ))}
-                {recipe.tags.length > 3 && (
+                {getVisibleTags(recipe.tags).length > 3 && (
                   <span className={styles.tag}>
-                    +{recipe.tags.length - 3}
+                    +{getVisibleTags(recipe.tags).length - 3}
                   </span>
                 )}
               </div>
             )}
 
             <div className={styles.stats}>
-              <span>❤️ {recipe.likes}</span>
-              <span>👁️ {recipe.views}</span>
+              <span>{recipe.likes} saves</span>
+              <span>{recipe.views} views</span>
               {recipe.ratingCount > 0 && (
-                <span>⭐ {recipe.ratingAverage.toFixed(1)}</span>
+                <span>{recipe.ratingAverage.toFixed(1)} rating</span>
               )}
             </div>
           </Link>

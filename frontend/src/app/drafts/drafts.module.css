@@ -1,14 +1,43 @@
 .container {
-  padding: 20px;
-  max-width: 900px;
+  padding: 24px 18px 96px;
+  max-width: 980px;
   margin: 0 auto;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--secondary);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: clamp(32px, 5vw, 50px);
+  line-height: 1;
+  font-weight: 900;
+}
+
+.header p:last-child {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .draftsList {
@@ -18,11 +47,14 @@
 
 .draftItem {
   padding: 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 14px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
 }
 
 .draftInfo {
@@ -32,18 +64,20 @@
 .draftName {
   margin: 0 0 8px;
   cursor: pointer;
-  color: #1f2937;
+  color: var(--foreground);
+  font-size: 17px;
+  font-weight: 900;
 }
 
 .draftTitle {
   margin: 0 0 4px;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
 .draftDate {
   margin: 0;
-  color: #999;
+  color: var(--text-muted);
   font-size: 12px;
 }
 
@@ -53,26 +87,30 @@
 }
 
 .button {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid transparent;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .buttonPrimary {
-  background-color: #3b82f6;
+  background-color: var(--primary);
   color: white;
 }
 
 .buttonSecondary {
-  background-color: #e5e7eb;
-  color: black;
+  background-color: var(--hover-bg);
+  color: var(--foreground);
+  border-color: var(--border);
 }
 
 .buttonDanger {
-  background-color: #ef4444;
-  color: white;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  border-color: rgba(239, 68, 68, 0.22);
 }
 
 .buttonSuccess {
@@ -86,6 +124,39 @@
 }
 
 .emptyMessage {
-  color: #999;
+  color: var(--text-secondary);
   margin-bottom: 16px;
+}
+
+.statusText,
+.errorText {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-secondary);
+  font-weight: 800;
+}
+
+.errorText {
+  color: var(--error);
+}
+
+.editRow {
+  display: flex;
+  gap: 8px;
+}
+
+.editRow input {
+  flex: 1;
+}
+
+@media (max-width: 720px) {
+  .header,
+  .draftItem {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .draftActions {
+    width: 100%;
+  }
 }

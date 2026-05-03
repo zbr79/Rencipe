@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 interface DraftData {
+  _id?: string;
   name?: string;
   title: string;
   description: string;
@@ -23,19 +24,36 @@ interface UseDraftOptions {
   enabled?: boolean;
 }
 
+interface SaveDraftOptions {
+  immediate?: boolean;
+}
+
 export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions) {
   const [draft, setDraft] = useState<DraftData | null>(null);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(draftId || null);
   
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const currentDraftIdRef = useRef<string | null>(draftId || null);
   const initialDataRef = useRef<DraftData | null>(null);
+
+  useEffect(() => {
+    currentDraftIdRef.current = draftId || null;
+    setCurrentDraftId(draftId || null);
+  }, [draftId]);
 
   // Load draft on mount
   useEffect(() => {
     if (!enabled || !authorId) return;
+
+    if (!draftId) {
+      setDraft(null);
+      setDraftLoaded(true);
+      return;
+    }
 
     const loadDraft = async () => {
       try {
@@ -46,10 +64,11 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
         const res = await fetch(url);
         const data = await res.json();
         
-        // If we're looking for a specific draft, use that; otherwise use the first one
-        const draftData = draftId ? data.draft : (data.drafts && data.drafts[0]);
+        const draftData = data.draft;
         if (draftData) {
           setDraft(draftData);
+          setCurrentDraftId(draftData._id);
+          currentDraftIdRef.current = draftData._id;
           initialDataRef.current = draftData;
         }
         setDraftLoaded(true);
@@ -64,79 +83,84 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
 
   // Auto-save draft (debounced every 2 seconds)
   const saveDraft = useCallback(
-    async (data: DraftData, draftName?: string) => {
-      if (!enabled || !authorId) return;
+    async (data: DraftData, draftName?: string, options: SaveDraftOptions = {}) => {
+      if (!enabled || !authorId) return null;
 
-      // Clear existing timeout
+      const runSave = async () => {
+        try {
+          setIsSaving(true);
+          const activeDraftId = currentDraftIdRef.current;
+          const response = await fetch(activeDraftId ? "/api/drafts" : "/api/drafts", {
+            method: activeDraftId ? "PUT" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...(activeDraftId ? { id: activeDraftId } : {}),
+              authorId,
+              name: draftName || data.title || "Untitled Draft",
+              ...data,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to save draft");
+          }
+
+          const saved = await response.json();
+          const savedDraft = saved.draft || null;
+          if (savedDraft?._id) {
+            currentDraftIdRef.current = savedDraft._id;
+            setCurrentDraftId(savedDraft._id);
+            setDraft(savedDraft);
+            initialDataRef.current = savedDraft;
+          }
+          setLastSaved(new Date().toLocaleTimeString());
+          setHasUnsavedChanges(false);
+          return savedDraft;
+        } catch (err) {
+          console.error("Failed to save draft:", err);
+          setHasUnsavedChanges(true);
+          return null;
+        } finally {
+          setIsSaving(false);
+        }
+      };
+
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
 
-      // Set timeout for debounced save
-      saveTimeoutRef.current = setTimeout(async () => {
-        try {
-          setIsSaving(true);
-          
-          // If we have a draftId, update the draft
-          if (draftId) {
-            const res = await fetch("/api/drafts", {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                id: draftId,
-                authorId,
-                name: draftName,
-                ...data,
-              }),
-            });
+      if (options.immediate) {
+        return runSave();
+      }
 
-            if (res.ok) {
-              setLastSaved(new Date().toLocaleTimeString());
-              setIsSaving(false);
-            }
-          } else {
-            // Otherwise, create a new draft
-            const res = await fetch("/api/drafts", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                authorId,
-                name: draftName || "Untitled Draft",
-                ...data,
-              }),
-            });
+      setHasUnsavedChanges(true);
+      saveTimeoutRef.current = setTimeout(() => {
+        void runSave();
+      }, 1200);
 
-            if (res.ok) {
-              setLastSaved(new Date().toLocaleTimeString());
-              setIsSaving(false);
-            }
-          }
-        } catch (err) {
-          console.error("Failed to save draft:", err);
-          setIsSaving(false);
-        }
-      }, 2000); // Debounce 2 seconds
+      return null;
     },
-    [authorId, draftId, enabled]
+    [authorId, enabled]
   );
 
   // Delete draft
   const deleteDraft = useCallback(async () => {
     if (!enabled || !authorId) return;
+    const idToDelete = currentDraftIdRef.current;
+    if (!idToDelete) return;
 
     try {
-      let url = `/api/drafts?authorId=${authorId}`;
-      if (draftId) {
-        url += `&id=${draftId}`;
-      }
+      const url = `/api/drafts?authorId=${authorId}&id=${idToDelete}`;
       await fetch(url, { method: "DELETE" });
       setDraft(null);
+      setCurrentDraftId(null);
+      currentDraftIdRef.current = null;
       setHasUnsavedChanges(false);
       initialDataRef.current = null;
     } catch (err) {
       console.error("Failed to delete draft:", err);
     }
-  }, [authorId, draftId, enabled]);
+  }, [authorId, enabled]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -153,6 +177,7 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
     isSaving,
     lastSaved,
     hasUnsavedChanges,
+    currentDraftId,
     saveDraft,
     deleteDraft,
   };

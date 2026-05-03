@@ -8,6 +8,8 @@ import RecipeBasicsForm from "../../create/components/RecipeBasicsForm";
 import IngredientsSection from "../../create/components/IngredientsSection";
 import StepsSection from "../../create/components/StepsSection";
 import TagsSection from "../../create/components/TagsSection";
+import { getHealthTag, withHealthTag } from "../../utils/recipeTags";
+import { authFetch } from "../../utils/authSession";
 
 interface Ingredient {
   name: string;
@@ -78,10 +80,10 @@ export default function EditPage() {
       setLoading(true);
       setError("");
       try {
-        const response = await fetch(`/api/recipes/${recipeId}`);
+        const response = await authFetch(`/api/recipes/${recipeId}`);
 
         if (!response.ok) {
-          throw new Error("加载食谱失败");
+          throw new Error("Failed to load recipe");
         }
 
         const data = await response.json();
@@ -210,6 +212,13 @@ export default function EditPage() {
     setTagsInput("");
   };
 
+  const handleHealthTagChange = (healthTag: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: withHealthTag(prev.tags, healthTag),
+    }));
+  };
+
   const removeTag = (index: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -234,18 +243,18 @@ export default function EditPage() {
 
   const handleSubmit = async () => {
     if (!formData.title.trim()) {
-      alert("请输入食谱名称");
+      alert("Please enter a recipe name");
       return;
     }
     if (!formData.description.trim()) {
-      alert("请输入食谱描述");
+      alert("Please enter a recipe description");
       return;
     }
 
     setSubmitting(true);
     try {
       // Update recipe basics
-      const updateResponse = await fetch(`/api/recipes/${recipeId}`, {
+      const updateResponse = await authFetch(`/api/recipes/${recipeId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -261,23 +270,23 @@ export default function EditPage() {
       });
 
       if (!updateResponse.ok) {
-        throw new Error("更新食谱失败");
+        throw new Error("Failed to update recipe");
       }
 
-      const updatedRecipe = await updateResponse.json();
+      await updateResponse.json();
 
       // Upload recipe image if changed and exists
       if (recipeImageFile && recipeImage) {
         const imageFormData = new FormData();
         imageFormData.append("image", recipeImageFile);
 
-        const imageResponse = await fetch(`/api/recipes/${recipeId}/upload-image`, {
+        const imageResponse = await authFetch(`/api/recipes/${recipeId}/upload-image`, {
           method: "POST",
           body: imageFormData,
         });
 
         if (!imageResponse.ok) {
-          console.warn("图片上传失败");
+          console.warn("Image upload failed");
         }
       }
 
@@ -286,16 +295,16 @@ export default function EditPage() {
         const stepFormData = new FormData();
         stepFormData.append("image", file);
 
-        await fetch(`/api/recipes/${recipeId}/steps/${stepNumber}/upload-image`, {
+        await authFetch(`/api/recipes/${recipeId}/steps/${stepNumber}/upload-image`, {
           method: "POST",
           body: stepFormData,
         });
       }
 
-      alert("食谱更新成功!");
+      alert("Recipe updated successfully!");
       router.push(`/recipes/${recipeId}`);
     } catch (err: any) {
-      alert("提交失败: " + (err.message || "未知错误"));
+      alert("Submit failed: " + (err.message || "Unknown error"));
       console.error(err);
     } finally {
       setSubmitting(false);
@@ -303,16 +312,16 @@ export default function EditPage() {
   };
 
   if (loading) {
-    return <div className={styles.loading}>加载中...</div>;
+    return <div className={styles.loading}>Loading...</div>;
   }
 
   if (error) {
     return (
       <div className={styles.container}>
         <div className={styles.error}>
-          <p>错误: {error}</p>
+          <p>Error: {error}</p>
           <Link href="/" className={styles.backLink}>
-            ← 返回
+            ← Back
           </Link>
         </div>
       </div>
@@ -323,9 +332,9 @@ export default function EditPage() {
     <div className={styles.container}>
       <div className={styles.header}>
         <Link href={`/recipes/${recipeId}`} className={styles.backLink}>
-          ← 返回
+          ← Back
         </Link>
-        <h1 className={styles.title}>编辑食谱</h1>
+        <h1 className={styles.title}>Edit Recipe</h1>
       </div>
 
       {recipeImage && (
@@ -345,10 +354,12 @@ export default function EditPage() {
           description={formData.description}
           servings={formData.servings}
           component={formData.component}
+          healthTag={getHealthTag(formData.tags)}
           onTitleChange={(title) => setFormData({ ...formData, title })}
           onDescriptionChange={(description) => setFormData({ ...formData, description })}
           onServingsChange={(servings) => setFormData({ ...formData, servings })}
           onComponentChange={(component) => setFormData({ ...formData, component })}
+          onHealthTagChange={handleHealthTagChange}
         />
 
         <IngredientsSection
@@ -386,7 +397,7 @@ export default function EditPage() {
             disabled={submitting}
             className={styles.submitBtn}
           >
-            {submitting ? "提交中..." : "保存修改"}
+            {submitting ? "Submitting..." : "Save Changes"}
           </button>
         </div>
       </form>

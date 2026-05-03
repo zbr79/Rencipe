@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
+import { useCart } from "./contexts/CartContext";
 import { useSaved } from "./contexts/SavedContext";
+import { hasHealthTag } from "./utils/recipeTags";
+import { authFetch } from "./utils/authSession";
 
 type Recipe = {
   id: string;
@@ -11,10 +14,14 @@ type Recipe = {
   title: string;
   description: string;
   image?: string;
+  component?: boolean;
+  servings?: number;
+  tags?: string[];
   likes: number;
   views: number;
   ratingAverage: number;
   ratingCount: number;
+  isPublic?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -34,16 +41,20 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("recommended");
-  const [searchTerm, setSearchTerm] = useState("");
-  const { isSaved, addFavorite, removeFavorite } = useSaved();
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const carouselRef = useRef<HTMLDivElement | null>(null);
+  const { addToCart, cartRecipes } = useCart();
+  const { isSaved, addFavorite, removeFavorite, fetchSaved } = useSaved();
   const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
+  const publicRecipes = recipes.filter((recipe) => recipe.isPublic !== false);
+  const featuredRecipes = publicRecipes.filter((recipe) => recipe.image).slice(0, 10);
 
   async function fetchRecipes() {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch(`/api/recipes`, {
+      const res = await authFetch(`/api/recipes`, {
         method: "GET",
         credentials: "include",
       });
@@ -72,35 +83,105 @@ export default function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    fetchSaved(userId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setActiveSlideIndex(0);
+    if (featuredRecipes.length <= 1) return;
+
+    const intervalId = window.setInterval(() => {
+      setActiveSlideIndex((current) => (current + 1) % featuredRecipes.length);
+    }, 4200);
+
+    return () => window.clearInterval(intervalId);
+  }, [featuredRecipes.length]);
+
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    const slide = carousel?.children[activeSlideIndex] as HTMLElement | undefined;
+    slide?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+  }, [activeSlideIndex]);
+
   const tabs = [
-    { id: "following", label: "关注" },
-    { id: "recommended", label: "推荐" },
-    { id: "trending", label: "热门" },
-    { id: "categories", label: "分类" },
+    { id: "recommended", label: "Recommended" },
+    { id: "healthy", label: "Healthy" },
+    { id: "quick", label: "Quick" },
+    { id: "dinner", label: "Dinner" },
   ];
+
+  const visibleRecipes = publicRecipes.filter((recipe) => {
+    const tags = recipe.tags || [];
+    if (activeTab === "healthy") return hasHealthTag(tags);
+    if (activeTab === "quick") return tags.some((tag) => ["Quick", "Easy", "Meal prep"].includes(tag));
+    if (activeTab === "dinner") return tags.some((tag) => ["Dinner", "Family dinner", "Protein", "Chicken", "Seafood"].includes(tag));
+    return true;
+  });
+
+  function handleCarouselScroll() {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+
+    const nextIndex = Math.round(carousel.scrollLeft / carousel.clientWidth);
+    if (nextIndex !== activeSlideIndex && nextIndex >= 0 && nextIndex < featuredRecipes.length) {
+      setActiveSlideIndex(nextIndex);
+    }
+  }
+
+  function goToSlide(direction: -1 | 1) {
+    if (featuredRecipes.length <= 1) return;
+    setActiveSlideIndex((current) => (current + direction + featuredRecipes.length) % featuredRecipes.length);
+  }
+
+  const cartIds = new Set(cartRecipes.map((recipe) => recipe._id || recipe.id).filter(Boolean));
 
   return (
     <main className={styles.container}>
-      {/* Search Bar */}
-      <div className={styles.searchSection}>
-        <Link href={`/search?q=${encodeURIComponent(searchTerm)}`} style={{ width: "100%" }}>
-          <div className={styles.searchInput} style={{ cursor: "pointer" }}>
-            <span className={styles.searchIcon}>search</span>
-            <input 
-              type="text" 
-              placeholder="搜索食谱..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  window.location.href = `/search?q=${encodeURIComponent(searchTerm)}`;
-                }
-              }}
-              onClick={(e) => e.preventDefault()}
-            />
-          </div>
-        </Link>
-      </div>
+      <section className={styles.dashboard}>
+        <div className={styles.dashboardContent}>
+          {featuredRecipes.length > 0 ? (
+            <div ref={carouselRef} className={styles.carouselTrack} onScroll={handleCarouselScroll}>
+              {featuredRecipes.map((recipe) => (
+                <Link key={recipe._id || recipe.id} href={`/recipes/${recipe._id || recipe.id}`} className={styles.slideCard}>
+                  <img src={recipe.image!} alt={recipe.title} className={styles.slideImage} />
+                  <div className={styles.slideShade} />
+                  <div className={styles.slideContent}>
+                    <h1>{recipe.title}</h1>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.slideFallback}>
+              <h1>Fresh recipes for this week</h1>
+            </div>
+          )}
+
+          {featuredRecipes.length > 1 && (
+            <>
+              <button type="button" className={`${styles.slideArrow} ${styles.slideArrowLeft}`} onClick={() => goToSlide(-1)} aria-label="Previous recipe">
+                <span className="material-symbols-outlined">chevron_left</span>
+              </button>
+              <button type="button" className={`${styles.slideArrow} ${styles.slideArrowRight}`} onClick={() => goToSlide(1)} aria-label="Next recipe">
+                <span className="material-symbols-outlined">chevron_right</span>
+              </button>
+              <div className={styles.slideDots} aria-label="Featured recipes">
+                {featuredRecipes.map((recipe, index) => (
+                  <button
+                    key={recipe._id || recipe.id}
+                    type="button"
+                    aria-label={`Show ${recipe.title}`}
+                    className={index === activeSlideIndex % featuredRecipes.length ? styles.slideDotActive : ""}
+                    onClick={() => setActiveSlideIndex(index)}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </section>
 
       {/* Tab Navigation */}
       <div className={styles.tabs}>
@@ -113,15 +194,6 @@ export default function HomePage() {
             {tab.label}
           </button>
         ))}
-      </div>
-
-      {/* Featured Banner */}
-      <div className={styles.banner}>
-        <div className={styles.bannerContent}>
-          <h3 className={styles.bannerTitle}>精选食谱</h3>
-          <p className={styles.bannerSubtitle}>今日发现</p>
-        </div>
-        <span className={styles.bannerArrow}>→</span>
       </div>
 
       {/* Error Message */}
@@ -139,80 +211,71 @@ export default function HomePage() {
       ) : recipes.length === 0 ? (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>🍳</div>
-          <h3 className={styles.emptyTitle}>尚无食谱</h3>
+          <h3 className={styles.emptyTitle}>No recipes yet</h3>
           <p className={styles.emptyDescription}>
-            成为第一个分享食谱的人！
+            Be the first to share a recipe.
           </p>
           <Link href="/create" className={styles.emptyButton}>
-            + 创建食谱
+            + Create Recipe
           </Link>
         </div>
       ) : (
         <div className={styles.recipeGrid}>
-          {recipes.map((r) => (
-            <div key={r._id || r.id} className={styles.recipeCardWrapper}>
-              <Link href={`/recipes/${r._id || r.id}`} className={styles.recipeCard}>
+          {visibleRecipes.map((r) => {
+            const recipeId = r._id || r.id;
+            const alreadyInCart = cartIds.has(recipeId);
+            const saved = isSaved(recipeId);
+            return (
+            <div key={recipeId} className={styles.recipeCardWrapper}>
+              <Link href={`/recipes/${recipeId}`} className={styles.recipeCard}>
                 <div className={styles.cardImage}>
                   {r.image ? (
-                    <img src={r.image} alt={r.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img src={r.image} alt={r.title} />
                   ) : (
                     <div className={styles.imagePlaceholder}>
-                      <span>🍽️</span>
+                      <span className="material-symbols-outlined">restaurant</span>
                     </div>
                   )}
                 </div>
                 
                 <div className={styles.cardContent}>
                   <h3 className={styles.cardTitle}>{r.title}</h3>
-                  
-                  <div className={styles.cardMeta}>
-                    <span>❤️ {r.likes} • 👁️ {r.views}</span>
-                    {r.ratingCount > 0 && (
-                      <span style={{ marginLeft: "8px" }}>⭐ {r.ratingAverage.toFixed(1)}</span>
-                    )}
-                  </div>
-
-                  {r.description && (
-                    <p className={styles.cardDescription}>
-                      {r.description.length > 60 ? r.description.slice(0, 60) + "…" : r.description}
-                    </p>
-                  )}
                 </div>
               </Link>
               
-              {/* Save Button */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  const saved = isSaved(r._id || r.id);
-                  if (saved) {
-                    removeFavorite(userId, r._id || r.id);
-                  } else {
-                    addFavorite(userId, r._id || r.id);
-                  }
-                }}
-                style={{
-                  position: "absolute",
-                  top: "8px",
-                  right: "8px",
-                  background: "rgba(255, 255, 255, 0.9)",
-                  border: "none",
-                  borderRadius: "50%",
-                  width: "40px",
-                  height: "40px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  fontSize: "20px",
-                  zIndex: 10,
-                }}
-                title={isSaved(r._id || r.id) ? "取消保存" : "保存食谱"}
-              >
-                {isSaved(r._id || r.id) ? "❤️" : "🤍"}
-              </button>
+              <div className={styles.cardActions}>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (saved) {
+                      removeFavorite(userId, recipeId);
+                    } else {
+                      addFavorite(userId, recipeId);
+                    }
+                  }}
+                  className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}
+                  title={saved ? "Remove from saved" : "Save recipe"}
+                >
+                  <span className="material-symbols-outlined">{saved ? "bookmark" : "bookmark_add"}</span>
+                  <span>Save</span>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addToCart(userId, recipeId);
+                  }}
+                  className={`${styles.addCartButton} ${alreadyInCart ? styles.addCartButtonActive : ""}`}
+                  title={alreadyInCart ? "Add another to cart" : "Add to cart"}
+                >
+                  <span className="material-symbols-outlined">add_shopping_cart</span>
+                  <span>Add</span>
+                </button>
+              </div>
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
     </main>

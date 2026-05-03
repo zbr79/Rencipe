@@ -3,19 +3,30 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useSaved } from "../contexts/SavedContext";
+import { getScheduledPlanDisplayName } from "../utils/planDisplay";
 import styles from "../recipes/page.module.css";
 
 export default function MealPlansPage() {
-  const { mealPlans, loadingPlans, fetchMealPlans, deleteMealPlan } = useSaved();
+  const {
+    mealPlans,
+    weeklyPlans,
+    loadingPlans,
+    loadingWeeklyPlans,
+    fetchMealPlans,
+    fetchWeeklyPlans,
+    deleteMealPlan,
+    deleteWeeklyPlan,
+  } = useSaved();
   
   const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
 
   useEffect(() => {
     fetchMealPlans(userId);
+    fetchWeeklyPlans(userId);
   }, []);
 
   const handleDeletePlan = async (planId: string) => {
-    if (confirm("确定要删除此计划吗?")) {
+    if (confirm("Delete this plan?")) {
       try {
         await deleteMealPlan(planId);
       } catch (error) {
@@ -24,88 +35,108 @@ export default function MealPlansPage() {
     }
   };
 
+  const handleDeleteScheduledPlan = async (planId: string) => {
+    if (!confirm("Delete this scheduled meal plan?")) return;
+    try {
+      await deleteWeeklyPlan(planId);
+    } catch (error) {
+      console.error("Failed to delete scheduled meal plan:", error);
+    }
+  };
+
+  const loading = loadingPlans || loadingWeeklyPlans;
+  const hasPlans = mealPlans.length > 0 || weeklyPlans.length > 0;
+
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <div style={{ marginBottom: "32px" }}>
-        <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>
-          我的膳食计划
-        </h1>
-      </div>
+      <header className={styles.header}>
+        <div>
+          <p className={styles.kicker}>Meal Planning</p>
+          <h1>Meal Plans</h1>
+          <p className={styles.headerMeta}>Create reusable plans or schedule meals across the week.</p>
+        </div>
+        <Link href="/weekly-plans/create" className={styles.createButton}>
+          <span className="material-symbols-outlined">calendar_month</span>
+          New Scheduled Plan
+        </Link>
+      </header>
 
-      {/* Meal Plans List */}
-      {loadingPlans ? (
-        <p style={{ textAlign: "center", color: "#999" }}>加载中...</p>
-      ) : mealPlans.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "40px 0" }}>
-          <p style={{ color: "#999", marginBottom: "16px" }}>还没有创建任何计划</p>
+      {loading ? (
+        <p className={styles.loading}>Loading...</p>
+      ) : !hasPlans ? (
+        <div className={styles.empty}>
+          <p>No meal plans yet</p>
         </div>
       ) : (
-        <div>
-          <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "16px" }}>
-            计划列表
-          </h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-              gap: "16px",
-            }}
-          >
-            {mealPlans.map((plan) => (
-              <Link key={plan._id} href={`/meal-plans/${plan._id}`}>
-                <div
-                  style={{
-                    backgroundColor: "white",
-                    border: "1px solid #e0e0e0",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow = "none";
-                  }}
-                >
-                  <h3 style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "8px" }}>
-                    {plan.name}
-                  </h3>
-                  <p style={{ color: "#666", fontSize: "14px", marginBottom: "8px" }}>
-                    👥 {plan.people.length} 人 | 📅 {plan.numberOfDays} 天
-                  </p>
-                  <p style={{ color: "#666", fontSize: "14px", marginBottom: "8px" }}>
-                    🍽️ {plan.mealTypes.includes("lunch") ? "午" : ""}{plan.mealTypes.includes("dinner") ? "晚" : ""}
-                  </p>
-                  <p style={{ color: "#999", fontSize: "12px", marginBottom: "12px" }}>
-                    需要 {plan.totalMealsNeeded} 份餐 | 已配置 {plan.combinations.length} 个组合
-                  </p>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleDeletePlan(plan._id);
-                    }}
-                    style={{
-                      width: "100%",
-                      padding: "8px",
-                      backgroundColor: "#ffebee",
-                      color: "#c62828",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                    }}
-                  >
-                    删除
-                  </button>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
+        <>
+          {mealPlans.length > 0 && (
+            <section>
+              <div className={styles.toolbarRow}>
+                <div className={styles.count}>{mealPlans.length} meal plans</div>
+              </div>
+              <div className={styles.planList}>
+                {mealPlans.map((plan) => (
+                  <Link key={plan._id} href={`/meal-plans/${plan._id}`} className={styles.planCard}>
+                    <div>
+                      <h3>{getScheduledPlanDisplayName(plan.name)}</h3>
+                      <p>
+                        {plan.people.length} people | {plan.numberOfDays} days | {plan.mealTypes.join(", ")}
+                      </p>
+                      <p>
+                        Needs {plan.totalMealsNeeded} meals | {plan.combinations.length} combinations set{Array.isArray(plan.recipes) && plan.recipes.length > 0 ? ` | ${plan.recipes.length} recipes` : ""}
+                      </p>
+                    </div>
+                    <div className={styles.planActions}>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDeletePlan(plan._id);
+                        }}
+                        className={styles.dangerButton}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {weeklyPlans.length > 0 && (
+            <section className={styles.planSection}>
+              <div className={styles.toolbarRow}>
+                <div className={styles.count}>{weeklyPlans.length} scheduled plans</div>
+              </div>
+              <div className={styles.planList}>
+                {weeklyPlans.map((plan) => (
+                  <Link key={plan._id} href={`/weekly-plans/${plan._id}`} className={styles.planCard}>
+                    <div>
+                      <h3>{getScheduledPlanDisplayName(plan.name)}</h3>
+                      <p>Calendar-style meal schedule</p>
+                      <p>
+                        {[plan.breakfastEnabled && "Breakfast", plan.lunchEnabled && "Lunch", plan.dinnerEnabled && "Dinner"].filter(Boolean).join(", ") || "No meal slots enabled"}
+                      </p>
+                    </div>
+                    <div className={styles.planActions}>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDeleteScheduledPlan(plan._id);
+                        }}
+                        className={styles.dangerButton}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
     </div>
   );

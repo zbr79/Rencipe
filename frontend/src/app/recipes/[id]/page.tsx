@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSaved } from "../../../app/contexts/SavedContext";
 import { getRecipeImageUrl } from "../../utils/recipeImageUtils";
+import { getVisibleTags } from "../../utils/recipeTags";
+import { authFetch } from "../../utils/authSession";
 import styles from "./page.module.css";
 
 interface MealPlan {
@@ -73,10 +75,10 @@ export default function RecipeDetailPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`/api/recipes/${recipeId}`);
+      const response = await authFetch(`/api/recipes/${recipeId}`);
 
       if (!response.ok) {
-        throw new Error("加载食谱失败");
+        throw new Error("Failed to load recipe");
       }
 
       const data = await response.json();
@@ -97,24 +99,24 @@ export default function RecipeDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("确定要删除这个食谱吗？此操作无法撤销。")) {
+    if (!confirm("Delete this recipe? This cannot be undone.")) {
       return;
     }
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/recipes/${recipeId}`, {
+      const response = await authFetch(`/api/recipes/${recipeId}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error("删除食谱失败");
+        throw new Error("Failed to delete recipe");
       }
 
       // Redirect to home page after successful deletion
       router.push("/");
     } catch (err: any) {
-      alert("删除失败: " + (err.message || "未知错误"));
+      alert("Delete failed: " + (err.message || "Unknown error"));
       setIsDeleting(false);
     }
   };
@@ -139,10 +141,10 @@ export default function RecipeDetailPage() {
     setAddingToPlan(planId);
     try {
       await addRecipeToMealPlan(planId, recipeId);
-      alert("已添加到计划！");
+      alert("Added to plan!");
       setShowPlanSelector(false);
     } catch (err: any) {
-      alert("添加失败: " + err.message);
+      alert("Add failed: " + err.message);
     } finally {
       setAddingToPlan(null);
     }
@@ -153,28 +155,28 @@ export default function RecipeDetailPage() {
     try {
       if (isSaved(recipeId)) {
         await removeFavorite(userId, recipeId);
-        alert("已取消保存");
+        alert("Removed from saved");
       } else {
         await addFavorite(userId, recipeId);
-        alert("已保存此食谱！");
+        alert("Recipe saved!");
       }
     } catch (err: any) {
-      alert("保存失败: " + err.message);
+      alert("Save failed: " + err.message);
     } finally {
       setIsSavingRecipe(false);
     }
   };
   if (loading) {
-    return <div className={styles.loading}>加载中...</div>;
+    return <div className={styles.loading}>Loading...</div>;
   }
 
   if (error || !recipe) {
     return (
       <div className={styles.container}>
         <div className={styles.error}>
-          <p>错误: {error || ""}</p>
+          <p>Error: {error || ""}</p>
           <Link href="/" className={styles.backLink}>
-            ← 返回
+            ← Back
           </Link>
         </div>
       </div>
@@ -186,36 +188,36 @@ export default function RecipeDetailPage() {
       {/* Back Button - Top */}
       <div className={styles.backButtonContainer}>
         <Link href="/" className={styles.backButtonNormal}>
-          ← 返回
+          ← Back
         </Link>
         <div className={styles.actionButtons}>
           <button 
             onClick={handleSaveRecipe}
             disabled={isSavingRecipe}
             className={styles.saveBtn}
-            title={isSaved(recipeId) ? "已保存" : "保存此食谱"}
+            title={isSaved(recipeId) ? "Saved" : "Save recipe"}
           >
-            {isSavingRecipe ? "保存中..." : (isSaved(recipeId) ? "❤️ 已保存" : "🤍 保存")}
+            {isSavingRecipe ? "Saving..." : (isSaved(recipeId) ? "❤️ Saved" : "🤍 Save")}
           </button>
           <button 
             onClick={handleOpenPlanSelector}
             className={styles.addToPlanBtn}
-            title="添加到计划"
+            title="Add to Plan"
           >
-            📋 添加到计划
+            📋 Add to Plan
           </button>
           <button 
             onClick={handleEdit}
             className={styles.editBtn}
           >
-            编辑
+            Edit
           </button>
           <button 
             onClick={handleDelete}
             disabled={isDeleting}
             className={styles.deleteBtn}
           >
-            {isDeleting ? "删除中..." : "删除"}
+            {isDeleting ? "Deleting..." : "Delete"}
           </button>
         </div>
       </div>
@@ -249,14 +251,14 @@ export default function RecipeDetailPage() {
           )}
           {/* View Count - Right aligned */}
           <div className={styles.viewCount}>
-            {recipe.views} 次浏览
+            {recipe.views} views
           </div>
         </div>
 
         {/* Tags */}
-        {recipe.tags.length > 0 && (
+        {getVisibleTags(recipe.tags).length > 0 && (
           <div className={styles.tagsRow}>
-            {recipe.tags.map((tag) => (
+            {getVisibleTags(recipe.tags).map((tag) => (
               <span key={tag} className={styles.tag}>{tag}</span>
             ))}
           </div>
@@ -267,13 +269,13 @@ export default function RecipeDetailPage() {
       <div className={styles.content}>
         {/* Ingredients Section */}
         <div className={styles.ingredientsSection}>
-          <h3 className={styles.sectionTitle}>用料</h3>
+          <h3 className={styles.sectionTitle}>Ingredients</h3>
           
           {/* Main Ingredients */}
           {recipe.mainIngredients && recipe.mainIngredients.length > 0 && (
             <div style={{ marginBottom: "16px" }}>
               <h4 style={{ fontSize: "13px", fontWeight: "600", color: "#666", marginBottom: "8px" }}>
-                主料
+                Main Ingredients
               </h4>
               <ul className={styles.ingredientsList}>
                 {recipe.mainIngredients.map((ing, idx) => (
@@ -293,7 +295,7 @@ export default function RecipeDetailPage() {
           {recipe.seasonings && recipe.seasonings.length > 0 && (
             <div>
               <h4 style={{ fontSize: "13px", fontWeight: "600", color: "#666", marginBottom: "8px" }}>
-                调料
+                Seasonings
               </h4>
               <ul className={styles.ingredientsList}>
                 {recipe.seasonings.map((ing, idx) => (
@@ -312,7 +314,7 @@ export default function RecipeDetailPage() {
 
         {/* Steps Section */}
         <div className={styles.directionsSection}>
-          <h3 className={styles.sectionTitle}>步骤</h3>
+          <h3 className={styles.sectionTitle}>Steps</h3>
           <ol className={styles.stepsList}>
             {recipe.steps.map((step, idx) => (
               <li key={idx} className={styles.step}>
@@ -361,10 +363,10 @@ export default function RecipeDetailPage() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 style={{ marginTop: 0, marginBottom: "16px" }}>选择计划</h2>
+            <h2 style={{ marginTop: 0, marginBottom: "16px" }}>Select a Plan</h2>
 
             {loadingPlans ? (
-              <p>加载中...</p>
+              <p>Loading...</p>
             ) : mealPlans && mealPlans.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {mealPlans.map((plan) => (
@@ -395,17 +397,17 @@ export default function RecipeDetailPage() {
                       {plan.name}
                     </div>
                     <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                      {plan.recipes?.length || 0} 道食谱
+                      {plan.recipes?.length || 0} recipes
                     </div>
                   </button>
                 ))}
               </div>
             ) : (
               <p style={{ color: "var(--text-secondary)" }}>
-                您还没有创建任何计划。
+                You have not created any meal plans yet.
                 <br />
                 <Link href="/saved" style={{ color: "#3b82f6", textDecoration: "none" }}>
-                  去创建计划 →
+                  Create a plan
                 </Link>
               </p>
             )}
@@ -423,7 +425,7 @@ export default function RecipeDetailPage() {
                 color: "var(--text-secondary)",
               }}
             >
-              关闭
+              Close
             </button>
           </div>
         </div>

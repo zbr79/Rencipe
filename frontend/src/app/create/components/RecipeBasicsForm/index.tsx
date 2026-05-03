@@ -1,14 +1,17 @@
 import styles from "./styles.module.css";
+import { HEALTH_TAG_OPTIONS } from "../../../utils/recipeTags";
 
 interface RecipeBasicsFormProps {
   title: string;
   description: string;
   servings: number;
   component: boolean;
+  healthTag: string;
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onServingsChange: (value: number) => void;
   onComponentChange: (value: boolean) => void;
+  onHealthTagChange: (value: string) => void;
 }
 
 export default function RecipeBasicsForm({
@@ -16,10 +19,12 @@ export default function RecipeBasicsForm({
   description,
   servings,
   component,
+  healthTag,
   onTitleChange,
   onDescriptionChange,
   onServingsChange,
   onComponentChange,
+  onHealthTagChange,
 }: RecipeBasicsFormProps) {
   return (
     <>
@@ -27,12 +32,12 @@ export default function RecipeBasicsForm({
       <section className={styles.section}>
         <div className={styles.formGroup}>
           <label htmlFor="title" className={styles.label}>
-            食谱名称
+            Recipe Name
           </label>
           <input
             id="title"
             type="text"
-            placeholder="输入食谱名称..."
+            placeholder="Enter recipe name..."
             value={title}
             onChange={(e) => onTitleChange(e.target.value)}
             required
@@ -42,11 +47,11 @@ export default function RecipeBasicsForm({
 
         <div className={styles.formGroup}>
           <label htmlFor="description" className={styles.label}>
-            简介
+            Description
           </label>
           <textarea
             id="description"
-            placeholder="菜谱简介..."
+            placeholder="Describe the recipe..."
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
             required
@@ -55,17 +60,33 @@ export default function RecipeBasicsForm({
           />
         </div>
 
-        <div className={styles.formGroup} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div className={styles.formGroup}>
+          <label htmlFor="healthTag" className={styles.label}>
+            Health Tag
+          </label>
+          <select
+            id="healthTag"
+            value={healthTag}
+            onChange={(e) => onHealthTagChange(e.target.value)}
+            className={styles.input}
+          >
+            <option value="">No health tag</option>
+            {HEALTH_TAG_OPTIONS.map((tag) => (
+              <option key={tag} value={tag}>{tag}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className={`${styles.formGroup} ${styles.checkboxRow}`}>
           <input
             id="component"
             type="checkbox"
             checked={component ?? false}
             onChange={(e) => onComponentChange(e.target.checked)}
             className={styles.checkbox}
-            style={{ width: "20px", height: "20px", cursor: "pointer" }}
           />
-          <label htmlFor="component" className={styles.label} style={{ margin: 0, cursor: "pointer" }}>
-            可用作膳食计划的组件
+          <label htmlFor="component" className={styles.label}>
+            Can be used as a component
           </label>
         </div>
       </section>

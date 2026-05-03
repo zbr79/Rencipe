@@ -42,10 +42,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let url = `${API_URL}/drafts?authorId=${authorId}`;
-    if (id) {
-      url += `&id=${id}`;
+    if (!id) {
+      return NextResponse.json(
+        { error: "id is required" },
+        { status: 400 }
+      );
     }
+
+    const url = `${API_URL}/drafts?authorId=${authorId}&id=${id}`;
 
     const response = await fetch(url, {
       method: "GET",

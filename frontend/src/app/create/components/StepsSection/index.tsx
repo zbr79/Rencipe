@@ -36,7 +36,7 @@ export default function StepsSection({
   return (
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
-        <h2>烹饪步骤</h2>
+        <h2>Cooking Steps</h2>
         <span className={styles.infoIcon}>ⓘ</span>
       </div>
 
@@ -44,7 +44,7 @@ export default function StepsSection({
         {steps.map((step, idx) => (
           <div key={idx} className={styles.stepContainer}>
             <div className={styles.stepHeader}>
-              <h3 className={styles.stepTitle}>步骤 {step.stepNumber}</h3>
+              <h3 className={styles.stepTitle}>Step {step.stepNumber}</h3>
               <button
                 type="button"
                 onClick={() => onRemoveStep(idx)}
@@ -79,7 +79,7 @@ export default function StepsSection({
                         onClick={() => document.getElementById(`file-${idx}`)?.click()}
                         className={styles.changeImageBtn}
                       >
-                        更换图片
+                        Change image
                       </button>
                       {onRemoveStepImage && (
                         <button
@@ -87,15 +87,15 @@ export default function StepsSection({
                           onClick={() => onRemoveStepImage(step.stepNumber)}
                           className={styles.removeImageBtn}
                         >
-                          删除图片
+                          Remove image
                         </button>
                       )}
                     </div>
                   </>
                 ) : (
                   <label htmlFor={`file-${idx}`} className={styles.uploadPlaceholder}>
-                    <div className={styles.uploadIcon}>+ 步骤图</div>
-                    <div className={styles.uploadText}>清晰的步骤会让菜谱更受欢迎</div>
+                    <div className={styles.uploadIcon}>+ Step Image</div>
+                    <div className={styles.uploadText}>Clear step photos make the recipe easier to follow</div>
                     <input
                       id={`file-${idx}`}
                       type="file"
@@ -109,7 +109,7 @@ export default function StepsSection({
 
               {/* Description */}
               <textarea
-                placeholder="添加步骤说明"
+                placeholder="Add step instructions"
                 value={step.instruction}
                 onChange={(e) => handleInstructionChange(idx, e.target.value)}
                 className={styles.textarea}
@@ -121,7 +121,7 @@ export default function StepsSection({
       </div>
 
       <button type="button" onClick={onAddStep} className={styles.addBtn}>
-        + 添加步骤
+        + Add Step
       </button>
     </section>
   );

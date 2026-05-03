@@ -10,6 +10,7 @@ import cartRoutes from "./routes/cart.routes";
 import favoriteRoutes from "./routes/favorite.routes";
 import mealPlanRoutes from "./routes/mealplan.routes";
 import weeklyPlanRoutes from "./routes/weeklyplan.routes";
+import authRoutes from "./routes/auth.routes";
 dotenv.config();
 
 const app = express();
@@ -20,13 +21,14 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 const PORT = process.env.PORT || 6000;
 // ...
+app.use(authRoutes);
 app.use(recipeRoutes);
 app.use(imageRoutes);
 app.use("/drafts", draftRoutes);

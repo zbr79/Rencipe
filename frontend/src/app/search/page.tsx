@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import styles from "../recipes/page.module.css";
+import { useRouter } from "next/navigation";
+import styles from "./page.module.css";
 import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
 import { matchesPinyinSearch } from "../utils/pinyinSearch";
+import { getPrimaryRecipeLabel, getVisibleTags } from "../utils/recipeTags";
+import { authFetch } from "../utils/authSession";
 
 interface Recipe {
   id: string;
@@ -21,37 +24,51 @@ interface Recipe {
   image?: string;
 }
 
+const HISTORY_KEY = "rencipe-search-history";
+
 export default function SearchPage() {
+  const router = useRouter();
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);
+  const [history, setHistory] = useState<string[]>([]);
 
   useEffect(() => {
     fetchAllRecipes();
+  }, []);
+
+  useEffect(() => {
+    setSearchTerm(new URLSearchParams(window.location.search).get("q") || "");
+  }, []);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(window.localStorage.getItem(HISTORY_KEY) || "[]");
+      setHistory(Array.isArray(stored) ? stored.slice(0, 8) : []);
+    } catch {
+      setHistory([]);
+    }
   }, []);
 
   const fetchAllRecipes = async () => {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`/api/recipes?limit=1000`);
+      const response = await authFetch(`/api/recipes?limit=1000`);
 
       if (!response.ok) {
-        throw new Error("获取食谱失败");
+        throw new Error("Failed to fetch recipes");
       }
 
       const data = await response.json();
-      // Enrich with mock images
       const enrichedRecipes = enrichRecipesWithMockImages<Recipe>((data.recipes || []) as Recipe[]);
       setAllRecipes(enrichedRecipes);
 
-      // Extract all unique tags
       const tags = new Set<string>();
-      enrichedRecipes?.forEach((recipe: Recipe) => {
-        recipe.tags?.forEach((tag) => tags.add(tag));
+      enrichedRecipes.forEach((recipe) => {
+        getVisibleTags(recipe.tags).forEach((tag) => tags.add(tag));
       });
       setAllTags(Array.from(tags).sort());
     } catch (err: any) {
@@ -62,165 +79,184 @@ export default function SearchPage() {
     }
   };
 
-  const filteredRecipes = allRecipes.filter((recipe) => {
-    const matchesSearch =
-      !searchTerm ||
-      matchesPinyinSearch(searchTerm, recipe.title) ||
-      matchesPinyinSearch(searchTerm, recipe.description);
+  const recommendationTags = useMemo(() => {
+    const preferred = ["High Protein", "Balanced", "Quick", "Dinner", "Vegetable", "Seafood", "Meal prep", "Keto Friendly"];
+    const merged = [...preferred, ...allTags];
+    return Array.from(new Set(merged)).filter(Boolean).slice(0, 12);
+  }, [allTags]);
 
-    const matchesTags =
-      selectedTags.length === 0 ||
-      selectedTags.every((tag) => recipe.tags.includes(tag));
+  const updateSearchTerm = (value: string) => {
+    setSearchTerm(value);
+    const query = value.trim();
+    router.replace(query ? `/search?q=${encodeURIComponent(query)}` : "/search", { scroll: false });
+  };
 
-    return matchesSearch && matchesTags;
-  });
+  const commitSearchTerm = (value = searchTerm) => {
+    const query = value.trim();
+    if (!query) return;
+    setHistory((prev) => {
+      const next = [query, ...prev.filter((item) => item.toLowerCase() !== query.toLowerCase())].slice(0, 8);
+      window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const removeHistoryItem = (value: string) => {
+    setHistory((prev) => {
+      const next = prev.filter((item) => item !== value);
+      window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const clearHistory = () => {
+    window.localStorage.removeItem(HISTORY_KEY);
+    setHistory([]);
+  };
+
+  const hasQuery = Boolean(searchTerm.trim());
+  const filteredRecipes = hasQuery
+    ? allRecipes.filter((recipe) => (
+        matchesPinyinSearch(searchTerm, recipe.title) ||
+        matchesPinyinSearch(searchTerm, recipe.description) ||
+        getVisibleTags(recipe.tags).some((tag) => matchesPinyinSearch(searchTerm, tag))
+      ))
+    : [];
 
   return (
-    <div className={styles.container}>
-      <h1>搜索食谱</h1>
+    <main className={styles.page}>
+      <header className={styles.searchHeader}>
+        <button type="button" className={styles.backButton} onClick={() => router.back()} aria-label="Back">
+          <span className="material-symbols-outlined">arrow_back</span>
+        </button>
 
-      {error && <div className={styles.error}>错误: {error}</div>}
+        <div className={styles.searchBox}>
+          <span className={`material-symbols-outlined ${styles.searchIcon}`}>search</span>
+          <input
+            type="text"
+            placeholder="Search recipes"
+            value={searchTerm}
+            onChange={(event) => updateSearchTerm(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") commitSearchTerm();
+            }}
+            autoFocus
+          />
+          {searchTerm && (
+            <button type="button" className={styles.clearSearch} onClick={() => updateSearchTerm("")} aria-label="Clear search">
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          )}
+        </div>
 
-      {/* Search Bar */}
-      <div className={styles.filtersSection}>
-        <input
-          type="text"
-          placeholder="输入食谱标题或描述..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className={styles.searchInput}
-          autoFocus
-          style={{ fontSize: "16px", marginBottom: "16px" }}
-        />
+        <Link href="/cart" className={styles.cartButton} aria-label="Shopping Cart">
+          <span className="material-symbols-outlined">shopping_cart</span>
+        </Link>
+      </header>
 
-        {/* Tags Filter */}
-        {allTags.length > 0 && (
-          <div style={{ marginBottom: "16px" }}>
-            <h3 style={{ marginBottom: "8px", fontSize: "14px" }}>按标签筛选</h3>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {allTags.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => {
-                    setSelectedTags((prev) =>
-                      prev.includes(tag)
-                        ? prev.filter((t) => t !== tag)
-                        : [...prev, tag]
-                    );
-                  }}
-                  style={{
-                    padding: "8px 12px",
-                    background: selectedTags.includes(tag) ? "#667eea" : "#f0f0f0",
-                    color: selectedTags.includes(tag) ? "white" : "black",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                  }}
-                >
+      {error && <div className={styles.error}>Error: {error}</div>}
+
+      {!hasQuery && (
+        <>
+          <section className={styles.sectionBlock}>
+            <div className={styles.sectionHeader}>
+              <h2>Search History</h2>
+              {history.length > 0 && (
+                <button type="button" className={styles.iconButton} onClick={clearHistory} aria-label="Clear history">
+                  <span className="material-symbols-outlined">delete</span>
+                </button>
+              )}
+            </div>
+            {history.length > 0 ? (
+              <div className={styles.chipList}>
+                {history.map((item) => (
+                  <button key={item} type="button" className={styles.historyChip} onClick={() => updateSearchTerm(item)}>
+                    <span>{item}</span>
+                    <span
+                      className="material-symbols-outlined"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        removeHistoryItem(item);
+                      }}
+                    >
+                      close
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className={styles.emptyHistory}>Your recent searches will appear here.</p>
+            )}
+          </section>
+
+          <section className={styles.sectionBlock}>
+            <div className={styles.sectionHeader}>
+              <h2>Recommended</h2>
+            </div>
+            <div className={styles.chipList}>
+              {recommendationTags.map((tag, index) => (
+                <button key={tag} type="button" className={styles.recommendChip} onClick={() => updateSearchTerm(tag)}>
+                  {index < 3 && <span className="material-symbols-outlined">local_fire_department</span>}
                   {tag}
                 </button>
               ))}
             </div>
-          </div>
-        )}
-      </div>
+          </section>
+        </>
+      )}
 
-      {/* Results Count */}
-      <div className={styles.count}>
-        找到 {filteredRecipes.length} 个食谱
-      </div>
-
-      {/* Loading State */}
-      {loading && <p className={styles.loading}>加载中...</p>}
-
-      {/* Empty State */}
-      {!loading && filteredRecipes.length === 0 && (
-        <div className={styles.empty}>
-          <p>
-            {allRecipes.length === 0 ? "尚无食谱" : "没有找到匹配的食谱"}
-          </p>
-          {allRecipes.length > 0 && (
-            <button
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedTags([]);
-              }}
-              className={styles.createLink}
-              style={{
-                background: "none",
-                border: "1px solid #667eea",
-                padding: "8px 16px",
-                cursor: "pointer",
-              }}
-            >
-              清除筛选
-            </button>
-          )}
+      {hasQuery && (
+        <div className={styles.resultsHeader}>
+          <h2>Search Results</h2>
+          <span>{filteredRecipes.length} recipes</span>
         </div>
       )}
 
-      {/* Recipes Grid */}
-      <div className={styles.grid}>
-        {filteredRecipes.map((recipe) => (
-          <Link
-            key={recipe._id || recipe.id}
-            href={`/recipes/${recipe._id || recipe.id}`}
-            className={styles.card}
-          >
-            {recipe.image && (
-              <div
-                style={{
-                  width: "100%",
-                  height: "200px",
-                  overflow: "hidden",
-                  borderRadius: "8px 8px 0 0",
-                }}
-              >
-                <img
-                  src={recipe.image}
-                  alt={recipe.title}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              </div>
-            )}
-            <div className={styles.cardHeader}>
-              <h3>{recipe.title}</h3>
-            </div>
+      {loading && <p className={styles.loading}>Loading...</p>}
 
-            <p className={styles.description}>{recipe.description || ""}</p>
+      {!loading && hasQuery && filteredRecipes.length === 0 && (
+        <div className={styles.empty}>
+          <p>{allRecipes.length === 0 ? "No recipes yet" : "No matching recipes found"}</p>
+          <button type="button" onClick={() => updateSearchTerm("")} className={styles.secondaryButton}>
+            Clear search
+          </button>
+        </div>
+      )}
 
-            <div className={styles.meta}>
-              <span className={styles.metaItem}>
-                🍽️ {recipe.servings || 1} 人份
-              </span>
-            </div>
-
-            {recipe.tags.length > 0 && (
-              <div className={styles.tags}>
-                {recipe.tags.slice(0, 3).map((tag) => (
-                  <span key={tag} className={styles.tag}>
-                    {tag}
-                  </span>
-                ))}
-                {recipe.tags.length > 3 && (
-                  <span className={styles.tag}>
-                    +{recipe.tags.length - 3}
-                  </span>
+      {hasQuery && (
+        <div className={styles.resultList}>
+          {filteredRecipes.map((recipe, index) => (
+            <Link
+              key={recipe._id || recipe.id}
+              href={`/recipes/${recipe._id || recipe.id}`}
+              className={`${styles.recipeCard} ${styles.resultCard}`}
+              onClick={() => commitSearchTerm()}
+            >
+              <span className={styles.discountBadge}>{index % 3 === 0 ? "New" : index % 3 === 1 ? "Popular" : "Fresh"}</span>
+              {recipe.image && (
+                <div className={styles.recipeImage}>
+                  <img src={recipe.image} alt={recipe.title} />
+                </div>
+              )}
+              <div className={styles.recipeBody}>
+                <div className={styles.recipeTopLine}>
+                  <span>{getPrimaryRecipeLabel(recipe.tags)}</span>
+                  <span>{recipe.servings || 1} servings</span>
+                </div>
+                <h3>{recipe.title}</h3>
+                {recipe.description && <p>{recipe.description}</p>}
+                {getVisibleTags(recipe.tags).length > 0 && (
+                  <div className={styles.cardTags}>
+                    {getVisibleTags(recipe.tags).slice(0, 2).map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
                 )}
               </div>
-            )}
-
-            <div className={styles.stats}>
-              <span>❤️ {recipe.likes}</span>
-              <span>👁️ {recipe.views}</span>
-              {recipe.ratingCount > 0 && (
-                <span>⭐ {recipe.ratingAverage.toFixed(1)}</span>
-              )}
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </main>
   );
 }

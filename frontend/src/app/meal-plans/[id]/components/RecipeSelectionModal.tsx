@@ -76,7 +76,7 @@ export default function RecipeSelectionModal({
         <div className={styles.searchContainer}>
           <input
             type="text"
-            placeholder="搜索食谱... (支持汉字、拼音和首字母)"
+            placeholder="Search recipes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className={styles.searchInput}
@@ -85,14 +85,14 @@ export default function RecipeSelectionModal({
         </div>
 
         <div className={styles.recipeList}>
-          {loading && <p className={styles.loading}>加载食谱中...</p>}
+          {loading && <p className={styles.loading}>Loading recipes...</p>}
 
           {!loading && recipes.length === 0 && (
-            <p className={styles.empty}>暂无可用食谱</p>
+            <p className={styles.empty}>No available recipes</p>
           )}
 
           {!loading && recipes.length > 0 && filteredRecipes.length === 0 && (
-            <p className={styles.empty}>未找到匹配的食谱</p>
+            <p className={styles.empty}>No matching recipes found</p>
           )}
 
           {!loading && filteredRecipes.length > 0 &&
@@ -118,7 +118,7 @@ export default function RecipeSelectionModal({
                   )}
                   {recipe.mainIngredients && recipe.mainIngredients.length > 0 && (
                     <p className={styles.recipeIngredients}>
-                      主料: {recipe.mainIngredients.map((ing) => ing.name).join(", ")}
+                      Main ingredients: {recipe.mainIngredients.map((ing) => ing.name).join(", ")}
                     </p>
                   )}
                 </div>
@@ -131,7 +131,7 @@ export default function RecipeSelectionModal({
 
         <div className={styles.footer}>
           <button className={styles.confirmBtn} onClick={onClose}>
-            完成选择
+            Done
           </button>
         </div>
       </div>

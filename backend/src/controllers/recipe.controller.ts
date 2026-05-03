@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 import Recipe from "../models/Recipe";
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
+import { getAuthUser } from "../middleware/auth";
 
 dotenv.config();
 
@@ -14,11 +16,13 @@ cloudinary.config({
 function pickRecipe(doc: any) {
   return {
     id: String(doc._id),
+    _id: String(doc._id),
     title: doc.title,
     description: doc.description,
     image: doc.image ?? null,
     authorId: doc.authorId ?? null,
     component: doc.component ?? false,
+    isPublic: doc.isPublic ?? false,
     mainIngredients: doc.mainIngredients ?? [],
     seasonings: doc.seasonings ?? [],
     steps: doc.steps ?? [],
@@ -33,14 +37,44 @@ function pickRecipe(doc: any) {
   };
 }
 
+function visibleRecipeQuery(req: Request) {
+  const user = getAuthUser(req);
+  if (user?.role === "admin") return {};
+
+  const publicQuery = { isPublic: true };
+  if (!user) return publicQuery;
+
+  return {
+    $or: [
+      publicQuery,
+      { authorId: new mongoose.Types.ObjectId(user.id) },
+    ],
+  };
+}
+
+function canAccessRecipe(req: Request, doc: any) {
+  const user = getAuthUser(req);
+  if (doc.isPublic) return true;
+  if (user?.role === "admin") return true;
+  return Boolean(user && doc.authorId?.toString() === user.id);
+}
+
+function canMutateRecipe(req: Request, doc: any) {
+  const user = getAuthUser(req);
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  return doc.authorId?.toString() === user.id;
+}
+
 /**
  * GET /recipes
  */
 export async function listRecipes(req: Request, res: Response) {
   try {
-    const docs = await Recipe.find({})
+    const limit = Math.min(parseInt(String(req.query.limit || "200"), 10) || 200, 1000);
+    const docs = await Recipe.find(visibleRecipeQuery(req))
       .sort({ updatedAt: -1, createdAt: -1 })
-      .limit(200);
+      .limit(limit);
 
     res.json({
       recipes: docs.map(pickRecipe),
@@ -52,14 +86,13 @@ export async function listRecipes(req: Request, res: Response) {
 
 /**
  * POST /recipes
- * body: { title, description, authorId, mainIngredients, seasonings, steps, servings, tags, image, component }
+ * body: { title, description, mainIngredients, seasonings, steps, servings, tags, image, component, isPublic }
  */
 export async function createRecipe(req: Request, res: Response) {
   try {
     const {
       title,
       description,
-      authorId,
       mainIngredients,
       seasonings,
       steps,
@@ -67,18 +100,21 @@ export async function createRecipe(req: Request, res: Response) {
       tags,
       image,
       component,
+      isPublic,
     } = req.body;
+    const authUser = getAuthUser(req);
+
+    if (!authUser)
+      return res.status(401).json({ error: "Authentication required" });
 
     if (!title) return res.status(400).json({ error: "title is required" });
     if (!description)
       return res.status(400).json({ error: "description is required" });
-    if (!authorId)
-      return res.status(400).json({ error: "authorId is required" });
 
     const doc = await Recipe.create({
       title,
       description,
-      authorId,
+      authorId: new mongoose.Types.ObjectId(authUser.id),
       mainIngredients: mainIngredients || [],
       seasonings: seasonings || [],
       steps: steps || [],
@@ -86,6 +122,7 @@ export async function createRecipe(req: Request, res: Response) {
       tags: tags || [],
       image: image || undefined,
       component: component ?? false,
+      isPublic: authUser.role === "admin" ? Boolean(isPublic) : false,
     });
 
     res.status(201).json({ recipe: pickRecipe(doc) });
@@ -104,6 +141,7 @@ export async function getRecipeById(req: Request, res: Response) {
 
     const doc = await Recipe.findById(id);
     if (!doc) return res.status(404).json({ error: "recipe not found" });
+    if (!canAccessRecipe(req, doc)) return res.status(404).json({ error: "recipe not found" });
 
     res.json({ recipe: pickRecipe(doc) });
   } catch (e: any) {
@@ -130,7 +168,14 @@ export async function updateRecipe(req: Request, res: Response) {
       tags,
       image,
       component,
+      isPublic,
     } = req.body;
+
+    const existing = await Recipe.findById(id);
+    if (!existing) return res.status(404).json({ error: "recipe not found" });
+    if (!canMutateRecipe(req, existing)) return res.status(403).json({ error: "Not allowed to update this recipe" });
+
+    const authUser = getAuthUser(req);
 
     const doc = await Recipe.findByIdAndUpdate(
       id,
@@ -144,6 +189,7 @@ export async function updateRecipe(req: Request, res: Response) {
         tags: tags || [],
         image: image || undefined,
         component: component ?? undefined,
+        ...(authUser?.role === "admin" && typeof isPublic === "boolean" ? { isPublic } : {}),
       },
       { new: true }
     );
@@ -165,6 +211,10 @@ export async function deleteRecipe(req: Request, res: Response) {
     const id = String(req.params.id || "").trim();
     if (!id) return res.status(400).json({ error: "id is required" });
 
+    const existing = await Recipe.findById(id);
+    if (!existing) return res.status(404).json({ error: "recipe not found" });
+    if (!canMutateRecipe(req, existing)) return res.status(403).json({ error: "Not allowed to delete this recipe" });
+
     const doc = await Recipe.findByIdAndDelete(id);
     if (!doc) return res.status(404).json({ error: "recipe not found" });
 
@@ -182,6 +232,10 @@ export async function uploadRecipeImage(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
     if (!id) return res.status(400).json({ error: "id is required" });
+
+    const existing = await Recipe.findById(id);
+    if (!existing) return res.status(404).json({ error: "recipe not found" });
+    if (!canMutateRecipe(req, existing)) return res.status(403).json({ error: "Not allowed to update this recipe" });
 
     const file = (req as any).file;
     if (!file) return res.status(400).json({ error: "image file is required" });
@@ -234,6 +288,10 @@ export async function uploadStepImage(req: Request, res: Response) {
 
     if (!id) return res.status(400).json({ error: "id is required" });
     if (!stepNumber) return res.status(400).json({ error: "stepNumber is required" });
+
+    const existing = await Recipe.findById(id);
+    if (!existing) return res.status(404).json({ error: "recipe not found" });
+    if (!canMutateRecipe(req, existing)) return res.status(403).json({ error: "Not allowed to update this recipe" });
 
     const file = (req as any).file;
     if (!file) return res.status(400).json({ error: "image file is required" });

@@ -23,7 +23,7 @@ export const getMealPlans = async (req: Request, res: Response) => {
       userId: new mongoose.Types.ObjectId(userId as string),
     })
       .populate({
-        path: "combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
+        path: "recipes combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
         model: "Recipe",
       })
       .sort({ createdAt: -1 });
@@ -49,7 +49,7 @@ export const getMealPlanById = async (req: Request, res: Response) => {
     }
 
     const plan = await MealPlan.findById(idStr).populate({
-      path: "combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
+      path: "recipes combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
       model: "Recipe",
     });
 
@@ -122,11 +122,12 @@ export const createMealPlan = async (req: Request, res: Response) => {
 
     const plan = new MealPlan({
       userId: new mongoose.Types.ObjectId(userId),
-      name: name || `${numberOfPeople}人${numberOfDays}天计划`,
+      name: name || `${numberOfPeople}-person ${numberOfDays}-day meal plan`,
       people: peopleArray,
       numberOfDays,
       mealTypes,
       totalMealsNeeded,
+      recipes: [],
       combinations: [],
     });
 
@@ -213,7 +214,7 @@ export const renameMealPlan = async (req: Request, res: Response) => {
       updateData,
       { new: true }
     ).populate({
-      path: "combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
+      path: "recipes combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
       model: "Recipe",
     });
 
@@ -250,6 +251,59 @@ export const deleteMealPlan = async (req: Request, res: Response) => {
     res.json({ message: "Meal plan deleted successfully" });
   } catch (err: any) {
     console.error("Error deleting meal plan:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * Add a recipe directly to a meal plan
+ * params: { id }
+ * body: { recipeId }
+ */
+export const addRecipeToMealPlan = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const idStr = (Array.isArray(id) ? id[0] : id) as string;
+    const { recipeId } = req.body;
+
+    if (!recipeId) {
+      return res.status(400).json({ error: "recipeId is required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(idStr)) {
+      return res.status(400).json({ error: "Invalid meal plan ID" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(recipeId)) {
+      return res.status(400).json({ error: "Invalid recipe ID" });
+    }
+
+    const [plan, recipe] = await Promise.all([
+      MealPlan.findById(idStr),
+      Recipe.findById(recipeId),
+    ]);
+
+    if (!plan) {
+      return res.status(404).json({ error: "Meal plan not found" });
+    }
+
+    if (!recipe) {
+      return res.status(404).json({ error: "Recipe not found" });
+    }
+
+    if (!plan.recipes.some((id) => id.toString() === recipeId)) {
+      plan.recipes.push(new mongoose.Types.ObjectId(recipeId));
+      await plan.save();
+    }
+
+    await plan.populate({
+      path: "recipes combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
+      model: "Recipe",
+    });
+
+    res.status(201).json({ plan });
+  } catch (err: any) {
+    console.error("Error adding recipe to meal plan:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -313,7 +367,7 @@ export const addMealCombination = async (req: Request, res: Response) => {
     plan.combinations.push(newCombination);
     await plan.save();
     await plan.populate({
-      path: "combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
+      path: "recipes combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
       model: "Recipe",
     });
 
@@ -355,7 +409,7 @@ export const removeMealCombination = async (req: Request, res: Response) => {
     plan.combinations.splice(index, 1);
     await plan.save();
     await plan.populate({
-      path: "combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
+      path: "recipes combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
       model: "Recipe",
     });
 
@@ -409,9 +463,11 @@ export const toggleIngredientCheckStatus = async (req: Request, res: Response) =
 
     await plan.save();
     await plan.populate({
-      path: "combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
+      path: "recipes combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
       model: "Recipe",
     });
+
+    res.json({ plan });
   } catch (err: any) {
     console.error("Error toggling ingredient check status:", err);
     res.status(500).json({ error: err.message });

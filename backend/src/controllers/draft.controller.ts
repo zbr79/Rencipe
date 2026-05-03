@@ -8,7 +8,7 @@ import mongoose from "mongoose";
  */
 export async function saveDraft(req: Request, res: Response) {
   try {
-    const { authorId, name, title, description, image, mainIngredients, seasonings, steps, servings, tags } = req.body;
+    const { authorId, name, title, description, image, component, mainIngredients, seasonings, steps, servings, tags } = req.body;
 
     if (!authorId) {
       return res.status(400).json({ error: "authorId is required" });
@@ -25,6 +25,7 @@ export async function saveDraft(req: Request, res: Response) {
       title: title || "",
       description: description || "",
       image: image || undefined,
+      component: component ?? false,
       mainIngredients: mainIngredients || [],
       seasonings: seasonings || [],
       steps: steps || [],
@@ -84,9 +85,9 @@ export async function getDraft(req: Request, res: Response) {
  */
 export async function updateDraft(req: Request, res: Response) {
   try {
-    const rawId = req.params.id;
+    const rawId = req.params.id || req.body.id;
     const id = Array.isArray(rawId) ? rawId[0] : rawId;
-    const { authorId, name, title, description, image, mainIngredients, seasonings, steps, servings, tags } = req.body;
+    const { authorId, name, title, description, image, component, mainIngredients, seasonings, steps, servings, tags } = req.body;
 
     if (!authorId) {
       return res.status(400).json({ error: "authorId is required" });
@@ -110,6 +111,7 @@ export async function updateDraft(req: Request, res: Response) {
         title: title,
         description: description,
         image: image,
+        component: component ?? false,
         mainIngredients: mainIngredients,
         seasonings: seasonings,
         steps: steps,
@@ -131,7 +133,7 @@ export async function updateDraft(req: Request, res: Response) {
 
 /**
  * DELETE /drafts
- * Delete a draft by ID or delete all drafts for a user
+ * Delete a draft by ID
  */
 export async function deleteDraft(req: Request, res: Response) {
   try {
@@ -145,29 +147,24 @@ export async function deleteDraft(req: Request, res: Response) {
       return res.status(400).json({ error: "authorId must be a valid MongoDB ObjectId" });
     }
 
-    // If a specific draft ID is provided
-    if (id) {
-      if (!mongoose.Types.ObjectId.isValid(id as string)) {
-        return res.status(400).json({ error: "draft id must be a valid MongoDB ObjectId" });
-      }
-      const result = await Draft.findOneAndDelete({
-        _id: new mongoose.Types.ObjectId(id as string),
-        authorId: new mongoose.Types.ObjectId(authorId as string),
-      });
-
-      if (!result) {
-        return res.status(404).json({ error: "Draft not found" });
-      }
-
-      return res.json({ message: "Draft deleted successfully" });
+    if (!id) {
+      return res.status(400).json({ error: "draft id is required" });
     }
 
-    // Otherwise, delete all drafts for the author
-    await Draft.deleteMany({
+    if (!mongoose.Types.ObjectId.isValid(id as string)) {
+      return res.status(400).json({ error: "draft id must be a valid MongoDB ObjectId" });
+    }
+
+    const result = await Draft.findOneAndDelete({
+      _id: new mongoose.Types.ObjectId(id as string),
       authorId: new mongoose.Types.ObjectId(authorId as string),
     });
 
-    res.json({ message: "All drafts deleted successfully" });
+    if (!result) {
+      return res.status(404).json({ error: "Draft not found" });
+    }
+
+    return res.json({ message: "Draft deleted successfully" });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Failed to delete draft" });
   }

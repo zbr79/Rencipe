@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSaved } from "../contexts/SavedContext";
 import styles from "../recipes/page.module.css";
 import { matchesPinyinSearch } from "../utils/pinyinSearch";
+import { getVisibleTags } from "../utils/recipeTags";
 
 export default function SavedPage() {
   const {
@@ -77,7 +78,7 @@ export default function SavedPage() {
   };
 
   const handleDeletePlan = async (planId: string) => {
-    if (!confirm("确定要删除这个计划吗？")) return;
+    if (!confirm("Delete this plan?")) return;
 
     try {
       await deleteMealPlan(planId);
@@ -89,117 +90,55 @@ export default function SavedPage() {
 
   return (
     <div className={styles.container}>
-      <h1 style={{ marginBottom: "24px" }}>已保存</h1>
-
       {/* Tabs */}
-      <div
-        style={{
-          display: "flex",
-          gap: "0",
-          borderBottom: "2px solid var(--border)",
-          marginBottom: "24px",
-        }}
-      >
+      <div className={styles.segmentedTabs}>
         <button
           onClick={() => setActiveTab("recipes")}
-          style={{
-            flex: 1,
-            padding: "14px 16px",
-            background: "transparent",
-            border: "none",
-            borderBottom:
-              activeTab === "recipes" ? "3px solid #3b82f6" : "3px solid transparent",
-            cursor: "pointer",
-            fontSize: "15px",
-            fontWeight: activeTab === "recipes" ? "700" : "500",
-            color:
-              activeTab === "recipes"
-                ? "#3b82f6"
-                : "var(--text-secondary)",
-            transition: "all 0.2s ease",
-          }}
+          className={`${styles.segmentedTab} ${activeTab === "recipes" ? styles.segmentedTabActive : ""}`}
         >
-          🍽️ 菜谱 ({savedRecipes.length})
+          Recipes ({savedRecipes.length})
         </button>
         <button
           onClick={() => setActiveTab("plans")}
-          style={{
-            flex: 1,
-            padding: "14px 16px",
-            background: "transparent",
-            border: "none",
-            borderBottom:
-              activeTab === "plans" ? "3px solid #8b5cf6" : "3px solid transparent",
-            cursor: "pointer",
-            fontSize: "15px",
-            fontWeight: activeTab === "plans" ? "700" : "500",
-            color:
-              activeTab === "plans" ? "#8b5cf6" : "var(--text-secondary)",
-            transition: "all 0.2s ease",
-          }}
+          className={`${styles.segmentedTab} ${activeTab === "plans" ? styles.segmentedTabActive : ""}`}
         >
-          📋 膳食计划 ({mealPlans.length})
+          Meal Plans ({mealPlans.length})
         </button>
       </div>
 
       {/* Filters */}
-      <div
-        style={{
-          marginBottom: "20px",
-          display: "flex",
-          gap: "12px",
-          alignItems: "center",
-        }}
-      >
+      <div className={styles.filtersSection}>
         <input
           type="text"
           placeholder={
-            activeTab === "recipes" ? "🔍 搜索已保存食谱..." : "🔍 搜索计划..."
+            activeTab === "recipes" ? "Search saved recipes" : "Search meal plans"
           }
           value={filters.searchTerm}
           onChange={(e) =>
             setFilters({ ...filters, searchTerm: e.target.value })
           }
-          style={{
-            flex: 1,
-            padding: "12px 16px",
-            border: "1.5px solid var(--border)",
-            borderRadius: "8px",
-            fontSize: "14px",
-            background: "var(--card-bg)",
-            color: "var(--foreground)",
-            transition: "all 0.2s ease",
-            boxSizing: "border-box",
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = "#3b82f6";
-            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = "var(--border)";
-            e.currentTarget.style.boxShadow = "none";
-          }}
+          className={styles.searchInput}
         />
       </div>
 
-      {/* ===== 菜谱 Tab ===== */}
+      {/* ===== Recipes Tab ===== */}
       {activeTab === "recipes" && (
         <>
           <div className={styles.count}>
-            已保存 {filteredRecipes.length} 个食谱
+            Saved {filteredRecipes.length} recipes
           </div>
 
-          {loadingSaved && <p className={styles.loading}>加载中...</p>}
+          {loadingSaved && <p className={styles.loading}>Loading...</p>}
 
           {!loadingSaved && filteredRecipes.length === 0 && (
             <div className={styles.empty}>
               <p>
                 {savedRecipes.length === 0
-                  ? "您还没有保存任何食谱"
-                  : "没有找到匹配的食谱"}
+                  ? "You have not saved any recipes yet"
+                  : "No matching recipes found"}
               </p>
               <Link href="/recipes" className={styles.createLink}>
-                浏览食谱
+                Browse Recipes
               </Link>
             </div>
           )}
@@ -213,23 +152,8 @@ export default function SavedPage() {
                 className={styles.card}
               >
                 {recipe.image && (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "200px",
-                      overflow: "hidden",
-                      borderRadius: "8px 8px 0 0",
-                    }}
-                  >
-                    <img
-                      src={recipe.image}
-                      alt={recipe.title}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
+                  <div className={styles.cardImage}>
+                    <img src={recipe.image} alt={recipe.title} />
                   </div>
                 )}
                 <div className={styles.cardHeader}>
@@ -242,30 +166,30 @@ export default function SavedPage() {
 
                 <div className={styles.meta}>
                   <span className={styles.metaItem}>
-                    🍽️ {recipe.servings || 1} 人份
+                    🍽️ {recipe.servings || 1} servings
                   </span>
                 </div>
 
-                {recipe.tags.length > 0 && (
+                {getVisibleTags(recipe.tags).length > 0 && (
                   <div className={styles.tags}>
-                    {recipe.tags.slice(0, 3).map((tag) => (
+                    {getVisibleTags(recipe.tags).slice(0, 3).map((tag) => (
                       <span key={tag} className={styles.tag}>
                         {tag}
                       </span>
                     ))}
-                    {recipe.tags.length > 3 && (
+                    {getVisibleTags(recipe.tags).length > 3 && (
                       <span className={styles.tag}>
-                        +{recipe.tags.length - 3}
+                        +{getVisibleTags(recipe.tags).length - 3}
                       </span>
                     )}
                   </div>
                 )}
 
                 <div className={styles.stats}>
-                  <span>❤️ {recipe.likes}</span>
-                  <span>👁️ {recipe.views}</span>
+                  <span>{recipe.likes} saves</span>
+                  <span>{recipe.views} views</span>
                   {recipe.ratingCount > 0 && (
-                    <span>⭐ {recipe.ratingAverage.toFixed(1)}</span>
+                    <span>{recipe.ratingAverage.toFixed(1)} rating</span>
                   )}
                 </div>
               </Link>
@@ -274,7 +198,7 @@ export default function SavedPage() {
         </>
       )}
 
-      {/* ===== 计划 Tab ===== */}
+      {/* ===== Plan Tab ===== */}
       {activeTab === "plans" && (
         <>
           <div
@@ -294,7 +218,7 @@ export default function SavedPage() {
                 fontWeight: "500",
               }}
             >
-              共有 {filteredPlans.length} 个计划
+              Total {filteredPlans.length} plans
             </div>
             <button
               onClick={handleCreateMealPlan}
@@ -323,18 +247,18 @@ export default function SavedPage() {
                 e.currentTarget.style.transform = "translateY(0)";
               }}
             >
-              ✨ 新建计划
+              ✨ New Plan
             </button>
           </div>
 
-          {loadingPlans && <p className={styles.loading}>加载中...</p>}
+          {loadingPlans && <p className={styles.loading}>Loading...</p>}
 
           {!loadingPlans && filteredPlans.length === 0 && (
             <div className={styles.empty}>
               <p>
                 {mealPlans.length === 0
-                  ? "您还没有创建任何计划"
-                  : "没有找到匹配的计划"}
+                  ? "You have not created any meal plans yet"
+                  : "No matching plans found"}
               </p>
               <button
                 onClick={handleCreateMealPlan}
@@ -363,7 +287,7 @@ export default function SavedPage() {
                   e.currentTarget.style.transform = "translateY(0)";
                 }}
               >
-                {isCreatingPlan ? "创建中..." : "✨ 新建第一个计划"}
+                {isCreatingPlan ? "Creating..." : "✨ Create your first plan"}
               </button>
             </div>
           )}
@@ -432,7 +356,7 @@ export default function SavedPage() {
                           fontWeight: "600",
                         }}
                       >
-                        保存
+                        Save
                       </button>
                       <button
                         onClick={(e) => {
@@ -450,7 +374,7 @@ export default function SavedPage() {
                           fontSize: "12px",
                         }}
                       >
-                        取消
+                        Cancel
                       </button>
                     </div>
                   ) : (
@@ -464,7 +388,7 @@ export default function SavedPage() {
                           fontWeight: "500",
                         }}
                       >
-                        📚 {plan.combinations.length} 道食谱
+                        📚 {plan.combinations.length} recipes
                       </p>
                     </div>
                   )}
@@ -482,9 +406,9 @@ export default function SavedPage() {
                         handleDeletePlan(plan._id);
                       }}
                       style={{
-                        background: "#fee2e2",
-                        color: "#ef4444",
-                        border: "1px solid #fecaca",
+                        background: "var(--hover-bg)",
+                        color: "var(--foreground)",
+                        border: "1px solid var(--border)",
                         padding: "8px 14px",
                         borderRadius: "6px",
                         cursor: "pointer",
@@ -493,15 +417,15 @@ export default function SavedPage() {
                         transition: "all 0.2s ease",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#ef4444";
-                        e.currentTarget.style.color = "white";
+                        e.currentTarget.style.background = "var(--card-bg)";
+                        e.currentTarget.style.color = "var(--foreground)";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "#fee2e2";
-                        e.currentTarget.style.color = "#ef4444";
+                        e.currentTarget.style.background = "var(--hover-bg)";
+                        e.currentTarget.style.color = "var(--foreground)";
                       }}
                     >
-                      🗑️ 删除
+                      Delete
                     </button>
                   </div>
                 )}

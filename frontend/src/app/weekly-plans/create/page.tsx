@@ -11,7 +11,7 @@ export default function CreateWeeklyPlanPage() {
   const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
   const modalShownRef = useRef(false);
 
-  const [name, setName] = useState("未命名排表");
+  const [name, setName] = useState("Untitled Meal Plan");
   const [mealTypes, setMealTypes] = useState({
     breakfast: false,
     lunch: false,
@@ -40,7 +40,7 @@ export default function CreateWeeklyPlanPage() {
       const plan = await createWeeklyPlan(userId, name, selectedMeals);
       router.push(`/weekly-plans/${plan._id}`);
     } catch (err: any) {
-      console.error("Failed to create weekly plan:", err);
+      console.error("Failed to create scheduled meal plan:", err);
       setIsLoading(false);
     }
   };
@@ -52,17 +52,17 @@ export default function CreateWeeklyPlanPage() {
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
-        <h2 style={{ marginBottom: "20px" }}>创建周计划</h2>
+        <h2 style={{ marginBottom: "20px" }}>Create Scheduled Meal Plan</h2>
 
         <div style={{ marginBottom: "20px" }}>
           <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
-            计划名称
+            Plan Name
           </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="输入计划名称"
+            placeholder="Enter plan name"
             style={{
               width: "100%",
               padding: "8px 12px",
@@ -76,7 +76,7 @@ export default function CreateWeeklyPlanPage() {
 
         <div style={{ marginBottom: "24px" }}>
           <label style={{ display: "block", marginBottom: "12px", fontWeight: "500" }}>
-            选择餐次（可多选）
+            Select meal types
           </label>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
@@ -86,7 +86,7 @@ export default function CreateWeeklyPlanPage() {
                 onChange={() => handleMealTypeChange("breakfast")}
                 style={{ marginRight: "8px", cursor: "pointer" }}
               />
-              <span>早餐</span>
+              <span>Breakfast</span>
             </label>
             <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
               <input
@@ -95,7 +95,7 @@ export default function CreateWeeklyPlanPage() {
                 onChange={() => handleMealTypeChange("lunch")}
                 style={{ marginRight: "8px", cursor: "pointer" }}
               />
-              <span>午餐</span>
+              <span>Lunch</span>
             </label>
             <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
               <input
@@ -104,7 +104,7 @@ export default function CreateWeeklyPlanPage() {
                 onChange={() => handleMealTypeChange("dinner")}
                 style={{ marginRight: "8px", cursor: "pointer" }}
               />
-              <span>晚餐</span>
+              <span>Dinner</span>
             </label>
           </div>
         </div>
@@ -122,7 +122,7 @@ export default function CreateWeeklyPlanPage() {
               opacity: isLoading ? 0.6 : 1,
             }}
           >
-            取消
+            Cancel
           </button>
           <button
             onClick={handleCreate}
@@ -137,7 +137,7 @@ export default function CreateWeeklyPlanPage() {
               opacity: isLoading ? 0.6 : 1,
             }}
           >
-            {isLoading ? "创建中..." : "创建"}
+            {isLoading ? "Creating..." : "Create"}
           </button>
         </div>
       </div>

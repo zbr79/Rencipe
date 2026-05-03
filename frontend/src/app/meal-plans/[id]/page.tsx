@@ -6,9 +6,11 @@ import { useSaved } from "../../contexts/SavedContext";
 import styles from "../../recipes/page.module.css";
 import RecipeSelectionModal from "./components/RecipeSelectionModal";
 import { enrichRecipesWithMockImages } from "../../utils/recipeImageUtils";
+import { authFetch } from "../../utils/authSession";
 
 interface Recipe {
   id: string;
+  _id?: string;
   title: string;
   description: string;
   image?: string;
@@ -37,6 +39,7 @@ interface MealPlan {
   numberOfDays: number;
   mealTypes: ('lunch' | 'dinner')[];
   totalMealsNeeded: number;
+  recipes?: Recipe[];
   combinations: MealCombination[];
   checkedIngredients: string[];
   createdAt: string;
@@ -128,6 +131,10 @@ export default function MealPlanDetailPage({
             }
           });
         }
+
+        if (data.plan.recipes) {
+          data.plan.recipes = enrichRecipesWithMockImages<Recipe>(data.plan.recipes);
+        }
         
         setPlan(data.plan);
         setNewName(data.plan.name);
@@ -145,7 +152,7 @@ export default function MealPlanDetailPage({
   const fetchAllRecipes = async () => {
     setLoadingRecipes(true);
     try {
-      const response = await fetch(`/api/recipes`);
+      const response = await authFetch(`/api/recipes`);
       if (response.ok) {
         const data = await response.json();
         console.log(`Fetched ${data.recipes?.length || 0} recipes from backend`);
@@ -177,7 +184,7 @@ export default function MealPlanDetailPage({
     const portionsNum = portions === "" ? 0 : parseInt(String(portions));
     
     if (!selectedMeat || !selectedVege || !selectedSide || isNaN(portionsNum) || portionsNum < 1) {
-      setAddError("请填写所有字段，份量必须大于0");
+      setAddError("Complete all fields; portions must be greater than 0");
       return;
     }
 
@@ -280,20 +287,20 @@ export default function MealPlanDetailPage({
 
     // Validate inputs
     if (!Array.isArray(editPeople) || editPeople.length === 0) {
-      alert("需要至少一个人");
+      alert("Add at least one person");
       return;
     }
     const days = editDays === "" ? plan.numberOfDays : parseInt(String(editDays));
 
     if (isNaN(days) || days < 1) {
-      alert("天数必须是大于0的数字");
+      alert("Days must be a number greater than 0");
       return;
     }
 
     // Validate people have names and modifiers
     for (const person of editPeople) {
       if (!person.name || !person.modifier || person.modifier < 0.1 || person.modifier > 5.0) {
-        alert("每个人必须有名字和有效的系数 (0.1-5.0)");
+        alert("Each person needs a name and valid modifier (0.1-5.0)");
         return;
       }
     }
@@ -372,56 +379,58 @@ export default function MealPlanDetailPage({
 
   // Calculate total ingredients needed
   const calculateTotalIngredients = (): AggregatedIngredient[] => {
-    if (!plan || !plan.combinations || !plan.people) return [];
+    if (!plan || !plan.people) return [];
 
     const ingredientMap: { [key: string]: AggregatedIngredient } = {};
+    const peopleMultiplier = plan.people.reduce((sum, person) => sum + person.modifier, 0);
+
+    const addIngredientsFromRecipe = (recipe: Recipe | undefined, type: string, multiplier: number) => {
+      if (!recipe) return;
+
+      const ingredients = [...(recipe.mainIngredients || []), ...(recipe.seasonings || [])];
+      ingredients.forEach((ing) => {
+        const key = ing.name.toLowerCase();
+        const match = ing.quantity.match(/^([\d.]+)(.*)$/);
+        const baseNum = match ? parseFloat(match[1]) : 1;
+        const unit = match ? match[2] : "";
+        const total = baseNum * multiplier;
+        const quantityStr = `${Math.round(total)}${unit}`;
+        const source = `${recipe.title} (${type})`;
+
+        if (!ingredientMap[key]) {
+          ingredientMap[key] = {
+            name: ing.name,
+            quantity: quantityStr,
+            sources: [source],
+          };
+          return;
+        }
+
+        const existingMatch = ingredientMap[key].quantity.match(/^([\d.]+)(.*)/);
+        const existingNum = existingMatch ? parseFloat(existingMatch[1]) : 0;
+        const existingUnit = existingMatch ? existingMatch[2] : unit;
+        ingredientMap[key].quantity = `${Math.round(existingNum + total)}${existingUnit}`;
+
+        if (!ingredientMap[key].sources.includes(source)) {
+          ingredientMap[key].sources.push(source);
+        }
+      });
+    };
 
     plan.combinations.forEach((combo) => {
       const recipes = [
-        { recipe: combo.meatRecipeId, type: "肉" },
-        { recipe: combo.vegeRecipeId, type: "菜" },
-        { recipe: combo.sideRecipeId, type: "配菜" },
+        { recipe: combo.meatRecipeId, type: "Protein" },
+        { recipe: combo.vegeRecipeId, type: "Vegetable" },
+        { recipe: combo.sideRecipeId, type: "Side" },
       ];
 
       recipes.forEach(({ recipe, type }) => {
-        if (!recipe) return;
-
-        const ingredients = [...(recipe.mainIngredients || []), ...(recipe.seasonings || [])];
-        ingredients.forEach((ing) => {
-          const key = ing.name.toLowerCase();
-          
-          // Parse quantity (e.g., "600g" -> {number: 600, unit: "g"})
-          const match = ing.quantity.match(/^([\d.]+)(.*)$/);
-          const baseNum = match ? parseFloat(match[1]) : 1;
-          const unit = match ? match[2] : "";
-          
-          // Calculate total for all people with modifiers applied
-          const total = combo.portions * plan.people.reduce((sum, person) => 
-            sum + baseNum * person.modifier, 0
-          );
-          
-          const quantityStr = `${Math.round(total)}${unit}`;
-          
-          if (!ingredientMap[key]) {
-            ingredientMap[key] = {
-              name: ing.name,
-              quantity: quantityStr,
-              sources: [`${recipe.title} (${type})`],
-            };
-          } else {
-            // Sum quantities from multiple sources
-            const existingMatch = ingredientMap[key].quantity.match(/^([\d.]+)(.*)/);
-            const existingNum = existingMatch ? parseFloat(existingMatch[1]) : 0;
-            const existingUnit = existingMatch ? existingMatch[2] : unit;
-            const summedTotal = existingNum + total;
-            ingredientMap[key].quantity = `${Math.round(summedTotal)}${existingUnit}`;
-            
-            if (!ingredientMap[key].sources.includes(`${recipe.title} (${type})`)) {
-              ingredientMap[key].sources.push(`${recipe.title} (${type})`);
-            }
-          }
-        });
+        addIngredientsFromRecipe(recipe, type, combo.portions * peopleMultiplier);
       });
+    });
+
+    (plan.recipes || []).forEach((recipe) => {
+      addIngredientsFromRecipe(recipe, "Cart recipe", peopleMultiplier);
     });
 
     return Object.values(ingredientMap);
@@ -432,7 +441,7 @@ export default function MealPlanDetailPage({
   if (loading) {
     return (
       <div className={styles.container}>
-        <p className={styles.loading}>加载中...</p>
+        <p className={styles.loading}>Loading...</p>
       </div>
     );
   }
@@ -441,9 +450,9 @@ export default function MealPlanDetailPage({
     return (
       <div className={styles.container}>
         <div className={styles.empty}>
-          <p>错误: {error}</p>
+          <p>Error: {error}</p>
           <Link href="/meal-plans" className={styles.createLink}>
-            返回计划列表
+            Back to Meal Plans
           </Link>
         </div>
       </div>
@@ -454,9 +463,9 @@ export default function MealPlanDetailPage({
     return (
       <div className={styles.container}>
         <div className={styles.empty}>
-          <p>找不到此计划</p>
+          <p>Plan not found</p>
           <Link href="/meal-plans" className={styles.createLink}>
-            返回计划列表
+            Back to Meal Plans
           </Link>
         </div>
       </div>
@@ -484,7 +493,7 @@ export default function MealPlanDetailPage({
                 fontSize: "12px",
               }}
             >
-              编辑
+              Edit
             </button>
           </div>
 
@@ -492,11 +501,11 @@ export default function MealPlanDetailPage({
           <div style={{ display: "flex", gap: "24px", alignItems: "center", fontSize: "13px", color: "#666" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span>👥</span>
-              <span>{plan.people.length} 人</span>
+              <span>{plan.people.length} people</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span>📅</span>
-              <span>{plan.numberOfDays} 天</span>
+              <span>{plan.numberOfDays} days</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span>🍽️</span>
@@ -504,7 +513,7 @@ export default function MealPlanDetailPage({
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <span>🛒</span>
-              <span><strong>{plan.totalMealsNeeded}</strong> 份</span>
+              <span><strong>{plan.totalMealsNeeded}</strong>  servings</span>
             </div>
           </div>
         </div>
@@ -525,7 +534,7 @@ export default function MealPlanDetailPage({
               fontSize: "16px",
             }}
           >
-            + 添加组合
+            + Add Combination
           </button>
         )}
 
@@ -557,7 +566,7 @@ export default function MealPlanDetailPage({
               }}
             >
             <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "16px" }}>
-              添加新组合
+              Add Meal Combination
             </h2>
 
             {addError && (
@@ -574,7 +583,7 @@ export default function MealPlanDetailPage({
               </div>
             )}
 
-            {loadingRecipes && <p style={{ color: "#999" }}>加载食谱中...</p>}
+            {loadingRecipes && <p style={{ color: "#999" }}>Loading recipes...</p>}
 
             {!loadingRecipes && (
               <>
@@ -614,7 +623,7 @@ export default function MealPlanDetailPage({
                         </p>
                       </>
                     ) : (
-                      <p style={{ fontSize: "11px", color: "#999", margin: "8px 0", fontWeight: "400" }}>选择肉</p>
+                      <p style={{ fontSize: "11px", color: "#999", margin: "8px 0", fontWeight: "400" }}>Select protein</p>
                     )}
                   </div>
 
@@ -643,7 +652,7 @@ export default function MealPlanDetailPage({
                         </p>
                       </>
                     ) : (
-                      <p style={{ fontSize: "11px", color: "#999", margin: "8px 0", fontWeight: "400" }}>选择菜</p>
+                      <p style={{ fontSize: "11px", color: "#999", margin: "8px 0", fontWeight: "400" }}>Select vegetable</p>
                     )}
                   </div>
 
@@ -672,7 +681,7 @@ export default function MealPlanDetailPage({
                         </p>
                       </>
                     ) : (
-                      <p style={{ fontSize: "11px", color: "#999", margin: "8px 0", fontWeight: "400" }}>选择配菜</p>
+                      <p style={{ fontSize: "11px", color: "#999", margin: "8px 0", fontWeight: "400" }}>Select side</p>
                     )}
                   </div>
 
@@ -688,14 +697,14 @@ export default function MealPlanDetailPage({
                       opacity: 0.7,
                     }}
                   >
-                    <p style={{ fontSize: "10px", margin: "12px 0", fontWeight: "500" }}>米饭 (固定)</p>
+                    <p style={{ fontSize: "10px", margin: "12px 0", fontWeight: "500" }}>Rice (fixed)</p>
                   </div>
                 </div>
 
                 {/* Portions */}
                 <div style={{ marginBottom: "16px" }}>
                   <label style={{ display: "block", marginBottom: "6px", fontWeight: "500", fontSize: "13px", color: "#666" }}>
-                    份量数
+                    Portions
                   </label>
                   <input
                     type="number"
@@ -711,7 +720,7 @@ export default function MealPlanDetailPage({
                     }}
                   />
                   <p style={{ fontSize: "12px", color: "#999", margin: "6px 0 0 0" }}>
-                    不能超过所需总份数: {plan.totalMealsNeeded}
+                    Cannot exceed required meals: {plan.totalMealsNeeded}
                   </p>
                 </div>
 
@@ -732,7 +741,7 @@ export default function MealPlanDetailPage({
                       fontSize: "16px",
                     }}
                   >
-                    {addingCombination ? "添加中..." : "添加组合"}
+                    {addingCombination ? "Adding..." : "Add Combination"}
                   </button>
                   <button
                     onClick={() => {
@@ -759,7 +768,7 @@ export default function MealPlanDetailPage({
                       fontSize: "16px",
                     }}
                   >
-                    取消
+                    Cancel
                   </button>
                 </div>
               </>
@@ -775,7 +784,7 @@ export default function MealPlanDetailPage({
                 setMeatModalOpen(false);
               }}
               onClose={() => setMeatModalOpen(false)}
-              title="选择肉类食谱"
+              title="Select protein recipe"
             />
             <RecipeSelectionModal
               isOpen={vegeModalOpen}
@@ -787,7 +796,7 @@ export default function MealPlanDetailPage({
                 setVegeModalOpen(false);
               }}
               onClose={() => setVegeModalOpen(false)}
-              title="选择蔬菜食谱"
+              title="Select vegetable recipe"
             />
             <RecipeSelectionModal
               isOpen={sideModalOpen}
@@ -799,18 +808,66 @@ export default function MealPlanDetailPage({
                 setSideModalOpen(false);
               }}
               onClose={() => setSideModalOpen(false)}
-              title="选择配菜食谱"
+              title="Select side recipe"
             />
             </div>
           </div>
         )}
       </div>
 
+      {plan.recipes && plan.recipes.length > 0 && (
+        <div style={{ marginBottom: "32px" }}>
+          <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "16px" }}>
+            Recipes from Cart ({plan.recipes.length})
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: "12px",
+            }}
+          >
+            {plan.recipes.map((recipe) => (
+              <Link
+                key={recipe._id || recipe.id}
+                href={`/recipes/${recipe._id || recipe.id}`}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  overflow: "hidden",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "8px",
+                  backgroundColor: "white",
+                  color: "inherit",
+                  textDecoration: "none",
+                }}
+              >
+                {recipe.image && (
+                  <img
+                    src={recipe.image}
+                    alt={recipe.title}
+                    style={{ width: "100%", aspectRatio: "4 / 3", objectFit: "cover" }}
+                  />
+                )}
+                <div style={{ padding: "12px" }}>
+                  <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 700 }}>{recipe.title}</h3>
+                  {recipe.description && (
+                    <p style={{ margin: "6px 0 0", color: "#666", fontSize: "12px", lineHeight: 1.4 }}>
+                      {recipe.description.length > 90 ? `${recipe.description.slice(0, 90)}...` : recipe.description}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Combinations List */}
       {plan.combinations.length > 0 && (
         <div style={{ marginBottom: "32px" }}>
           <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "16px" }}>
-            已添加的组合 ({plan.combinations.length})
+            Added Combinations ({plan.combinations.length})
           </h2>
           <div
             style={{
@@ -846,7 +903,7 @@ export default function MealPlanDetailPage({
                 }}
               >
                 <h3 style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "16px", color: "#333" }}>
-                  组合 #{index + 1} - {combo.portions} 份
+                  Combination #{index + 1} - {combo.portions}  servings
                 </h3>
                 
                 {/* Selection Grid - 4 columns */}
@@ -932,7 +989,7 @@ export default function MealPlanDetailPage({
                       opacity: 0.7,
                     }}
                   >
-                    <p style={{ fontSize: "10px", margin: "12px 0", fontWeight: "500" }}>米饭 (固定)</p>
+                    <p style={{ fontSize: "10px", margin: "12px 0", fontWeight: "500" }}>Rice (fixed)</p>
                   </div>
                 </div>
 
@@ -952,7 +1009,7 @@ export default function MealPlanDetailPage({
                     fontSize: "14px",
                   }}
                 >
-                  删除
+                  Delete
                 </button>
               </div>
             ))}
@@ -964,7 +1021,7 @@ export default function MealPlanDetailPage({
       {totalIngredients.length > 0 && (
         <div>
           <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "16px" }}>
-            所需食材清单
+            Ingredient List
           </h2>
           <div style={{ backgroundColor: "white", borderRadius: "8px", overflow: "hidden" }}>
             {totalIngredients.map((ing, index) => (
@@ -988,12 +1045,6 @@ export default function MealPlanDetailPage({
                   <p style={{ minWidth: "100px", textAlign: "right", fontSize: "14px" }}>
                     {ing.quantity}
                   </p>
-                  <input
-                    type="checkbox"
-                    checked={plan.checkedIngredients.includes(ing.name)}
-                    onChange={(e) => handleToggleIngredient(ing.name, e.target.checked)}
-                    style={{ cursor: "pointer" }}
-                  />
                 </div>
               </div>
             ))}
@@ -1001,10 +1052,10 @@ export default function MealPlanDetailPage({
         </div>
       )}
 
-      {plan.combinations.length === 0 && (
+      {plan.combinations.length === 0 && (!plan.recipes || plan.recipes.length === 0) && (
         <div style={{ textAlign: "center", padding: "40px 0", color: "#999" }}>
-          <p>还没有添加任何组合</p>
-          <p style={{ fontSize: "14px" }}>点击上面的按钮开始添加组合</p>
+          <p>No combinations added yet</p>
+          <p style={{ fontSize: "14px" }}>Use the button above to add a combination.</p>
         </div>
       )}
 
@@ -1033,18 +1084,18 @@ export default function MealPlanDetailPage({
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
             boxSizing: "border-box",
           }}>
-            <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "20px" }}>编辑计划</h2>
+            <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "20px" }}>Edit Plan</h2>
 
             {/* Edit Plan Name */}
             <div style={{ marginBottom: "16px" }}>
               <label style={{ display: "block", marginBottom: "6px", fontWeight: "500", fontSize: "13px", color: "#666" }}>
-                计划名称
+                Plan Name
               </label>
               <input
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="输入计划名称"
+                placeholder="Enter plan name"
                 style={{
                   width: "100%",
                   padding: "10px 12px",
@@ -1059,13 +1110,13 @@ export default function MealPlanDetailPage({
             {/* Edit People */}
             <div style={{ marginBottom: "16px" }}>
               <label style={{ display: "block", marginBottom: "6px", fontWeight: "500", fontSize: "13px", color: "#666" }}>
-                👥 家庭成员设置
+                👥 Household Members
               </label>
               <div style={{ marginBottom: "12px", maxHeight: "300px", overflowY: "auto" }}>
                 {Array.isArray(editPeople) && editPeople.map((person, idx) => (
                   <div key={idx} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-end" }}>
                     <div style={{ flex: 1 }}>
-                      <label style={{ display: "block", fontSize: "11px", color: "#999", marginBottom: "4px" }}>名字</label>
+                      <label style={{ display: "block", fontSize: "11px", color: "#999", marginBottom: "4px" }}>Name</label>
                       <input
                         type="text"
                         value={person.name}
@@ -1085,7 +1136,7 @@ export default function MealPlanDetailPage({
                       />
                     </div>
                     <div style={{ width: "80px" }}>
-                      <label style={{ display: "block", fontSize: "11px", color: "#999", marginBottom: "4px" }}>系数</label>
+                      <label style={{ display: "block", fontSize: "11px", color: "#999", marginBottom: "4px" }}>Modifier</label>
                       <input
                         type="number"
                         step="0.1"
@@ -1126,14 +1177,14 @@ export default function MealPlanDetailPage({
                   fontSize: "13px",
                 }}
               >
-                + 新增成员
+                + Add Member
               </button>
             </div>
 
             {/* Edit Days */}
             <div style={{ marginBottom: "16px" }}>
               <label style={{ display: "block", marginBottom: "6px", fontWeight: "500", fontSize: "13px", color: "#666" }}>
-                📅 天数
+                📅 Days
               </label>
               <input
                 type="number"
@@ -1153,7 +1204,7 @@ export default function MealPlanDetailPage({
             {/* Edit Meal Types */}
             <div style={{ marginBottom: "20px" }}>
               <label style={{ display: "block", marginBottom: "8px", fontWeight: "500", fontSize: "13px", color: "#666" }}>
-                🍽️ 餐型
+                🍽️ Meal Types
               </label>
               <div style={{ display: "flex", gap: "16px" }}>
                 <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
@@ -1169,7 +1220,7 @@ export default function MealPlanDetailPage({
                     }}
                     style={{ cursor: "pointer" }}
                   />
-                  <span>午餐</span>
+                  <span>Lunch</span>
                 </label>
                 <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
                   <input
@@ -1184,7 +1235,7 @@ export default function MealPlanDetailPage({
                     }}
                     style={{ cursor: "pointer" }}
                   />
-                  <span>晚餐</span>
+                  <span>Dinner</span>
                 </label>
               </div>
             </div>
@@ -1205,7 +1256,7 @@ export default function MealPlanDetailPage({
                   fontWeight: "500",
                 }}
               >
-                保存
+                Save
               </button>
               <button
                 onClick={() => {
@@ -1224,7 +1275,7 @@ export default function MealPlanDetailPage({
                   fontWeight: "500",
                 }}
               >
-                取消
+                Cancel
               </button>
             </div>
           </div>
@@ -1256,7 +1307,7 @@ export default function MealPlanDetailPage({
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
             boxSizing: "border-box",
           }}>
-            <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "20px" }}>编辑组合 #{editComboIndex + 1}</h2>
+            <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "20px" }}>Edit Combination #{editComboIndex + 1}</h2>
 
             {/* Recipe Selection Grid */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "4px", marginBottom: "16px", width: "100%", boxSizing: "border-box" }}>
@@ -1285,7 +1336,7 @@ export default function MealPlanDetailPage({
                     </p>
                   </>
                 ) : (
-                  <p style={{ fontSize: "11px", color: "#999", margin: "8px 0", fontWeight: "400" }}>选择肉</p>
+                  <p style={{ fontSize: "11px", color: "#999", margin: "8px 0", fontWeight: "400" }}>Select protein</p>
                 )}
               </div>
 
@@ -1314,7 +1365,7 @@ export default function MealPlanDetailPage({
                     </p>
                   </>
                 ) : (
-                  <p style={{ fontSize: "11px", color: "#999", margin: "8px 0", fontWeight: "400" }}>选择菜</p>
+                  <p style={{ fontSize: "11px", color: "#999", margin: "8px 0", fontWeight: "400" }}>Select vegetable</p>
                 )}
               </div>
 
@@ -1343,7 +1394,7 @@ export default function MealPlanDetailPage({
                     </p>
                   </>
                 ) : (
-                  <p style={{ fontSize: "11px", color: "#999", margin: "8px 0", fontWeight: "400" }}>选择配菜</p>
+                  <p style={{ fontSize: "11px", color: "#999", margin: "8px 0", fontWeight: "400" }}>Select side</p>
                 )}
               </div>
 
@@ -1359,14 +1410,14 @@ export default function MealPlanDetailPage({
                   opacity: 0.7,
                 }}
               >
-                <p style={{ fontSize: "10px", margin: "12px 0", fontWeight: "500" }}>米饭 (固定)</p>
+                <p style={{ fontSize: "10px", margin: "12px 0", fontWeight: "500" }}>Rice (fixed)</p>
               </div>
             </div>
 
             {/* Portions */}
             <div style={{ marginBottom: "16px" }}>
               <label style={{ display: "block", marginBottom: "6px", fontWeight: "500", fontSize: "13px", color: "#666" }}>
-                份量数
+                Portions
               </label>
               <input
                 type="number"
@@ -1389,7 +1440,7 @@ export default function MealPlanDetailPage({
                 onClick={async () => {
                   const editComboPortionsNum = editComboPortions === "" ? 0 : editComboPortions;
                   if (!editComboMeat || !editComboVege || !editComboSide || editComboPortionsNum < 1 || editComboIndex === null) {
-                    alert("请填写所有字段");
+                    alert("Complete all fields");
                     return;
                   }
 
@@ -1426,7 +1477,7 @@ export default function MealPlanDetailPage({
                   fontWeight: "500",
                 }}
               >
-                保存
+                Save
               </button>
               <button
                 onClick={() => {
@@ -1445,7 +1496,7 @@ export default function MealPlanDetailPage({
                   fontWeight: "500",
                 }}
               >
-                取消
+                Cancel
               </button>
             </div>
           </div>
@@ -1465,7 +1516,7 @@ export default function MealPlanDetailPage({
               setMeatModalOpen(false);
             }}
             onClose={() => setMeatModalOpen(false)}
-            title="选择肉类"
+            title="Select protein"
           />
 
           <RecipeSelectionModal
@@ -1478,7 +1529,7 @@ export default function MealPlanDetailPage({
               setVegeModalOpen(false);
             }}
             onClose={() => setVegeModalOpen(false)}
-            title="选择蔬菜"
+            title="Select vegetable"
           />
 
           <RecipeSelectionModal
@@ -1491,7 +1542,7 @@ export default function MealPlanDetailPage({
               setSideModalOpen(false);
             }}
             onClose={() => setSideModalOpen(false)}
-            title="选择配菜"
+            title="Select side"
           />
         </>
       )}

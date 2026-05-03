@@ -5,6 +5,8 @@ import Link from "next/link";
 import styles from "../recipes/page.module.css";
 import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
 import { matchesPinyinSearch } from "../utils/pinyinSearch";
+import { getVisibleTags } from "../utils/recipeTags";
+import { authFetch } from "../utils/authSession";
 
 interface Recipe {
   id: string;
@@ -36,10 +38,10 @@ export default function ProfilePage() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`/api/recipes?limit=1000`);
+      const response = await authFetch(`/api/recipes?limit=1000`);
 
       if (!response.ok) {
-        throw new Error("获取食谱失败");
+        throw new Error("Failed to fetch recipes");
       }
 
       const data = await response.json();
@@ -68,54 +70,54 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.container}>
-      <h1>我的资料</h1>
+      <header className={styles.header}>
+        <div>
+          <p className={styles.kicker}>Profile</p>
+          <h1>Demo Cook</h1>
+          <p className={styles.headerMeta}>Published recipe activity for the current demo user.</p>
+        </div>
+        <Link href="/create" className={styles.createButton}>
+          <span className="material-symbols-outlined">add</span>
+          Create
+        </Link>
+      </header>
 
-      {error && <div className={styles.error}>错误: {error}</div>}
+      {error && <div className={styles.error}>Error: {error}</div>}
 
       {/* Profile Stats */}
-      <div
-        style={{
-          background: "var(--bg-secondary)",
-          padding: "16px",
-          borderRadius: "8px",
-          marginBottom: "24px",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-          gap: "16px",
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "32px", fontWeight: "bold" }}>{userRecipes.length}</div>
-          <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>已发布食谱</div>
+      <div className={styles.statsPanel}>
+        <div className={styles.statTile}>
+          <strong>{userRecipes.length}</strong>
+          <span>Published Recipes</span>
         </div>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "32px", fontWeight: "bold" }}>{totalLikes}</div>
-          <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>获赞</div>
+        <div className={styles.statTile}>
+          <strong>{totalLikes}</strong>
+          <span>Likes</span>
         </div>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "32px", fontWeight: "bold" }}>{totalViews}</div>
-          <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>浏览量</div>
+        <div className={styles.statTile}>
+          <strong>{totalViews}</strong>
+          <span>Views</span>
         </div>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "32px", fontWeight: "bold" }}>{averageRating}</div>
-          <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>平均评分</div>
+        <div className={styles.statTile}>
+          <strong>{averageRating}</strong>
+          <span>Average Rating</span>
         </div>
       </div>
 
       {/* Recipes Count */}
       <div className={styles.count}>
-        共发布 {userRecipes.length} 个食谱
+        Published {userRecipes.length} recipes
       </div>
 
       {/* Loading State */}
-      {loading && <p className={styles.loading}>加载中...</p>}
+      {loading && <p className={styles.loading}>Loading...</p>}
 
       {/* Empty State */}
       {!loading && userRecipes.length === 0 && (
         <div className={styles.empty}>
-          <p>您还没有发布任何食谱</p>
+          <p>You have not published any recipes yet</p>
           <Link href="/create" className={styles.createLink}>
-            创建第一个食谱
+            Create your first recipe
           </Link>
         </div>
       )}
@@ -129,19 +131,8 @@ export default function ProfilePage() {
             className={styles.card}
           >
             {recipe.image && (
-              <div
-                style={{
-                  width: "100%",
-                  height: "200px",
-                  overflow: "hidden",
-                  borderRadius: "8px 8px 0 0",
-                }}
-              >
-                <img
-                  src={recipe.image}
-                  alt={recipe.title}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
+              <div className={styles.cardImage}>
+                <img src={recipe.image} alt={recipe.title} />
               </div>
             )}
             <div className={styles.cardHeader}>
@@ -152,30 +143,30 @@ export default function ProfilePage() {
 
             <div className={styles.meta}>
               <span className={styles.metaItem}>
-                🍽️ {recipe.servings || 1} 人份
+                🍽️ {recipe.servings || 1} servings
               </span>
             </div>
 
-            {recipe.tags.length > 0 && (
+            {getVisibleTags(recipe.tags).length > 0 && (
               <div className={styles.tags}>
-                {recipe.tags.slice(0, 3).map((tag) => (
+                {getVisibleTags(recipe.tags).slice(0, 3).map((tag) => (
                   <span key={tag} className={styles.tag}>
                     {tag}
                   </span>
                 ))}
-                {recipe.tags.length > 3 && (
+                {getVisibleTags(recipe.tags).length > 3 && (
                   <span className={styles.tag}>
-                    +{recipe.tags.length - 3}
+                    +{getVisibleTags(recipe.tags).length - 3}
                   </span>
                 )}
               </div>
             )}
 
             <div className={styles.stats}>
-              <span>❤️ {recipe.likes}</span>
-              <span>👁️ {recipe.views}</span>
+              <span>{recipe.likes} saves</span>
+              <span>{recipe.views} views</span>
               {recipe.ratingCount > 0 && (
-                <span>⭐ {recipe.ratingAverage.toFixed(1)}</span>
+                <span>{recipe.ratingAverage.toFixed(1)} rating</span>
               )}
             </div>
           </Link>
