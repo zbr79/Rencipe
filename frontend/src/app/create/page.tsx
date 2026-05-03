@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./styles.module.css";
 import { useCreateForm } from "../contexts/CreateFormContext";
 import PhotoUploadStep from "./components/PhotoUploadStep";
@@ -10,7 +10,7 @@ import IngredientsSection from "./components/IngredientsSection";
 import StepsSection from "./components/StepsSection";
 import TagsSection from "./components/TagsSection";
 import { useDraft } from "../../hooks/useDraft";
-import UnsavedChangesModal, { RestoreDraftModal } from "../../components/DraftModals";
+import UnsavedChangesModal from "../../components/DraftModals";
 
 interface Ingredient {
   name: string;
@@ -25,18 +25,21 @@ interface Step {
 
 export default function CreatePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const draftId = searchParams.get("draftId");
   const { recipeImage: contextImage, recipeImageFile: contextImageFile, setRecipeImage, setRecipeImageFile } = useCreateForm();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Draft management
-  const { draft, draftLoaded, isSaving, hasUnsavedChanges, saveDraft, deleteDraft, updateHasChanges } = useDraft({
+  const { draft, draftLoaded, isSaving, hasUnsavedChanges, saveDraft, deleteDraft } = useDraft({
     authorId: "507f1f77bcf86cd799439011",
+    draftId: draftId || undefined,
     enabled: true,
   });
 
-  const [showRestoreDraftModal, setShowRestoreDraftModal] = useState(false);
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+  const [draftName, setDraftName] = useState("Untitled Draft");
 
   const [showPhotoStep, setShowPhotoStep] = useState(false);
   const [recipeImage, setLocalRecipeImage] = useState<string | null>(contextImage);
@@ -78,25 +81,35 @@ export default function CreatePage() {
     }
   }, [contextImage, contextImageFile]);
 
-  // Show restore draft modal when draft is loaded
+  // Load draft data if draftId is provided
   useEffect(() => {
-    if (draftLoaded && draft && !showPhotoStep) {
-      setShowRestoreDraftModal(true);
+    if (draftLoaded && draft && draftId) {
+      setFormData({
+        title: draft.title || "",
+        description: draft.description || "",
+        authorId: "507f1f77bcf86cd799439011",
+        component: draft.component ?? false,
+        mainIngredients: draft.mainIngredients || [],
+        seasonings: draft.seasonings || [],
+        steps: draft.steps || [],
+        servings: draft.servings || 1,
+        tags: draft.tags || [],
+      });
+      if (draft.image) setLocalRecipeImage(draft.image);
+      if (draft.name) setDraftName(draft.name);
     }
-  }, [draftLoaded, draft, showPhotoStep]);
+  }, [draftLoaded, draft, draftId]);
 
   // Handle beforeunload (browser back, refresh, tab close)
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
+      // Don't block navigation if a form is not being edited
+      return;
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasUnsavedChanges]);
+  }, []);
 
   // Handle router changes (navigation to other pages)
   const handleNavigate = (href: string) => {
@@ -146,35 +159,6 @@ export default function CreatePage() {
   };
 
   // Draft handlers
-  const handleRestoreDraft = () => {
-    if (!draft) return;
-    setFormData({
-      title: draft.title,
-      description: draft.description,
-      authorId: "507f1f77bcf86cd799439011",
-      component: draft.component ?? false,
-      mainIngredients: draft.mainIngredients || [],
-      seasonings: draft.seasonings || [],
-      steps: draft.steps || [],
-      servings: draft.servings || 1,
-      tags: draft.tags || [],
-    });
-    if (draft.image) setLocalRecipeImage(draft.image);
-    if (draft.steps) {
-      const images: { [key: number]: string } = {};
-      draft.steps.forEach((step) => {
-        if (step.image) images[step.stepNumber] = step.image;
-      });
-      setStepImages(images);
-    }
-    setShowRestoreDraftModal(false);
-  };
-
-  const handleDiscardDraft = () => {
-    deleteDraft();
-    setShowRestoreDraftModal(false);
-  };
-
   const handleSaveDraftAndLeave = async () => {
     if (hasUnsavedChanges) {
       await saveDraft({
@@ -187,7 +171,7 @@ export default function CreatePage() {
         steps: formData.steps,
         servings: formData.servings,
         tags: formData.tags,
-      });
+      }, draftName);
     }
     setShowUnsavedChangesModal(false);
     if (pendingAction) {
@@ -218,8 +202,8 @@ export default function CreatePage() {
       servings: formData.servings,
       tags: formData.tags,
     };
-    saveDraft(draftData);
-  }, [formData, recipeImage, stepImages, tagsInput, draftLoaded, saveDraft]);
+    saveDraft(draftData, draftName);
+  }, [formData, recipeImage, stepImages, tagsInput, draftLoaded, saveDraft, draftName]);
 
   const addMainIngredient = () => {
     setFormData((prev) => ({
@@ -381,14 +365,6 @@ export default function CreatePage() {
 
   return (
     <>
-      {/* Draft Modals */}
-      <RestoreDraftModal
-        isOpen={showRestoreDraftModal}
-        lastSaved={draft?.updatedAt ? new Date(draft.updatedAt).toLocaleTimeString() : null}
-        onRestore={handleRestoreDraft}
-        onDiscard={handleDiscardDraft}
-      />
-
       <UnsavedChangesModal
         isOpen={showUnsavedChangesModal}
         isSaving={isSaving}

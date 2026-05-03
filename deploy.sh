@@ -4,31 +4,36 @@ echo "🚀 Starting deployment..."
 set -e
 
 BASE_DIR=$(pwd)
+BACKEND_PM2_NAME="rencipe-backend"
+FRONTEND_PM2_NAME="rencipe-frontend"
+BACKEND_PORT=6000
+FRONTEND_PORT=4000
+BACKEND_URL="http://127.0.0.1:${BACKEND_PORT}"
 
 # ========================
 # Backend
 # ========================
 echo "📦 Building backend..."
-cd $BASE_DIR/backend
+cd "$BASE_DIR/backend"
 npm run build
 
 echo "🔄 Reloading backend..."
-pm2 describe backend > /dev/null \
-  && pm2 reload backend --update-env \
-  || pm2 start dist/server.js --name backend
+PORT=$BACKEND_PORT pm2 describe "$BACKEND_PM2_NAME" > /dev/null \
+  && PORT=$BACKEND_PORT pm2 reload "$BACKEND_PM2_NAME" --update-env \
+  || PORT=$BACKEND_PORT pm2 start dist/server.js --name "$BACKEND_PM2_NAME"
 
 
 # ========================
 # Frontend
 # ========================
 echo "📦 Building frontend..."
-cd $BASE_DIR/frontend
-npm run build
+cd "$BASE_DIR/frontend"
+NEXT_PUBLIC_BACKEND_URL="$BACKEND_URL" npm run build
 
 echo "🔄 Reloading frontend..."
-pm2 describe frontend > /dev/null \
-  && pm2 reload frontend --update-env \
-  || pm2 start npm --name frontend -- start
+PORT=$FRONTEND_PORT NEXT_PUBLIC_BACKEND_URL="$BACKEND_URL" pm2 describe "$FRONTEND_PM2_NAME" > /dev/null \
+  && PORT=$FRONTEND_PORT NEXT_PUBLIC_BACKEND_URL="$BACKEND_URL" pm2 reload "$FRONTEND_PM2_NAME" --update-env \
+  || PORT=$FRONTEND_PORT NEXT_PUBLIC_BACKEND_URL="$BACKEND_URL" pm2 start npm --name "$FRONTEND_PM2_NAME" -- start
 
 
 # ========================

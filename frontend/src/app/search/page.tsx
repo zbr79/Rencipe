@@ -45,7 +45,7 @@ export default function SearchPage() {
 
       const data = await response.json();
       // Enrich with mock images
-      const enrichedRecipes = enrichRecipesWithMockImages(data.recipes || []);
+      const enrichedRecipes = enrichRecipesWithMockImages<Recipe>((data.recipes || []) as Recipe[]);
       setAllRecipes(enrichedRecipes);
 
       // Extract all unique tags

@@ -8,6 +8,7 @@ interface Recipe {
   id: string;
   title: string;
   description: string;
+  image?: string;
   component: boolean;
   mainIngredients: Array<{ name: string; quantity: string }>;
   seasonings: Array<{ name: string; quantity: string }>;

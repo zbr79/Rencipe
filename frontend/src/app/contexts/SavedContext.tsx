@@ -52,6 +52,7 @@ export interface MealPlan {
   numberOfDays: number;
   mealTypes: ('lunch' | 'dinner')[];
   totalMealsNeeded: number;
+  recipes?: unknown[];
   combinations: MealCombination[];
   checkedIngredients: string[];
   createdAt: string;
@@ -101,6 +102,7 @@ interface SavedContextType {
   createMealPlan: (userId: string, numberOfPeople: number, numberOfDays: number, mealTypes: ('lunch' | 'dinner')[], name?: string) => Promise<MealPlan>;
   renameMealPlan: (planId: string, newName: string) => Promise<MealPlan>;
   deleteMealPlan: (planId: string) => Promise<void>;
+  addRecipeToMealPlan: (planId: string, recipeId: string) => Promise<MealPlan>;
   addMealCombination: (planId: string, meatRecipeId: string, vegeRecipeId: string, sideRecipeId: string, portions: number) => Promise<MealPlan>;
   removeMealCombination: (planId: string, index: number) => Promise<MealPlan>;
 
@@ -151,7 +153,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         throw new Error("Failed to fetch favorites");
       }
       const data = await response.json();
-      const recipes = data.favorites.recipes || [];
+      const recipes = (data.favorites.recipes || []) as SavedRecipe[];
       // Enrich with mock images
       const enrichedRecipes = enrichRecipesWithMockImages(recipes);
       setSavedRecipes(enrichedRecipes);
@@ -177,7 +179,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      const recipes = data.favorites.recipes || [];
+      const recipes = (data.favorites.recipes || []) as SavedRecipe[];
       // Enrich with mock images
       const enrichedRecipes = enrichRecipesWithMockImages(recipes);
       setSavedRecipes(enrichedRecipes);
@@ -200,7 +202,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      const recipes = data.favorites.recipes || [];
+      const recipes = (data.favorites.recipes || []) as SavedRecipe[];
       // Enrich with mock images
       const enrichedRecipes = enrichRecipesWithMockImages(recipes);
       setSavedRecipes(enrichedRecipes);
@@ -300,6 +302,30 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       setMealPlans(mealPlans.filter((plan) => plan._id !== planId));
     } catch (err: any) {
       console.error("Error deleting meal plan:", err);
+      setErrorPlans(err.message);
+      throw err;
+    }
+  };
+
+  const addRecipeToMealPlan = async (planId: string, recipeId: string): Promise<MealPlan> => {
+    try {
+      const response = await fetch(`/api/meal-plans/${planId}/recipes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipeId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add recipe to meal plan");
+      }
+
+      const data = await response.json();
+      setMealPlans(
+        mealPlans.map((plan) => (plan._id === planId ? data.plan : plan))
+      );
+      return data.plan;
+    } catch (err: any) {
+      console.error("Error adding recipe to meal plan:", err);
       setErrorPlans(err.message);
       throw err;
     }
@@ -514,6 +540,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         createMealPlan,
         renameMealPlan,
         deleteMealPlan,
+        addRecipeToMealPlan,
         addMealCombination,
         removeMealCombination,
         // Weekly Plans

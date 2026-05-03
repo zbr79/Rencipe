@@ -54,7 +54,7 @@ export default function SavedPage() {
   const handleCreateMealPlan = async () => {
     setIsCreatingPlan(true);
     try {
-      await createMealPlan(userId, "新建计划");
+      await createMealPlan(userId, 1, 1, ["lunch"], "New Plan");
       await fetchMealPlans(userId);
     } catch (error) {
       console.error("Failed to create meal plan:", error);

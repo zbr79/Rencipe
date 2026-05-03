@@ -46,7 +46,7 @@ export default function ProfilePage() {
       // Filter recipes by user's authorId
       const myRecipes = data.recipes?.filter((recipe: Recipe) => recipe.authorId === userId) || [];
       // Enrich with mock images
-      const enrichedRecipes = enrichRecipesWithMockImages(myRecipes);
+      const enrichedRecipes = enrichRecipesWithMockImages<Recipe>(myRecipes);
       setUserRecipes(enrichedRecipes);
     } catch (err: any) {
       setError(err.message);

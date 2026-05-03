@@ -47,7 +47,7 @@ export default function RecipesPage() {
 
       const data = await response.json();
       // Enrich recipes with mock images if they don't have images
-      const enrichedRecipes = enrichRecipesWithMockImages(data.recipes);
+      const enrichedRecipes = enrichRecipesWithMockImages<Recipe>((data.recipes || []) as Recipe[]);
       setRecipes(enrichedRecipes);
 
       // Extract all unique tags

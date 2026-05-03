@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IDraft extends Document {
   authorId: mongoose.Types.ObjectId;
+  name: string; // Draft name (e.g., "My First Recipe", "Pasta Ideas")
   title: string;
   description: string;
   image?: string;
@@ -16,7 +17,8 @@ export interface IDraft extends Document {
 
 const DraftSchema = new Schema<IDraft>(
   {
-    authorId: { type: Schema.Types.ObjectId, required: true, index: true, unique: true },
+    authorId: { type: Schema.Types.ObjectId, required: true, index: true },
+    name: { type: String, required: true, default: "Untitled Draft" },
     title: { type: String, default: "" },
     description: { type: String, default: "" },
     image: { type: String, default: undefined },

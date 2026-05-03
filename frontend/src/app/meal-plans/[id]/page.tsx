@@ -11,6 +11,7 @@ interface Recipe {
   id: string;
   title: string;
   description: string;
+  image?: string;
   component: boolean;
   mainIngredients: Array<{ name: string; quantity: string }>;
   seasonings: Array<{ name: string; quantity: string }>;
@@ -66,7 +67,7 @@ export default function MealPlanDetailPage({
   const [selectedMeat, setSelectedMeat] = useState<string>("");
   const [selectedVege, setSelectedVege] = useState<string>("");
   const [selectedSide, setSelectedSide] = useState<string>("");
-  const [portions, setPortions] = useState(1);
+  const [portions, setPortions] = useState<number | "">(1);
   const [addingCombination, setAddingCombination] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
 
@@ -82,7 +83,7 @@ export default function MealPlanDetailPage({
   // Edit plan details modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editPeople, setEditPeople] = useState<Person[]>([]);
-  const [editDays, setEditDays] = useState(0);
+  const [editDays, setEditDays] = useState<number | "">(0);
   const [editMealTypes, setEditMealTypes] = useState<('lunch' | 'dinner')[]>([]);
   const [editTotalMeals, setEditTotalMeals] = useState(0);
   
@@ -92,7 +93,7 @@ export default function MealPlanDetailPage({
   const [editComboMeat, setEditComboMeat] = useState("");
   const [editComboVege, setEditComboVege] = useState("");
   const [editComboSide, setEditComboSide] = useState("");
-  const [editComboPortions, setEditComboPortions] = useState(1);
+  const [editComboPortions, setEditComboPortions] = useState<number | "">(1);
   const [editComboModifier, setEditComboModifier] = useState(1.0);
 
 
@@ -150,11 +151,11 @@ export default function MealPlanDetailPage({
         console.log(`Fetched ${data.recipes?.length || 0} recipes from backend`);
         
         // Only show component recipes
-        const recipesToUse = (data.recipes || []).filter((recipe: Recipe) => recipe.component === true);
+        const recipesToUse = ((data.recipes || []) as Recipe[]).filter((recipe) => recipe.component === true);
         console.log(`Filtered to ${recipesToUse.length} component recipes`);
         
         // Enrich with mock images
-        const enrichedRecipes = enrichRecipesWithMockImages(recipesToUse);
+        const enrichedRecipes = enrichRecipesWithMockImages<Recipe>(recipesToUse);
         console.log(`After enrichment: ${enrichedRecipes.length} recipes`);
         setAllRecipes(enrichedRecipes);
       }
@@ -1386,7 +1387,8 @@ export default function MealPlanDetailPage({
             <div style={{ display: "flex", gap: "12px" }}>
               <button
                 onClick={async () => {
-                  if (!editComboMeat || !editComboVege || !editComboSide || editComboPortions < 1) {
+                  const editComboPortionsNum = editComboPortions === "" ? 0 : editComboPortions;
+                  if (!editComboMeat || !editComboVege || !editComboSide || editComboPortionsNum < 1 || editComboIndex === null) {
                     alert("请填写所有字段");
                     return;
                   }
@@ -1404,7 +1406,7 @@ export default function MealPlanDetailPage({
                       editComboMeat,
                       editComboVege,
                       editComboSide,
-                      editComboPortions
+                      editComboPortionsNum
                     );
                     setPlan(updatedPlan);
                     setEditComboModalOpen(false);

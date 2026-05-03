@@ -228,7 +228,9 @@ export async function uploadRecipeImage(req: Request, res: Response) {
 export async function uploadStepImage(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
-    const stepNumber = parseInt(req.params.stepNumber || "0");
+    const rawStepNumber = req.params.stepNumber;
+    const stepNumberParam = Array.isArray(rawStepNumber) ? rawStepNumber[0] : rawStepNumber;
+    const stepNumber = parseInt(stepNumberParam || "0", 10);
 
     if (!id) return res.status(400).json({ error: "id is required" });
     if (!stepNumber) return res.status(400).json({ error: "stepNumber is required" });

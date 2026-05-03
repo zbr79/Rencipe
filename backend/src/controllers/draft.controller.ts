@@ -4,11 +4,11 @@ import mongoose from "mongoose";
 
 /**
  * POST /drafts
- * Save or update a recipe draft
+ * Create a new recipe draft
  */
 export async function saveDraft(req: Request, res: Response) {
   try {
-    const { authorId, title, description, image, mainIngredients, seasonings, steps, servings, tags } = req.body;
+    const { authorId, name, title, description, image, mainIngredients, seasonings, steps, servings, tags } = req.body;
 
     if (!authorId) {
       return res.status(400).json({ error: "authorId is required" });
@@ -18,23 +18,22 @@ export async function saveDraft(req: Request, res: Response) {
       return res.status(400).json({ error: "authorId must be a valid MongoDB ObjectId" });
     }
 
-    // Update or create draft (one per author)
-    const draft = await Draft.findOneAndUpdate(
-      { authorId: new mongoose.Types.ObjectId(authorId) },
-      {
-        title: title || "",
-        description: description || "",
-        image: image || undefined,
-        mainIngredients: mainIngredients || [],
-        seasonings: seasonings || [],
-        steps: steps || [],
-        servings: servings || 1,
-        tags: tags || [],
-      },
-      { upsert: true, returnDocument: 'after', new: true }
-    );
+    // Create a new draft
+    const draft = new Draft({
+      authorId: new mongoose.Types.ObjectId(authorId),
+      name: name || "Untitled Draft",
+      title: title || "",
+      description: description || "",
+      image: image || undefined,
+      mainIngredients: mainIngredients || [],
+      seasonings: seasonings || [],
+      steps: steps || [],
+      servings: servings || 1,
+      tags: tags || [],
+    });
 
-    res.json({ draft });
+    await draft.save();
+    res.status(201).json({ draft });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Failed to save draft" });
   }
@@ -42,11 +41,11 @@ export async function saveDraft(req: Request, res: Response) {
 
 /**
  * GET /drafts
- * Get the user's draft
+ * Get all drafts for a user, or get a specific draft by ID
  */
 export async function getDraft(req: Request, res: Response) {
   try {
-    const { authorId } = req.query;
+    const { authorId, id } = req.query;
 
     if (!authorId) {
       return res.status(400).json({ error: "authorId is required" });
@@ -56,21 +55,87 @@ export async function getDraft(req: Request, res: Response) {
       return res.status(400).json({ error: "authorId must be a valid MongoDB ObjectId" });
     }
 
-    const draft = await Draft.findOne({ authorId: new mongoose.Types.ObjectId(authorId as string) });
+    // If a specific draft ID is provided
+    if (id) {
+      if (!mongoose.Types.ObjectId.isValid(id as string)) {
+        return res.status(400).json({ error: "draft id must be a valid MongoDB ObjectId" });
+      }
+      const draft = await Draft.findOne({
+        _id: new mongoose.Types.ObjectId(id as string),
+        authorId: new mongoose.Types.ObjectId(authorId as string),
+      });
+      return res.json({ draft });
+    }
+
+    // Otherwise, get all drafts for the author
+    const drafts = await Draft.find({
+      authorId: new mongoose.Types.ObjectId(authorId as string),
+    }).sort({ updatedAt: -1 });
+
+    res.json({ drafts });
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || "Failed to get drafts" });
+  }
+}
+
+/**
+ * PUT /drafts/:id
+ * Update a draft
+ */
+export async function updateDraft(req: Request, res: Response) {
+  try {
+    const rawId = req.params.id;
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
+    const { authorId, name, title, description, image, mainIngredients, seasonings, steps, servings, tags } = req.body;
+
+    if (!authorId) {
+      return res.status(400).json({ error: "authorId is required" });
+    }
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "draft id must be a valid MongoDB ObjectId" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(authorId)) {
+      return res.status(400).json({ error: "authorId must be a valid MongoDB ObjectId" });
+    }
+
+    const draft = await Draft.findOneAndUpdate(
+      {
+        _id: new mongoose.Types.ObjectId(id),
+        authorId: new mongoose.Types.ObjectId(authorId),
+      },
+      {
+        name: name,
+        title: title,
+        description: description,
+        image: image,
+        mainIngredients: mainIngredients,
+        seasonings: seasonings,
+        steps: steps,
+        servings: servings,
+        tags: tags,
+      },
+      { new: true }
+    );
+
+    if (!draft) {
+      return res.status(404).json({ error: "Draft not found" });
+    }
 
     res.json({ draft });
   } catch (e: any) {
-    res.status(500).json({ error: e?.message || "Failed to get draft" });
+    res.status(500).json({ error: e?.message || "Failed to update draft" });
   }
 }
 
 /**
  * DELETE /drafts
- * Delete the user's draft
+ * Delete a draft by ID or delete all drafts for a user
  */
 export async function deleteDraft(req: Request, res: Response) {
   try {
-    const { authorId } = req.query;
+    const { authorId, id } = req.query;
 
     if (!authorId) {
       return res.status(400).json({ error: "authorId is required" });
@@ -80,15 +145,29 @@ export async function deleteDraft(req: Request, res: Response) {
       return res.status(400).json({ error: "authorId must be a valid MongoDB ObjectId" });
     }
 
-    const result = await Draft.findOneAndDelete({
+    // If a specific draft ID is provided
+    if (id) {
+      if (!mongoose.Types.ObjectId.isValid(id as string)) {
+        return res.status(400).json({ error: "draft id must be a valid MongoDB ObjectId" });
+      }
+      const result = await Draft.findOneAndDelete({
+        _id: new mongoose.Types.ObjectId(id as string),
+        authorId: new mongoose.Types.ObjectId(authorId as string),
+      });
+
+      if (!result) {
+        return res.status(404).json({ error: "Draft not found" });
+      }
+
+      return res.json({ message: "Draft deleted successfully" });
+    }
+
+    // Otherwise, delete all drafts for the author
+    await Draft.deleteMany({
       authorId: new mongoose.Types.ObjectId(authorId as string),
     });
 
-    if (!result) {
-      return res.status(404).json({ error: "draft not found" });
-    }
-
-    res.json({ message: "draft deleted successfully" });
+    res.json({ message: "All drafts deleted successfully" });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Failed to delete draft" });
   }
