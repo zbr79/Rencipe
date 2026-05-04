@@ -58,3 +58,4 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 - Recipe ownership needs both backend enforcement and frontend entry gating. Keep backend mutation routes returning 403 for non-owners, and make edit pages block non-owners before rendering the editor.
 - Demo login credentials for later testing: username/password `admin`/`admin` and username/password `testuser1`/`testuser1`.
 - In this VS Code browser, `page.screenshot({ path })` can report success without updating workspace files. For deck refreshes, return base64 screenshots from Playwright and decode them into `frontend/demo-screenshots/` before replacing PPTX media.
+- The final presentation deck should be actual slides to present from, not a demo plan. Avoid visible time boxes, presenter scripts, and "Demo Flow" wording; use short topic slides plus current screenshots.
