@@ -1,7 +1,61 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import MealPlan, { IMealCombination } from "../models/MealPlan";
+import MealPlan, { IMealCombination, MealType } from "../models/MealPlan";
 import Recipe from "../models/Recipe";
+
+const VALID_MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner"];
+
+function normalizeMealTypes(mealTypes: any): MealType[] {
+  if (!Array.isArray(mealTypes)) return ["dinner"];
+  const requestedTypes = new Set(mealTypes);
+  const normalizedTypes = VALID_MEAL_TYPES.filter((type) => requestedTypes.has(type));
+  return normalizedTypes.length > 0 ? normalizedTypes : ["dinner"];
+}
+
+function buildPlanDays(numberOfDays: number, mealTypes: MealType[], existingDays: any[] = []) {
+  return Array.from({ length: numberOfDays }, (_, dayIndex) => {
+    const dayNumber = dayIndex + 1;
+    const existingDay = existingDays.find((day) => Number(day.dayNumber) === dayNumber);
+
+    return {
+      dayNumber,
+      meals: mealTypes.map((mealType) => {
+        const existingMeal = existingDay?.meals?.find((meal: any) => meal.mealType === mealType);
+        return {
+          mealType,
+          recipes: Array.isArray(existingMeal?.recipes) ? existingMeal.recipes : [],
+        };
+      }),
+    };
+  });
+}
+
+function normalizeSubmittedDays(days: any, numberOfDays: number, mealTypes: MealType[]) {
+  if (!Array.isArray(days)) return buildPlanDays(numberOfDays, mealTypes);
+
+  return buildPlanDays(numberOfDays, mealTypes, days).map((day) => ({
+    ...day,
+    meals: day.meals.map((meal) => ({
+      ...meal,
+      recipes: meal.recipes
+        .map((recipe: any) => {
+          const recipeId = typeof recipe === "string" ? recipe : recipe?._id || recipe?.id;
+          return mongoose.Types.ObjectId.isValid(recipeId) ? new mongoose.Types.ObjectId(recipeId) : null;
+        })
+        .filter(Boolean),
+    })),
+  }));
+}
+
+async function populateMealPlan(plan: any) {
+  return plan.populate([
+    { path: "recipes", model: "Recipe" },
+    { path: "days.meals.recipes", model: "Recipe" },
+    { path: "combinations.meatRecipeId", model: "Recipe" },
+    { path: "combinations.vegeRecipeId", model: "Recipe" },
+    { path: "combinations.sideRecipeId", model: "Recipe" },
+  ]);
+}
 
 /**
  * Get all meal plans for a user
@@ -22,10 +76,13 @@ export const getMealPlans = async (req: Request, res: Response) => {
     const plans = await MealPlan.find({
       userId: new mongoose.Types.ObjectId(userId as string),
     })
-      .populate({
-        path: "recipes combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
-        model: "Recipe",
-      })
+      .populate([
+        { path: "recipes", model: "Recipe" },
+        { path: "days.meals.recipes", model: "Recipe" },
+        { path: "combinations.meatRecipeId", model: "Recipe" },
+        { path: "combinations.vegeRecipeId", model: "Recipe" },
+        { path: "combinations.sideRecipeId", model: "Recipe" },
+      ])
       .sort({ createdAt: -1 });
 
     res.json({ plans });
@@ -48,10 +105,13 @@ export const getMealPlanById = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid meal plan ID" });
     }
 
-    const plan = await MealPlan.findById(idStr).populate({
-      path: "recipes combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
-      model: "Recipe",
-    });
+    const plan = await MealPlan.findById(idStr).populate([
+      { path: "recipes", model: "Recipe" },
+      { path: "days.meals.recipes", model: "Recipe" },
+      { path: "combinations.meatRecipeId", model: "Recipe" },
+      { path: "combinations.vegeRecipeId", model: "Recipe" },
+      { path: "combinations.sideRecipeId", model: "Recipe" },
+    ]);
 
     if (!plan) {
       return res.status(404).json({ error: "Meal plan not found" });
@@ -82,17 +142,7 @@ export const createMealPlan = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "userId must be a valid MongoDB ObjectId" });
     }
 
-    if (!Array.isArray(mealTypes) || mealTypes.length === 0) {
-      return res.status(400).json({ error: "mealTypes must be a non-empty array of 'lunch' or 'dinner'" });
-    }
-
-    // Validate mealTypes
-    const validMealTypes = ["lunch", "dinner"];
-    for (const type of mealTypes) {
-      if (!validMealTypes.includes(type)) {
-        return res.status(400).json({ error: "mealTypes must contain only 'lunch' or 'dinner'" });
-      }
-    }
+    const normalizedMealTypes = normalizeMealTypes(mealTypes);
 
     if (numberOfPeople < 1 || numberOfDays < 1) {
       return res.status(400).json({ error: "numberOfPeople and numberOfDays must be at least 1" });
@@ -102,8 +152,8 @@ export const createMealPlan = async (req: Request, res: Response) => {
     let peopleArray = [];
     if (people && Array.isArray(people) && people.length > 0) {
       // Validate and use provided people data
-      peopleArray = people.map((p: any) => ({
-        name: p.name || `Person ${peopleArray.length + 1}`,
+      peopleArray = people.map((p: any, index: number) => ({
+        name: p.name || `Person ${index + 1}`,
         modifier: Math.max(0.1, Math.min(5.0, p.modifier || 1.0)),
       }));
     } else {
@@ -118,15 +168,16 @@ export const createMealPlan = async (req: Request, res: Response) => {
 
     // Calculate total meals needed: numberOfDays * number of meal types
     // Modifiers only affect ingredient quantities, not the number of meal occasions
-    const totalMealsNeeded = numberOfDays * mealTypes.length;
+    const totalMealsNeeded = numberOfDays * normalizedMealTypes.length;
 
     const plan = new MealPlan({
       userId: new mongoose.Types.ObjectId(userId),
       name: name || `${numberOfPeople}-person ${numberOfDays}-day meal plan`,
       people: peopleArray,
       numberOfDays,
-      mealTypes,
+      mealTypes: normalizedMealTypes,
       totalMealsNeeded,
+      days: buildPlanDays(numberOfDays, normalizedMealTypes),
       recipes: [],
       combinations: [],
     });
@@ -149,7 +200,7 @@ export const createMealPlan = async (req: Request, res: Response) => {
 export const renameMealPlan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, people, numberOfDays, mealTypes } = req.body;
+    const { name, people, numberOfDays, mealTypes, days } = req.body;
 
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
@@ -181,46 +232,36 @@ export const renameMealPlan = async (req: Request, res: Response) => {
     }
     
     if (mealTypes !== undefined) {
-      if (!Array.isArray(mealTypes) || mealTypes.length === 0) {
-        return res.status(400).json({ error: "mealTypes must be a non-empty array" });
-      }
-      const validMealTypes = ["lunch", "dinner"];
-      for (const type of mealTypes) {
-        if (!validMealTypes.includes(type)) {
-          return res.status(400).json({ error: "mealTypes must contain only 'lunch' or 'dinner'" });
-        }
-      }
-      updateData.mealTypes = mealTypes;
+      updateData.mealTypes = normalizeMealTypes(mealTypes);
     }
 
     // If any of the meal calculation fields changed, recalculate totalMealsNeeded
-    if (updateData.people !== undefined || updateData.numberOfDays !== undefined || updateData.mealTypes !== undefined) {
+    if (updateData.people !== undefined || updateData.numberOfDays !== undefined || updateData.mealTypes !== undefined || days !== undefined) {
       const plan = await MealPlan.findById(idStr);
       if (!plan) {
         return res.status(404).json({ error: "Meal plan not found" });
       }
 
-      const planPeople = updateData.people !== undefined ? updateData.people : plan.people;
       const days = updateData.numberOfDays !== undefined ? updateData.numberOfDays : plan.numberOfDays;
       const types = updateData.mealTypes !== undefined ? updateData.mealTypes : plan.mealTypes;
 
       // Calculate total: days * number of meal types
       // Modifiers only affect ingredient quantities, not the number of meal occasions
       updateData.totalMealsNeeded = days * types.length;
+      updateData.days = normalizeSubmittedDays(req.body.days ?? plan.days, days, types);
     }
 
     const plan = await MealPlan.findByIdAndUpdate(
       idStr,
       updateData,
       { new: true }
-    ).populate({
-      path: "recipes combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
-      model: "Recipe",
-    });
+    );
 
     if (!plan) {
       return res.status(404).json({ error: "Meal plan not found" });
     }
+
+    await populateMealPlan(plan);
 
     res.json({ plan });
   } catch (err: any) {
@@ -291,15 +332,32 @@ export const addRecipeToMealPlan = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Recipe not found" });
     }
 
+    const recipeObjectId = new mongoose.Types.ObjectId(recipeId);
+
+    let changed = false;
     if (!plan.recipes.some((id) => id.toString() === recipeId)) {
-      plan.recipes.push(new mongoose.Types.ObjectId(recipeId));
-      await plan.save();
+      plan.recipes.push(recipeObjectId);
+      changed = true;
     }
 
-    await plan.populate({
-      path: "recipes combinations.meatRecipeId combinations.vegeRecipeId combinations.sideRecipeId",
-      model: "Recipe",
-    });
+    if (!plan.days || plan.days.length === 0) {
+      plan.days = buildPlanDays(plan.numberOfDays, plan.mealTypes);
+      changed = true;
+    }
+
+    const openMeal = plan.days
+      .flatMap((day: any) => day.meals)
+      .find((meal: any) => Array.isArray(meal.recipes) && meal.recipes.length === 0);
+
+    const targetMeal = openMeal || plan.days[0]?.meals?.[0];
+    if (targetMeal && !targetMeal.recipes.some((id: any) => id.toString() === recipeId)) {
+      targetMeal.recipes.push(recipeObjectId);
+      changed = true;
+    }
+
+    if (changed) await plan.save();
+
+    await populateMealPlan(plan);
 
     res.status(201).json({ plan });
   } catch (err: any) {

@@ -8,7 +8,6 @@ import styles from "./create.module.css";
 export default function CreateWeeklyPlanPage() {
   const { createWeeklyPlan } = useSaved();
   const router = useRouter();
-  const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
   const modalShownRef = useRef(false);
 
   const [name, setName] = useState("Untitled Meal Plan");
@@ -37,7 +36,7 @@ export default function CreateWeeklyPlanPage() {
       const selectedMeals = (["breakfast", "lunch", "dinner"] as const).filter(
         (type) => mealTypes[type]
       );
-      const plan = await createWeeklyPlan(userId, name, selectedMeals);
+      const plan = await createWeeklyPlan(undefined, name, selectedMeals);
       router.push(`/weekly-plans/${plan._id}`);
     } catch (err: any) {
       console.error("Failed to create scheduled meal plan:", err);

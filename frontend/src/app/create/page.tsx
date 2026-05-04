@@ -10,8 +10,7 @@ import IngredientsSection from "./components/IngredientsSection";
 import StepsSection from "./components/StepsSection";
 import TagsSection from "./components/TagsSection";
 import { useDraft } from "../../hooks/useDraft";
-import { getHealthTag, withHealthTag } from "../utils/recipeTags";
-import { authFetch } from "../utils/authSession";
+import { authFetch, getCurrentUserId } from "../utils/authSession";
 
 interface Ingredient {
   name: string;
@@ -30,12 +29,13 @@ export default function CreatePage() {
   const draftId = searchParams.get("draftId");
   const { recipeImage: contextImage, recipeImageFile: contextImageFile, setRecipeImage, setRecipeImageFile } = useCreateForm();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [accountId, setAccountId] = useState("");
 
   // Draft management
   const { draft, draftLoaded, isSaving, lastSaved, saveDraft, deleteDraft } = useDraft({
-    authorId: "507f1f77bcf86cd799439011",
+    authorId: accountId,
     draftId: draftId || undefined,
-    enabled: true,
+    enabled: Boolean(accountId),
   });
 
   const [draftName, setDraftName] = useState("Untitled Draft");
@@ -47,7 +47,7 @@ export default function CreatePage() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    authorId: "507f1f77bcf86cd799439011",
+    authorId: "",
     component: false,
     mainIngredients: [
       {
@@ -72,6 +72,14 @@ export default function CreatePage() {
   });
 
   useEffect(() => {
+    const userId = getCurrentUserId();
+    setAccountId(userId);
+    if (userId) {
+      setFormData((prev) => ({ ...prev, authorId: userId }));
+    }
+  }, []);
+
+  useEffect(() => {
     if (contextImage) {
       setLocalRecipeImage(contextImage);
     }
@@ -86,7 +94,7 @@ export default function CreatePage() {
       setFormData({
         title: draft.title || "",
         description: draft.description || "",
-        authorId: "507f1f77bcf86cd799439011",
+        authorId: accountId,
         component: draft.component ?? false,
         mainIngredients: draft.mainIngredients || [],
         seasonings: draft.seasonings || [],
@@ -97,7 +105,7 @@ export default function CreatePage() {
       if (draft.image) setLocalRecipeImage(draft.image);
       if (draft.name) setDraftName(draft.name);
     }
-  }, [draftLoaded, draft, draftId]);
+  }, [draftLoaded, draft, draftId, accountId]);
 
   const [stepImages, setStepImages] = useState<{ [key: number]: string }>({});
   const [stepImageFiles, setStepImageFiles] = useState<{ [key: number]: File }>({});
@@ -240,13 +248,6 @@ export default function CreatePage() {
     setTagsInput("");
   };
 
-  const handleHealthTagChange = (healthTag: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: withHealthTag(prev.tags, healthTag),
-    }));
-  };
-
   const removeTag = (index: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -334,7 +335,7 @@ export default function CreatePage() {
       setFormData({
         title: "",
         description: "",
-        authorId: "507f1f77bcf86cd799439011",
+        authorId: accountId,
         component: false,
         mainIngredients: [],
         seasonings: [],
@@ -392,16 +393,11 @@ export default function CreatePage() {
       )}
 
       <div className={styles.container} style={{ opacity: showPhotoStep ? 0.3 : 1, pointerEvents: showPhotoStep ? "none" : "auto" }}>
-        <header className={styles.header}>
-          <div>
-            <p className={styles.kicker}>Create</p>
-            <h1>Create Recipe</h1>
-            <p>Start with the recipe details. Add a cover image before publishing.</p>
-          </div>
+        <div className={styles.draftToolbar}>
           <button type="button" className={styles.saveDraftBtn} onClick={handleManualSaveDraft} disabled={isSaving}>
             {isSaving ? "Saving..." : "Save Draft"}
           </button>
-        </header>
+        </div>
 
         {recipeImage && (
           <div className={styles.imageDisplay}>
@@ -439,12 +435,10 @@ export default function CreatePage() {
             description={formData.description}
             servings={formData.servings}
             component={formData.component}
-            healthTag={getHealthTag(formData.tags)}
             onTitleChange={(value) => setFormData({ ...formData, title: value })}
             onDescriptionChange={(value) => setFormData({ ...formData, description: value })}
             onServingsChange={(value) => setFormData({ ...formData, servings: value })}
             onComponentChange={(value) => setFormData({ ...formData, component: value })}
-            onHealthTagChange={handleHealthTagChange}
           />
 
           <IngredientsSection

@@ -8,8 +8,7 @@ import RecipeBasicsForm from "../../create/components/RecipeBasicsForm";
 import IngredientsSection from "../../create/components/IngredientsSection";
 import StepsSection from "../../create/components/StepsSection";
 import TagsSection from "../../create/components/TagsSection";
-import { getHealthTag, withHealthTag } from "../../utils/recipeTags";
-import { authFetch } from "../../utils/authSession";
+import { authFetch, getCurrentUser, type AuthUser } from "../../utils/authSession";
 
 interface Ingredient {
   name: string;
@@ -36,6 +35,10 @@ interface RecipeData {
   tags: string[];
 }
 
+function canEditRecipe(recipe: RecipeData, user: AuthUser | null) {
+  return Boolean(user && (user.role === "admin" || recipe.authorId === user.id));
+}
+
 export default function EditPage() {
   const params = useParams();
   const router = useRouter();
@@ -46,8 +49,11 @@ export default function EditPage() {
   const [error, setError] = useState("");
   const [recipeImage, setRecipeImage] = useState<string | null>(null);
   const [recipeImageFile, setRecipeImageFile] = useState<File | null>(null);
+  const [originalRecipe, setOriginalRecipe] = useState<RecipeData | null>(null);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [stepImages, setStepImages] = useState<{ [key: number]: string }>({});
   const [stepImageFiles, setStepImageFiles] = useState<{ [key: number]: File }>({});
+  const [originalStepImages, setOriginalStepImages] = useState<{ [key: number]: string }>({});
 
   const [formData, setFormData] = useState<{
     title: string;
@@ -62,7 +68,7 @@ export default function EditPage() {
   }>({
     title: "",
     description: "",
-    authorId: "507f1f77bcf86cd799439011",
+    authorId: "",
     component: false,
     mainIngredients: [{ name: "", quantity: "" }],
     seasonings: [{ name: "", quantity: "" }],
@@ -73,6 +79,28 @@ export default function EditPage() {
 
   const [tagsInput, setTagsInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
+
+  const normalizeRecipeForm = (recipe: RecipeData) => ({
+    title: recipe.title,
+    description: recipe.description,
+    authorId: recipe.authorId,
+    component: recipe.component ?? false,
+    mainIngredients: recipe.mainIngredients || [{ name: "", quantity: "" }],
+    seasonings: recipe.seasonings || [{ name: "", quantity: "" }],
+    steps: recipe.steps || [{ stepNumber: 1, instruction: "" }],
+    servings: recipe.servings || 1,
+    tags: recipe.tags || [],
+  });
+
+  const getStepImageMap = (steps: Step[] = []) => {
+    const images: { [key: number]: string } = {};
+    steps.forEach((step) => {
+      if (step.image) images[step.stepNumber] = step.image;
+    });
+    return images;
+  };
 
   // Load recipe data
   useEffect(() => {
@@ -88,33 +116,23 @@ export default function EditPage() {
 
         const data = await response.json();
         const recipe: RecipeData = data.recipe;
+        const user = getCurrentUser();
 
-        setFormData({
-          title: recipe.title,
-          description: recipe.description,
-          authorId: recipe.authorId,
-          component: recipe.component ?? false,
-          mainIngredients: recipe.mainIngredients || [{ name: "", quantity: "" }],
-          seasonings: recipe.seasonings || [{ name: "", quantity: "" }],
-          steps: recipe.steps || [{ stepNumber: 1, instruction: "" }],
-          servings: recipe.servings || 1,
-          tags: recipe.tags || [],
-        });
-
-        if (recipe.image) {
-          setRecipeImage(recipe.image);
+        setCurrentUser(user);
+        if (!canEditRecipe(recipe, user)) {
+          setError("You can only edit recipes you created.");
+          return;
         }
 
-        // Load step images
-        const images: { [key: number]: string } = {};
-        if (recipe.steps) {
-          recipe.steps.forEach((step) => {
-            if (step.image) {
-              images[step.stepNumber] = step.image;
-            }
-          });
-        }
+        const images = getStepImageMap(recipe.steps || []);
+
+        setOriginalRecipe(recipe);
+        setOriginalStepImages(images);
+        setFormData(normalizeRecipeForm(recipe));
+        setRecipeImage(recipe.image || null);
+        setRecipeImageFile(null);
         setStepImages(images);
+        setStepImageFiles({});
 
         setTagsInput(recipe.tags.join(", "));
       } catch (err: any) {
@@ -212,13 +230,6 @@ export default function EditPage() {
     setTagsInput("");
   };
 
-  const handleHealthTagChange = (healthTag: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: withHealthTag(prev.tags, healthTag),
-    }));
-  };
-
   const removeTag = (index: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -242,6 +253,11 @@ export default function EditPage() {
   };
 
   const handleSubmit = async () => {
+    if (!originalRecipe || !canEditRecipe(originalRecipe, currentUser)) {
+      alert("You can only edit recipes you created.");
+      return;
+    }
+
     if (!formData.title.trim()) {
       alert("Please enter a recipe name");
       return;
@@ -270,7 +286,8 @@ export default function EditPage() {
       });
 
       if (!updateResponse.ok) {
-        throw new Error("Failed to update recipe");
+        const errorData = await updateResponse.json().catch(() => null);
+        throw new Error(errorData?.error || "Failed to update recipe");
       }
 
       await updateResponse.json();
@@ -301,6 +318,18 @@ export default function EditPage() {
         });
       }
 
+      const refreshedResponse = await authFetch(`/api/recipes/${recipeId}`);
+      if (refreshedResponse.ok) {
+        const refreshedData = await refreshedResponse.json();
+        const refreshedRecipe: RecipeData = refreshedData.recipe;
+        const refreshedStepImages = getStepImageMap(refreshedRecipe.steps || []);
+        setOriginalRecipe(refreshedRecipe);
+        setOriginalStepImages(refreshedStepImages);
+        setRecipeImage(refreshedRecipe.image || recipeImage);
+        setRecipeImageFile(null);
+        setStepImageFiles({});
+      }
+
       alert("Recipe updated successfully!");
       router.push(`/recipes/${recipeId}`);
     } catch (err: any) {
@@ -309,6 +338,34 @@ export default function EditPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleDelete = async () => {
+    if (!originalRecipe || !canEditRecipe(originalRecipe, currentUser)) {
+      alert("You can only delete recipes you created.");
+      return;
+    }
+
+    if (!confirm("Delete this recipe? This cannot be undone.")) return;
+    setDeleting(true);
+    try {
+      const response = await authFetch(`/api/recipes/${recipeId}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to delete recipe");
+      router.push("/profile");
+    } catch (err: any) {
+      alert("Delete failed: " + (err.message || "Unknown error"));
+      setDeleting(false);
+    }
+  };
+
+  const handleRevert = () => {
+    if (!originalRecipe) return;
+    setFormData(normalizeRecipeForm(originalRecipe));
+    setRecipeImage(originalRecipe.image || null);
+    setRecipeImageFile(null);
+    setStepImages(originalStepImages);
+    setStepImageFiles({});
+    setTagsInput((originalRecipe.tags || []).join(", "));
   };
 
   if (loading) {
@@ -330,21 +387,50 @@ export default function EditPage() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
+      <div className={styles.editorHeader}>
         <Link href={`/recipes/${recipeId}`} className={styles.backLink}>
-          ← Back
+          <span className="material-symbols-outlined">arrow_back</span>
+          Recipe
         </Link>
-        <h1 className={styles.title}>Edit Recipe</h1>
+        <div>
+          <p className={styles.kicker}>Editing</p>
+          <h1 className={styles.title}>{formData.title || "Untitled recipe"}</h1>
+        </div>
       </div>
+
+      <aside className={`${styles.floatingPanel} ${panelCollapsed ? styles.floatingPanelCollapsed : ""}`} aria-label="Edit recipe actions">
+        <button
+          type="button"
+          className={styles.panelToggle}
+          onClick={() => setPanelCollapsed((value) => !value)}
+          aria-label={panelCollapsed ? "Open edit actions" : "Minimize edit actions"}
+          aria-expanded={!panelCollapsed}
+        >
+          <span className="material-symbols-outlined">{panelCollapsed ? "chevron_left" : "chevron_right"}</span>
+        </button>
+        <div className={styles.panelActions}>
+          <button type="button" className={`${styles.panelButton} ${styles.panelButtonPrimary}`} onClick={handleSubmit} disabled={submitting} aria-label={submitting ? "Saving recipe" : "Save recipe"} title={submitting ? "Saving" : "Save"}>
+            <span className="material-symbols-outlined">save</span>
+          </button>
+          <button type="button" className={styles.panelButton} onClick={handleRevert} disabled={!originalRecipe || submitting} aria-label="Revert changes" title="Revert">
+            <span className="material-symbols-outlined">history</span>
+          </button>
+          <button type="button" className={`${styles.panelButton} ${styles.panelButtonDanger}`} onClick={handleDelete} disabled={deleting} aria-label={deleting ? "Deleting recipe" : "Delete recipe"} title={deleting ? "Deleting" : "Delete"}>
+            <span className="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </aside>
 
       {recipeImage && (
         <div className={styles.imageDisplay}>
-          <img 
-            src={recipeImage} 
-            alt="Recipe cover" 
-            className={styles.recipeImage}
-            onClick={() => fileInputRef.current?.click()}
-          />
+            <img 
+              src={recipeImage} 
+              alt="Recipe cover" 
+              className={styles.recipeImage}
+            />
+            <button type="button" className={styles.replaceImageIconButton} onClick={() => fileInputRef.current?.click()} aria-label="Replace cover image" title="Replace cover image">
+              <span className="material-symbols-outlined">autorenew</span>
+            </button>
         </div>
       )}
 
@@ -354,12 +440,10 @@ export default function EditPage() {
           description={formData.description}
           servings={formData.servings}
           component={formData.component}
-          healthTag={getHealthTag(formData.tags)}
           onTitleChange={(title) => setFormData({ ...formData, title })}
           onDescriptionChange={(description) => setFormData({ ...formData, description })}
           onServingsChange={(servings) => setFormData({ ...formData, servings })}
           onComponentChange={(component) => setFormData({ ...formData, component })}
-          onHealthTagChange={handleHealthTagChange}
         />
 
         <IngredientsSection

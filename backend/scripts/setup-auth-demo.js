@@ -6,7 +6,7 @@ const dotenv = require("dotenv");
 const ITERATIONS = 12000;
 const KEY_LENGTH = 64;
 const DIGEST = "sha512";
-const PRIVATE_TITLES = ["Admin Private Citrus Cod", "Admin Private Harvest Omelet"];
+const PRIVATE_TITLES = ["Admin Private XO Sauce Lobster", "Admin Private Sichuan Pepper Chicken"];
 
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
@@ -19,6 +19,8 @@ const userSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true, trim: true, lowercase: true },
     displayName: { type: String, required: true, trim: true },
+    email: { type: String, trim: true, default: "" },
+    phone: { type: String, trim: true, default: "" },
     role: { type: String, enum: ["admin", "user"], default: "user", required: true },
     passwordHash: { type: String, required: true },
     passwordSalt: { type: String, required: true },
@@ -56,11 +58,11 @@ function searchText(title) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
-async function upsertUser({ username, password, displayName, role }) {
+async function upsertUser({ username, password, displayName, email, phone, role }) {
   const { salt, hash } = hashPassword(password);
   return User.findOneAndUpdate(
     { username },
-    { username, displayName, role, passwordSalt: salt, passwordHash: hash },
+    { username, displayName, email, phone, role, passwordSalt: salt, passwordHash: hash },
     { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
   );
 }
@@ -96,13 +98,17 @@ async function run() {
   const admin = await upsertUser({
     username: "admin",
     password: "admin",
-    displayName: "Admin Cook",
+    displayName: "admin",
+    email: "admin@rencipe.demo",
+    phone: "(555) 010-0001",
     role: "admin",
   });
   const testUser = await upsertUser({
     username: "testuser1",
     password: "testuser1",
     displayName: "Test User 1",
+    email: "testuser1@rencipe.demo",
+    phone: "(555) 010-0002",
     role: "user",
   });
 
@@ -114,33 +120,33 @@ async function run() {
   const privateSeeds = [
     privateRecipe({
       title: PRIVATE_TITLES[0],
-      description: "Admin-only draft seafood recipe used to verify private search visibility.",
-      image: "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=1200&q=80",
+      description: "Admin-only Cantonese seafood recipe used to verify private search visibility.",
+      image: "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=1200&q=80",
       mainIngredients: [
-        { name: "Cod fillets", quantity: "2" },
-        { name: "Orange", quantity: "1" },
+        { name: "Lobster tails", quantity: "2" },
+        { name: "Egg noodles", quantity: "300g" },
       ],
       seasonings: [
-        { name: "Olive oil", quantity: "1 tbsp" },
-        { name: "Sea salt", quantity: "to taste" },
+        { name: "XO sauce", quantity: "3 tbsp" },
+        { name: "Ginger", quantity: "20g" },
       ],
-      steps: ["Season cod with citrus and salt.", "Bake until the fish flakes easily."],
-      tags: ["Private", "Seafood", "Admin Draft"],
+      steps: ["Blanch lobster until just cooked.", "Stir-fry noodles with XO sauce and ginger.", "Toss lobster through the noodles and serve hot."],
+      tags: ["Private", "Cantonese", "Seafood", "Admin Draft"],
     }),
     privateRecipe({
       title: PRIVATE_TITLES[1],
-      description: "Admin-only draft breakfast recipe used to verify private search visibility.",
-      image: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1200&q=80",
+      description: "Admin-only spicy Sichuan chicken recipe used to verify private search visibility.",
+      image: "https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=1200&q=80",
       mainIngredients: [
-        { name: "Eggs", quantity: "4" },
-        { name: "Spinach", quantity: "80g" },
+        { name: "Chicken thighs", quantity: "600g" },
+        { name: "Dried chilies", quantity: "16" },
       ],
       seasonings: [
-        { name: "Black pepper", quantity: "to taste" },
-        { name: "Butter", quantity: "1 tbsp" },
+        { name: "Sichuan peppercorn", quantity: "1 tbsp" },
+        { name: "Chili oil", quantity: "2 tbsp" },
       ],
-      steps: ["Whisk eggs with pepper.", "Cook gently with spinach until just set."],
-      tags: ["Private", "Breakfast", "Admin Draft"],
+      steps: ["Marinate chicken pieces.", "Bloom chilies and peppercorn in hot oil.", "Stir-fry chicken until glossy and spicy."],
+      tags: ["Private", "Sichuan", "Spicy", "Admin Draft"],
     }),
   ];
 

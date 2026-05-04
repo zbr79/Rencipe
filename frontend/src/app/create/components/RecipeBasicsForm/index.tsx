@@ -1,17 +1,14 @@
 import styles from "./styles.module.css";
-import { HEALTH_TAG_OPTIONS } from "../../../utils/recipeTags";
 
 interface RecipeBasicsFormProps {
   title: string;
   description: string;
   servings: number;
   component: boolean;
-  healthTag: string;
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onServingsChange: (value: number) => void;
   onComponentChange: (value: boolean) => void;
-  onHealthTagChange: (value: string) => void;
 }
 
 export default function RecipeBasicsForm({
@@ -19,12 +16,10 @@ export default function RecipeBasicsForm({
   description,
   servings,
   component,
-  healthTag,
   onTitleChange,
   onDescriptionChange,
   onServingsChange,
   onComponentChange,
-  onHealthTagChange,
 }: RecipeBasicsFormProps) {
   return (
     <>
@@ -58,23 +53,6 @@ export default function RecipeBasicsForm({
             className={styles.textarea}
             rows={4}
           />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label htmlFor="healthTag" className={styles.label}>
-            Health Tag
-          </label>
-          <select
-            id="healthTag"
-            value={healthTag}
-            onChange={(e) => onHealthTagChange(e.target.value)}
-            className={styles.input}
-          >
-            <option value="">No health tag</option>
-            {HEALTH_TAG_OPTIONS.map((tag) => (
-              <option key={tag} value={tag}>{tag}</option>
-            ))}
-          </select>
         </div>
 
         <div className={`${styles.formGroup} ${styles.checkboxRow}`}>

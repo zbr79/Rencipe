@@ -3,20 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useSaved } from "../../../app/contexts/SavedContext";
+import { useSaved } from "../../contexts/SavedContext";
 import { getRecipeImageUrl } from "../../utils/recipeImageUtils";
 import { getVisibleTags } from "../../utils/recipeTags";
-import { authFetch } from "../../utils/authSession";
+import { authFetch, getCurrentUser, type AuthUser } from "../../utils/authSession";
 import styles from "./page.module.css";
-
-interface MealPlan {
-  _id: string;
-  userId: string;
-  name: string;
-  recipes: any[];
-  createdAt: string;
-  updatedAt: string;
-}
 
 interface Recipe {
   id: string;
@@ -51,24 +42,27 @@ interface Recipe {
   updatedAt: string;
 }
 
+function formatIngredientAmount(ingredient: Recipe["mainIngredients"][number]) {
+  return [ingredient.quantity, ingredient.unit].filter(Boolean).join(" ");
+}
+
 export default function RecipeDetailPage() {
   const params = useParams();
   const router = useRouter();
   const recipeId = params.id as string;
-  const { isSaved, addFavorite, removeFavorite, mealPlans, fetchMealPlans, addRecipeToMealPlan } = useSaved();
+  const { isSaved, addFavorite, removeFavorite, fetchSaved } = useSaved();
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isSavingRecipe, setIsSavingRecipe] = useState(false);
-  const [showPlanSelector, setShowPlanSelector] = useState(false);
-  const [loadingPlans, setLoadingPlans] = useState(false);
-  const [addingToPlan, setAddingToPlan] = useState<string | null>(null);
-  const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
 
   useEffect(() => {
     fetchRecipe();
+    setCurrentUser(getCurrentUser());
+    fetchSaved();
   }, [recipeId]);
 
   const fetchRecipe = async () => {
@@ -98,67 +92,17 @@ export default function RecipeDetailPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Delete this recipe? This cannot be undone.")) {
-      return;
-    }
-
-    setIsDeleting(true);
-    try {
-      const response = await authFetch(`/api/recipes/${recipeId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete recipe");
-      }
-
-      // Redirect to home page after successful deletion
-      router.push("/");
-    } catch (err: any) {
-      alert("Delete failed: " + (err.message || "Unknown error"));
-      setIsDeleting(false);
-    }
-  };
-
   const handleEdit = () => {
     router.push(`/edit/${recipeId}`);
-  };
-
-  const handleOpenPlanSelector = async () => {
-    setShowPlanSelector(true);
-    setLoadingPlans(true);
-    try {
-      await fetchMealPlans(userId);
-    } catch (err) {
-      console.error("Failed to fetch meal plans:", err);
-    } finally {
-      setLoadingPlans(false);
-    }
-  };
-
-  const handleAddToPlan = async (planId: string) => {
-    setAddingToPlan(planId);
-    try {
-      await addRecipeToMealPlan(planId, recipeId);
-      alert("Added to plan!");
-      setShowPlanSelector(false);
-    } catch (err: any) {
-      alert("Add failed: " + err.message);
-    } finally {
-      setAddingToPlan(null);
-    }
   };
 
   const handleSaveRecipe = async () => {
     setIsSavingRecipe(true);
     try {
       if (isSaved(recipeId)) {
-        await removeFavorite(userId, recipeId);
-        alert("Removed from saved");
+        await removeFavorite(undefined, recipeId);
       } else {
-        await addFavorite(userId, recipeId);
-        alert("Recipe saved!");
+        await addFavorite(undefined, recipeId);
       }
     } catch (err: any) {
       alert("Save failed: " + err.message);
@@ -166,6 +110,10 @@ export default function RecipeDetailPage() {
       setIsSavingRecipe(false);
     }
   };
+
+  const saved = isSaved(recipeId);
+  const canEditRecipe = Boolean(recipe && currentUser && (recipe.authorId === currentUser.id || currentUser.role === "admin"));
+
   if (loading) {
     return <div className={styles.loading}>Loading...</div>;
   }
@@ -185,42 +133,40 @@ export default function RecipeDetailPage() {
 
   return (
     <div className={styles.container}>
-      {/* Back Button - Top */}
       <div className={styles.backButtonContainer}>
         <Link href="/" className={styles.backButtonNormal}>
           ← Back
         </Link>
-        <div className={styles.actionButtons}>
-          <button 
+      </div>
+
+      <aside className={`${styles.floatingPanel} ${panelCollapsed ? styles.floatingPanelCollapsed : ""}`} aria-label="Recipe actions">
+        <button
+          type="button"
+          className={styles.panelToggle}
+          onClick={() => setPanelCollapsed((value) => !value)}
+          aria-label={panelCollapsed ? "Open recipe actions" : "Minimize recipe actions"}
+          aria-expanded={!panelCollapsed}
+        >
+          <span className="material-symbols-outlined">{panelCollapsed ? "chevron_left" : "chevron_right"}</span>
+        </button>
+        <div className={styles.panelActions}>
+          <button
+            type="button"
+            className={`${styles.panelButton} ${saved ? styles.panelButtonActive : ""}`}
             onClick={handleSaveRecipe}
             disabled={isSavingRecipe}
-            className={styles.saveBtn}
-            title={isSaved(recipeId) ? "Saved" : "Save recipe"}
+            aria-label={saved ? "Remove from saved" : "Save recipe"}
+            title={saved ? "Saved" : "Save"}
           >
-            {isSavingRecipe ? "Saving..." : (isSaved(recipeId) ? "❤️ Saved" : "🤍 Save")}
+            <span className="material-symbols-outlined">{saved ? "bookmark" : "bookmark_border"}</span>
           </button>
-          <button 
-            onClick={handleOpenPlanSelector}
-            className={styles.addToPlanBtn}
-            title="Add to Plan"
-          >
-            📋 Add to Plan
-          </button>
-          <button 
-            onClick={handleEdit}
-            className={styles.editBtn}
-          >
-            Edit
-          </button>
-          <button 
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className={styles.deleteBtn}
-          >
-            {isDeleting ? "Deleting..." : "Delete"}
-          </button>
+          {canEditRecipe && (
+            <button type="button" className={styles.panelButton} onClick={handleEdit} aria-label="Edit recipe" title="Edit">
+              <span className="material-symbols-outlined">edit</span>
+            </button>
+          )}
         </div>
-      </div>
+      </aside>
 
       {/* Recipe Image */}
       {recipe.image && (
@@ -280,11 +226,9 @@ export default function RecipeDetailPage() {
               <ul className={styles.ingredientsList}>
                 {recipe.mainIngredients.map((ing, idx) => (
                   <li key={idx} className={styles.ingredientItem}>
-                    <input type="checkbox" id={`main-ing-${idx}`} />
-                    <label htmlFor={`main-ing-${idx}`}>
-                      <strong>{ing.quantity}</strong> {ing.name}
-                      {ing.note && <span className={styles.note}> • {ing.note}</span>}
-                    </label>
+                    <span className={styles.ingredientName}>{ing.name}</span>
+                    <span className={styles.ingredientAmount}>{formatIngredientAmount(ing)}</span>
+                    {ing.note && <span className={styles.note}>{ing.note}</span>}
                   </li>
                 ))}
               </ul>
@@ -300,11 +244,9 @@ export default function RecipeDetailPage() {
               <ul className={styles.ingredientsList}>
                 {recipe.seasonings.map((ing, idx) => (
                   <li key={idx} className={styles.ingredientItem}>
-                    <input type="checkbox" id={`seasoning-${idx}`} />
-                    <label htmlFor={`seasoning-${idx}`}>
-                      <strong>{ing.quantity}</strong> {ing.name}
-                      {ing.note && <span className={styles.note}> • {ing.note}</span>}
-                    </label>
+                    <span className={styles.ingredientName}>{ing.name}</span>
+                    <span className={styles.ingredientAmount}>{formatIngredientAmount(ing)}</span>
+                    {ing.note && <span className={styles.note}>{ing.note}</span>}
                   </li>
                 ))}
               </ul>
@@ -334,102 +276,6 @@ export default function RecipeDetailPage() {
           </ol>
         </div>
       </div>
-
-      {/* Meal Plan Selector Modal */}
-      {showPlanSelector && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-          onClick={() => setShowPlanSelector(false)}
-        >
-          <div
-            style={{
-              background: "var(--card-bg)",
-              borderRadius: "8px",
-              padding: "20px",
-              maxWidth: "400px",
-              maxHeight: "80vh",
-              overflow: "auto",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 style={{ marginTop: 0, marginBottom: "16px" }}>Select a Plan</h2>
-
-            {loadingPlans ? (
-              <p>Loading...</p>
-            ) : mealPlans && mealPlans.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {mealPlans.map((plan) => (
-                  <button
-                    key={plan._id}
-                    onClick={() => handleAddToPlan(plan._id)}
-                    disabled={addingToPlan === plan._id}
-                    style={{
-                      padding: "12px",
-                      background: "var(--card-bg)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      textAlign: "left",
-                      transition: "all 0.2s ease",
-                      opacity: addingToPlan === plan._id ? 0.6 : 1,
-                    }}
-                    onMouseEnter={(e) => {
-                      if (addingToPlan !== plan._id) {
-                        e.currentTarget.style.background = "var(--border)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "var(--card-bg)";
-                    }}
-                  >
-                    <div style={{ fontWeight: "600", marginBottom: "4px" }}>
-                      {plan.name}
-                    </div>
-                    <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                      {plan.recipes?.length || 0} recipes
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p style={{ color: "var(--text-secondary)" }}>
-                You have not created any meal plans yet.
-                <br />
-                <Link href="/saved" style={{ color: "#3b82f6", textDecoration: "none" }}>
-                  Create a plan
-                </Link>
-              </p>
-            )}
-
-            <button
-              onClick={() => setShowPlanSelector(false)}
-              style={{
-                marginTop: "16px",
-                width: "100%",
-                padding: "10px",
-                background: "transparent",
-                border: "1px solid var(--border)",
-                borderRadius: "6px",
-                cursor: "pointer",
-                color: "var(--text-secondary)",
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

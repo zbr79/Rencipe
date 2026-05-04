@@ -7,7 +7,10 @@ export default function GlobalSearchBar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  if (pathname === "/login" || pathname === "/search" || pathname === "/categories") return null;
+  const hiddenRoutes = ["/login", "/search", "/categories", "/saved", "/settings", "/profile", "/drafts", "/create"];
+  const hiddenPrefixes = ["/edit", "/recipes/", "/meal-plans", "/weekly-plans"];
+
+  if (hiddenRoutes.includes(pathname) || hiddenPrefixes.some((prefix) => pathname.startsWith(prefix))) return null;
 
   const goToSearch = () => router.push("/search");
 

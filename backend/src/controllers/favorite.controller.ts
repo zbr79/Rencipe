@@ -21,7 +21,10 @@ export const getFavorites = async (req: Request, res: Response) => {
 
     let favorites = await Favorite.findOne({
       userId: new mongoose.Types.ObjectId(userId as string),
-    }).populate("recipes");
+    }).populate({
+      path: "recipes",
+      populate: { path: "authorId", select: "username displayName role" },
+    });
 
     if (!favorites) {
       favorites = new Favorite({
@@ -78,13 +81,16 @@ export const addFavorite = async (req: Request, res: Response) => {
       });
     } else {
       const recipeObjectId = new mongoose.Types.ObjectId(recipeId);
-      if (!favorites.recipes.includes(recipeObjectId)) {
+      if (!favorites.recipes.some((id) => id.equals(recipeObjectId))) {
         favorites.recipes.push(recipeObjectId);
       }
     }
 
     await favorites.save();
-    await favorites.populate("recipes");
+    await favorites.populate({
+      path: "recipes",
+      populate: { path: "authorId", select: "username displayName role" },
+    });
 
     res.json({
       message: "Recipe added to favorites",
@@ -129,7 +135,10 @@ export const removeFavorite = async (req: Request, res: Response) => {
     favorites.recipes = favorites.recipes.filter((id) => !id.equals(recipeObjectId));
 
     await favorites.save();
-    await favorites.populate("recipes");
+    await favorites.populate({
+      path: "recipes",
+      populate: { path: "authorId", select: "username displayName role" },
+    });
 
     res.json({
       message: "Recipe removed from favorites",

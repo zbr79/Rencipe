@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { CreateFormProvider } from './contexts/CreateFormContext';
-import { CartProvider } from './contexts/CartContext';
 import { SavedProvider } from './contexts/SavedContext';
 import TopBar from './components/TopBar';
 import GlobalSearchBar from './components/GlobalSearchBar';
 import BottomNav from './components/BottomNav';
 import CreateFormModal from './components/CreateFormModal';
 import AuthGate from './components/AuthGate';
+import ToastProvider from './components/toast/ToastProvider';
 import './globals.css';
 
 export const metadata = {
@@ -27,19 +27,18 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>
-          <CartProvider>
-            <SavedProvider>
-              <CreateFormProvider>
-                <AuthGate>
-                  <TopBar />
-                  <GlobalSearchBar />
-                  {children}
-                  <BottomNav />
-                  <CreateFormModal />
-                </AuthGate>
-              </CreateFormProvider>
-            </SavedProvider>
-          </CartProvider>
+          <ToastProvider />
+          <SavedProvider>
+            <CreateFormProvider>
+              <AuthGate>
+                <TopBar />
+                <GlobalSearchBar />
+                {children}
+                <BottomNav />
+                <CreateFormModal />
+              </AuthGate>
+            </CreateFormProvider>
+          </SavedProvider>
         </ThemeProvider>
       </body>
     </html>

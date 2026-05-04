@@ -3,16 +3,22 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
+import { useSaved } from "../contexts/SavedContext";
+import AccountAvatar from "../components/AccountAvatar";
 import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
 import { matchesPinyinSearch } from "../utils/pinyinSearch";
 import { getVisibleTags, hasHealthTag } from "../utils/recipeTags";
 import { authFetch } from "../utils/authSession";
+import { getAccountDisplayName, type AccountIdentity } from "../utils/accountAvatar";
+import { getRecipeAuthor } from "../utils/recipeAuthor";
 
 interface Recipe {
   id: string;
   _id?: string;
   title: string;
   description: string;
+  author?: AccountIdentity | null;
+  authorId?: string | AccountIdentity | null;
   servings: number;
   tags: string[];
   likes: number;
@@ -24,6 +30,7 @@ interface Recipe {
 }
 
 export default function RecipesPage() {
+  const { isSaved, addFavorite, removeFavorite, fetchSaved } = useSaved();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -35,6 +42,11 @@ export default function RecipesPage() {
 
   useEffect(() => {
     fetchRecipes();
+  }, []);
+
+  useEffect(() => {
+    fetchSaved();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchRecipes = async () => {
@@ -174,55 +186,84 @@ export default function RecipesPage() {
 
       {/* Recipes Grid */}
       <div className={styles.grid}>
-        {filteredRecipes.map((recipe) => (
-          <Link
-            key={recipe._id || recipe.id}
-            href={`/recipes/${recipe._id || recipe.id}`}
-            className={styles.card}
-          >
-            {recipe.image && (
-              <div className={styles.cardImage}>
-                <img src={recipe.image} alt={recipe.title} />
+        {filteredRecipes.map((recipe) => {
+          const recipeId = recipe._id || recipe.id;
+          const author = getRecipeAuthor(recipe);
+          const saved = isSaved(recipeId);
+
+          return (
+            <div key={recipeId} className={styles.cardWrapper}>
+              <article className={styles.card}>
+                <Link href={`/recipes/${recipeId}`} className={styles.cardLink}>
+                  {recipe.image && (
+                    <div className={styles.cardImage}>
+                      <img src={recipe.image} alt={recipe.title} />
+                    </div>
+                  )}
+                  <div className={styles.cardHeader}>
+                    <h3>{recipe.title}</h3>
+                  </div>
+
+                  <p className={styles.description}>
+                    {recipe.description || ""}
+                  </p>
+
+                  <div className={styles.meta}>
+                    <span className={styles.metaItem}>
+                      <span className="material-symbols-outlined">restaurant</span>
+                      {recipe.servings || 1} servings
+                    </span>
+                  </div>
+
+                  {getVisibleTags(recipe.tags).length > 0 && (
+                    <div className={styles.tags}>
+                      {getVisibleTags(recipe.tags).slice(0, 3).map((tag) => (
+                        <span key={tag} className={styles.tag}>
+                          {tag}
+                        </span>
+                      ))}
+                      {getVisibleTags(recipe.tags).length > 3 && (
+                        <span className={styles.tag}>
+                          +{getVisibleTags(recipe.tags).length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  <div className={styles.stats}>
+                    <span>{recipe.likes} saves</span>
+                    <span>{recipe.views} views</span>
+                    {recipe.ratingCount > 0 && (
+                      <span>{recipe.ratingAverage.toFixed(1)} rating</span>
+                    )}
+                  </div>
+                </Link>
+
+                <div className={styles.cardActionRow}>
+                  <div className={styles.uploaderLine}>
+                    <AccountAvatar account={author} size={24} />
+                    <span>{getAccountDisplayName(author)}</span>
+                  </div>
+                </div>
+              </article>
+
+              <button
+                type="button"
+                className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}
+                onClick={() => {
+                  if (saved) {
+                    removeFavorite(undefined, recipeId);
+                  } else {
+                    addFavorite(undefined, recipeId);
+                  }
+                }}
+                aria-label={saved ? "Remove from saved" : "Save recipe"}
+              >
+                <span className="material-symbols-outlined">{saved ? "bookmark" : "bookmark_border"}</span>
+              </button>
               </div>
-            )}
-            <div className={styles.cardHeader}>
-              <h3>{recipe.title}</h3>
-            </div>
-
-            <p className={styles.description}>
-              {recipe.description || ""}
-            </p>
-
-            <div className={styles.meta}>
-              <span className={styles.metaItem}>
-                🍽️ {recipe.servings || 1} servings
-              </span>
-            </div>
-
-            {getVisibleTags(recipe.tags).length > 0 && (
-              <div className={styles.tags}>
-                {getVisibleTags(recipe.tags).slice(0, 3).map((tag) => (
-                  <span key={tag} className={styles.tag}>
-                    {tag}
-                  </span>
-                ))}
-                {getVisibleTags(recipe.tags).length > 3 && (
-                  <span className={styles.tag}>
-                    +{getVisibleTags(recipe.tags).length - 3}
-                  </span>
-                )}
-              </div>
-            )}
-
-            <div className={styles.stats}>
-              <span>{recipe.likes} saves</span>
-              <span>{recipe.views} views</span>
-              {recipe.ratingCount > 0 && (
-                <span>{recipe.ratingAverage.toFixed(1)} rating</span>
-              )}
-            </div>
-          </Link>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

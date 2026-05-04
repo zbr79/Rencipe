@@ -18,7 +18,7 @@ export interface IDraft extends Document {
 
 const DraftSchema = new Schema<IDraft>(
   {
-    authorId: { type: Schema.Types.ObjectId, required: true, index: true },
+    authorId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     name: { type: String, required: true, default: "Untitled Draft" },
     title: { type: String, default: "" },
     description: { type: String, default: "" },

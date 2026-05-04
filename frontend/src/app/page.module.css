@@ -26,14 +26,8 @@
 .carouselTrack {
   min-height: 320px;
   display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-}
-
-.carouselTrack::-webkit-scrollbar {
-  display: none;
+  transition: transform 520ms ease;
+  will-change: transform;
 }
 
 .slideCard,
@@ -111,8 +105,8 @@
 }
 
 .slideDots button {
-  width: 26px;
-  height: 6px;
+  width: 14px;
+  height: 4px;
   padding: 0;
   border: none;
   border-radius: 999px;
@@ -120,7 +114,7 @@
 }
 
 .slideDots .slideDotActive {
-  width: 42px;
+  width: 22px;
   background: white;
 }
 
@@ -133,11 +127,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba(0, 0, 0, 0.82);
+  border: none;
   border-radius: 8px;
   background: transparent;
   color: white;
-  box-shadow: var(--shadow-sm);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
   transform: translateY(-50%);
 }
 
@@ -308,6 +302,15 @@
   transition: all var(--transition-base);
 }
 
+.cardLink {
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+}
+
 .recipeCard:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
@@ -345,13 +348,13 @@
 }
 
 .cardContent {
-  min-height: 70px;
-  padding: 12px 14px 16px;
+  min-height: 66px;
+  padding: 12px 14px 10px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: flex-start;
 }
 
 .cardTitle {
@@ -361,55 +364,67 @@
   font-weight: 900;
   line-height: 1.25;
   color: var(--foreground);
-  text-align: center;
+  text-align: left;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.cardActions {
-  position: absolute;
-  display: flex;
-  left: 10px;
-  right: 10px;
-  bottom: 78px;
-  gap: 8px;
-  z-index: 2;
+.cardFooter {
+  min-height: 38px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px 12px;
 }
 
-.saveButton,
-.addCartButton {
+.uploaderLine {
   min-width: 0;
-  min-height: 38px;
-  flex: 1;
-  border: 1px solid rgba(255, 255, 255, 0.86);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.uploaderLine span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saveButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  width: 34px;
+  height: 38px;
+  border: none;
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #172019;
-  font-size: 12px;
-  font-weight: 900;
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  color: var(--primary);
+  filter: drop-shadow(0 1px 4px rgba(255, 255, 255, 0.9));
 }
 
-.saveButton span:first-child,
-.addCartButton span:first-child {
-  font-size: 19px;
+.saveButton span {
+  font-size: 27px;
+  line-height: 1;
 }
 
-.saveButton:hover,
-.addCartButton:hover {
+.saveButton:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
-.saveButtonActive,
-.addCartButtonActive {
-  background: white;
+.saveButtonActive {
   color: var(--primary);
 }
 
@@ -444,7 +459,7 @@
 
   .slideDots {
     left: 20px;
-    bottom: 18px;
+    bottom: 14px;
   }
 
   .slideArrow {
@@ -488,14 +503,8 @@
     font-size: 15px;
   }
 
-  .cardActions {
-    bottom: 74px;
-    gap: 6px;
-  }
-
-  .saveButton,
-  .addCartButton {
-    min-height: 34px;
-    font-size: 11px;
+  .saveButton {
+    width: 32px;
+    height: 36px;
   }
 }

@@ -6,7 +6,8 @@ import styles from "../recipes/page.module.css";
 import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
 import { matchesPinyinSearch } from "../utils/pinyinSearch";
 import { getVisibleTags } from "../utils/recipeTags";
-import { authFetch } from "../utils/authSession";
+import { authFetch, readAuthSession, type AuthSession } from "../utils/authSession";
+import { getAccountDisplayName } from "../utils/accountAvatar";
 
 interface Recipe {
   id: string;
@@ -28,16 +29,19 @@ export default function ProfilePage() {
   const [userRecipes, setUserRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
+  const [session, setSession] = useState<AuthSession | null>(null);
 
   useEffect(() => {
-    fetchUserRecipes();
+    const activeSession = readAuthSession();
+    setSession(activeSession);
+    fetchUserRecipes(activeSession?.user.id || "");
   }, []);
 
-  const fetchUserRecipes = async () => {
+  const fetchUserRecipes = async (userId: string) => {
     setLoading(true);
     setError("");
     try {
+      if (!userId) throw new Error("Sign in before viewing your profile");
       const response = await authFetch(`/api/recipes?limit=1000`);
 
       if (!response.ok) {
@@ -73,7 +77,7 @@ export default function ProfilePage() {
       <header className={styles.header}>
         <div>
           <p className={styles.kicker}>Profile</p>
-          <h1>Demo Cook</h1>
+          <h1>{getAccountDisplayName(session?.user)}</h1>
           <p className={styles.headerMeta}>Published recipe activity for the current demo user.</p>
         </div>
         <Link href="/create" className={styles.createButton}>

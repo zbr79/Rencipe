@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./drafts.module.css";
+import { getCurrentUserId } from "../utils/authSession";
 
 interface Draft {
   _id: string;
@@ -22,7 +23,6 @@ export default function DraftsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const router = useRouter();
-  const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
 
   useEffect(() => {
     fetchDrafts();
@@ -31,6 +31,8 @@ export default function DraftsPage() {
   const fetchDrafts = async () => {
     try {
       setLoading(true);
+      const userId = getCurrentUserId();
+      if (!userId) throw new Error("Sign in before viewing drafts");
       const response = await fetch(`/api/drafts?authorId=${userId}`);
       if (!response.ok) throw new Error("Failed to fetch drafts");
       const data = await response.json();
@@ -51,6 +53,8 @@ export default function DraftsPage() {
   const handleDeleteDraft = async (draftId: string) => {
     if (!confirm("Delete this draft?")) return;
     try {
+      const userId = getCurrentUserId();
+      if (!userId) throw new Error("Sign in before deleting drafts");
       const response = await fetch(`/api/drafts?authorId=${userId}&id=${draftId}`, {
         method: "DELETE",
       });
@@ -64,6 +68,8 @@ export default function DraftsPage() {
   const handleRenameDraft = async (draftId: string) => {
     if (!editingName.trim()) return;
     try {
+      const userId = getCurrentUserId();
+      if (!userId) throw new Error("Sign in before renaming drafts");
       const response = await fetch(`/api/drafts`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

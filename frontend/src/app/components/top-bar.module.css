@@ -36,7 +36,10 @@
   border-radius: 8px;
   background: var(--primary-soft);
   color: var(--primary);
-  font-size: 22px;
+  font-size: 23px;
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 .logoText {
@@ -70,41 +73,11 @@
   background: var(--hover-bg);
 }
 
-.cartButton {
-  position: relative;
-  width: 42px;
-  height: 42px;
-  flex: none;
+.actions {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
-  border-radius: 999px;
-  background: var(--primary-soft);
-  color: var(--primary);
-  text-decoration: none;
-}
-
-.cartButton span:first-child {
-  font-size: 24px;
-}
-
-.cartBadge {
-  position: absolute;
-  top: -3px;
-  right: -2px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: var(--error);
-  color: white;
-  font-size: 11px;
-  font-weight: 900;
-  box-sizing: border-box;
+  gap: 10px;
+  min-width: 42px;
 }
 
 @media (max-width: 768px) {
@@ -120,11 +93,6 @@
   .logoIcon {
     width: 32px;
     height: 32px;
-  }
-
-  .cartButton {
-    width: 40px;
-    height: 40px;
   }
 
   .navLinks {

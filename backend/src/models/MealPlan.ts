@@ -1,5 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+export type MealType = "breakfast" | "lunch" | "dinner";
+
 export interface IPerson {
   name: string;
   modifier: number; // Individual eating modifier (0.5 = 50%, 1.0 = 100%, 1.8 = 180%)
@@ -12,13 +14,24 @@ export interface IMealCombination {
   portions: number;
 }
 
+export interface IPlannedMeal {
+  mealType: MealType;
+  recipes: mongoose.Types.ObjectId[];
+}
+
+export interface IMealPlanDay {
+  dayNumber: number;
+  meals: IPlannedMeal[];
+}
+
 export interface IMealPlan extends Document {
   userId: mongoose.Types.ObjectId;
   name: string;
   people: IPerson[];
   numberOfDays: number;
-  mealTypes: ('lunch' | 'dinner')[];
+  mealTypes: MealType[];
   totalMealsNeeded: number;
+  days: IMealPlanDay[];
   recipes: mongoose.Types.ObjectId[];
   combinations: IMealCombination[];
   checkedIngredients: string[];
@@ -69,10 +82,41 @@ const mealCombinationSchema = new Schema<IMealCombination>(
   { _id: false }
 );
 
+const plannedMealSchema = new Schema<IPlannedMeal>(
+  {
+    mealType: {
+      type: String,
+      enum: ["breakfast", "lunch", "dinner"],
+      required: true,
+    },
+    recipes: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Recipe" }],
+      default: [],
+    },
+  },
+  { _id: false }
+);
+
+const mealPlanDaySchema = new Schema<IMealPlanDay>(
+  {
+    dayNumber: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    meals: {
+      type: [plannedMealSchema],
+      default: [],
+    },
+  },
+  { _id: false }
+);
+
 const mealPlanSchema = new Schema<IMealPlan>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
       index: true,
     },
@@ -98,13 +142,17 @@ const mealPlanSchema = new Schema<IMealPlan>(
     },
     mealTypes: {
       type: [String],
-      enum: ["lunch", "dinner"],
+      enum: ["breakfast", "lunch", "dinner"],
       required: true,
     },
     totalMealsNeeded: {
       type: Number,
       required: true,
       min: 1,
+    },
+    days: {
+      type: [mealPlanDaySchema],
+      default: [],
     },
     recipes: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Recipe" }],

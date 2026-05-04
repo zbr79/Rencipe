@@ -114,6 +114,12 @@
   white-space: nowrap;
 }
 
+.draftToolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
 /* Messages */
 .message {
   padding: 14px 16px;
@@ -240,6 +246,14 @@
   .uploadPrompt {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .draftToolbar {
+    justify-content: stretch;
+  }
+
+  .saveDraftBtn {
+    width: 100%;
   }
 
   .submitBtn {

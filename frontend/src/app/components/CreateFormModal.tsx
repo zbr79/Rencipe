@@ -6,29 +6,39 @@ import { useCreateForm } from "../contexts/CreateFormContext";
 import { useSaved } from "../contexts/SavedContext";
 import styles from "./create-form-modal.module.css";
 
+type MealType = "breakfast" | "lunch" | "dinner";
+
+const mealTypeOptions: MealType[] = ["breakfast", "lunch", "dinner"];
+
 export default function CreateFormModal() {
   const { isOpen, closeCreateForm, showMealPlanForm, setShowMealPlanForm } = useCreateForm();
   const { createMealPlan, fetchMealPlans } = useSaved();
   const router = useRouter();
-  const userId = "507f1f77bcf86cd799439011";
   
   const [mealPlanState, setMealPlanState] = useState({
     numberOfPeople: 2,
     numberOfDays: 3,
-    mealTypes: ['lunch'] as ('lunch' | 'dinner')[],
+    mealTypes: ["dinner"] as MealType[],
     name: "",
     loading: false,
     error: null as string | null,
   });
-  const suggestedMealPlanName = `${mealPlanState.numberOfPeople}-person ${mealPlanState.numberOfDays}-day plan`;
+  const suggestedMealPlanName = "New Plan";
 
-  const handleMealTypeToggle = (type: 'lunch' | 'dinner') => {
-    setMealPlanState((prev) => ({
-      ...prev,
-      mealTypes: prev.mealTypes.includes(type)
-        ? prev.mealTypes.filter((t) => t !== type)
-        : [...prev.mealTypes, type],
-    }));
+  const handleMealTypeToggle = (type: MealType) => {
+    setMealPlanState((prev) => {
+      const selected = new Set(prev.mealTypes);
+      if (selected.has(type)) {
+        selected.delete(type);
+      } else {
+        selected.add(type);
+      }
+
+      return {
+        ...prev,
+        mealTypes: mealTypeOptions.filter((option) => selected.has(option)),
+      };
+    });
   };
 
   const handleCreateMealPlan = async () => {
@@ -41,14 +51,14 @@ export default function CreateFormModal() {
 
     try {
       const newPlan = await createMealPlan(
-        userId,
+        undefined,
         mealPlanState.numberOfPeople,
         mealPlanState.numberOfDays,
         mealPlanState.mealTypes,
         mealPlanState.name || suggestedMealPlanName
       );
 
-      await fetchMealPlans(userId);
+  await fetchMealPlans();
       closeCreateForm();
       router.push(`/meal-plans/${newPlan._id}`);
     } catch (err: any) {
@@ -65,41 +75,69 @@ export default function CreateFormModal() {
       <div className={styles.modalOverlay} onClick={closeCreateForm}>
         <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
           <button className={styles.closeBtn} onClick={() => { setShowMealPlanForm(false); closeCreateForm(); }}>✕</button>
-          <div className={styles.formContainer}>
+          <div className={`${styles.formContainer} ${styles.mealPlanForm}`}>
             <h1 className={styles.menuTitle}>New Meal Plan</h1>
             {mealPlanState.error && (
-              <div style={{ backgroundColor: "#ffebee", color: "#c62828", padding: "12px", borderRadius: "4px", marginBottom: "16px" }}>
+              <div className={`${styles.message} ${styles.messageError}`}>
                 {mealPlanState.error}
               </div>
             )}
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>People</label>
-              <input type="number" min="1" value={mealPlanState.numberOfPeople} onChange={(e) => setMealPlanState((prev) => ({ ...prev, numberOfPeople: Math.max(1, parseInt(e.target.value) || 1) }))} style={{ width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid var(--border)", fontSize: "16px", backgroundColor: "var(--card-bg)", color: "var(--foreground)", boxSizing: "border-box" }} />
+            <label className={styles.mealPlanField}>
+              <span>Name</span>
+              <input
+                type="text"
+                value={mealPlanState.name}
+                onChange={(event) => setMealPlanState((prev) => ({ ...prev, name: event.target.value }))}
+                placeholder={suggestedMealPlanName}
+              />
+            </label>
+
+            <div className={styles.mealPlanInlineRow}>
+              <label className={styles.mealPlanField}>
+                <span>People</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={mealPlanState.numberOfPeople}
+                  onChange={(event) => setMealPlanState((prev) => ({ ...prev, numberOfPeople: Math.max(1, parseInt(event.target.value) || 1) }))}
+                />
+              </label>
+              <label className={styles.mealPlanField}>
+                <span>Days</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={mealPlanState.numberOfDays}
+                  onChange={(event) => setMealPlanState((prev) => ({ ...prev, numberOfDays: Math.max(1, parseInt(event.target.value) || 1) }))}
+                />
+              </label>
             </div>
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>Days</label>
-              <input type="number" min="1" value={mealPlanState.numberOfDays} onChange={(e) => setMealPlanState((prev) => ({ ...prev, numberOfDays: Math.max(1, parseInt(e.target.value) || 1) }))} style={{ width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid var(--border)", fontSize: "16px", backgroundColor: "var(--card-bg)", color: "var(--foreground)", boxSizing: "border-box" }} />
-            </div>
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", marginBottom: "12px", fontWeight: "500" }}>Meal Types</label>
-              <div style={{ display: "flex", gap: "16px" }}>
-                <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                  <input type="checkbox" checked={mealPlanState.mealTypes.includes("lunch")} onChange={() => handleMealTypeToggle("lunch")} style={{ marginRight: "8px", cursor: "pointer" }} />Lunch
-                </label>
-                <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                  <input type="checkbox" checked={mealPlanState.mealTypes.includes("dinner")} onChange={() => handleMealTypeToggle("dinner")} style={{ marginRight: "8px", cursor: "pointer" }} />Dinner
-                </label>
+
+            <div className={styles.mealPlanField}>
+              <span>Meal Types</span>
+              <div className={styles.mealTypeGrid}>
+                {(["breakfast", "lunch", "dinner"] as const).map((type) => (
+                  <label key={type} className={styles.mealTypeOption}>
+                    <input
+                      type="checkbox"
+                      checked={mealPlanState.mealTypes.includes(type)}
+                      onChange={() => handleMealTypeToggle(type)}
+                    />
+                    <span>{type}</span>
+                  </label>
+                ))}
               </div>
             </div>
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>Plan Name (optional)</label>
-              <input type="text" value={mealPlanState.name} onChange={(e) => setMealPlanState((prev) => ({ ...prev, name: e.target.value }))} placeholder={suggestedMealPlanName} style={{ width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid var(--border)", fontSize: "16px", backgroundColor: "var(--card-bg)", color: "var(--foreground)", boxSizing: "border-box" }} />
+
+            <div className={styles.mealPlanSummary}>
+              <span>{mealPlanState.numberOfDays} days</span>
+              <strong>{mealPlanState.numberOfDays * mealPlanState.mealTypes.length}</strong>
+              <span>meal slots</span>
             </div>
-            <div style={{ backgroundColor: "rgba(59, 130, 246, 0.1)", padding: "12px", borderRadius: "4px", marginBottom: "20px", fontSize: "14px" }}>Total meals needed: <strong>{mealPlanState.numberOfPeople * mealPlanState.numberOfDays * mealPlanState.mealTypes.length}</strong></div>
-            <div style={{ display: "flex", gap: "12px" }}>
-              <button onClick={handleCreateMealPlan} disabled={mealPlanState.loading} style={{ flex: 1, padding: "12px", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: "4px", cursor: mealPlanState.loading ? "not-allowed" : "pointer", opacity: mealPlanState.loading ? 0.6 : 1, fontSize: "16px", fontWeight: "600" }}>{mealPlanState.loading ? "Creating..." : "Create Plan"}</button>
-              <button onClick={() => { setShowMealPlanForm(false); closeCreateForm(); }} style={{ flex: 1, padding: "12px", backgroundColor: "var(--hover-bg)", color: "var(--foreground)", border: "1px solid var(--border)", borderRadius: "4px", cursor: "pointer", fontSize: "16px", fontWeight: "600" }}>Cancel</button>
-            </div>
+
+            <button onClick={handleCreateMealPlan} disabled={mealPlanState.loading} className={styles.createPlanButton}>
+              {mealPlanState.loading ? "Creating..." : "Create Plan"}
+            </button>
           </div>
         </div>
       </div>

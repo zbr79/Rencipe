@@ -1,18 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
-import { useCart } from "./contexts/CartContext";
 import { useSaved } from "./contexts/SavedContext";
+import AccountAvatar from "./components/AccountAvatar";
 import { hasHealthTag } from "./utils/recipeTags";
 import { authFetch } from "./utils/authSession";
+import { getAccountDisplayName, type AccountIdentity } from "./utils/accountAvatar";
+import { getRecipeAuthor } from "./utils/recipeAuthor";
 
 type Recipe = {
   id: string;
   _id?: string;
   title: string;
   description: string;
+  author?: AccountIdentity | null;
+  authorId?: string | AccountIdentity | null;
   image?: string;
   component?: boolean;
   servings?: number;
@@ -42,10 +46,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("recommended");
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
-  const carouselRef = useRef<HTMLDivElement | null>(null);
-  const { addToCart, cartRecipes } = useCart();
   const { isSaved, addFavorite, removeFavorite, fetchSaved } = useSaved();
-  const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
   const publicRecipes = recipes.filter((recipe) => recipe.isPublic !== false);
   const featuredRecipes = publicRecipes.filter((recipe) => recipe.image).slice(0, 10);
 
@@ -84,7 +85,7 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    fetchSaved(userId);
+    fetchSaved();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -98,12 +99,6 @@ export default function HomePage() {
 
     return () => window.clearInterval(intervalId);
   }, [featuredRecipes.length]);
-
-  useEffect(() => {
-    const carousel = carouselRef.current;
-    const slide = carousel?.children[activeSlideIndex] as HTMLElement | undefined;
-    slide?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
-  }, [activeSlideIndex]);
 
   const tabs = [
     { id: "recommended", label: "Recommended" },
@@ -120,29 +115,20 @@ export default function HomePage() {
     return true;
   });
 
-  function handleCarouselScroll() {
-    const carousel = carouselRef.current;
-    if (!carousel) return;
-
-    const nextIndex = Math.round(carousel.scrollLeft / carousel.clientWidth);
-    if (nextIndex !== activeSlideIndex && nextIndex >= 0 && nextIndex < featuredRecipes.length) {
-      setActiveSlideIndex(nextIndex);
-    }
-  }
-
   function goToSlide(direction: -1 | 1) {
     if (featuredRecipes.length <= 1) return;
     setActiveSlideIndex((current) => (current + direction + featuredRecipes.length) % featuredRecipes.length);
   }
-
-  const cartIds = new Set(cartRecipes.map((recipe) => recipe._id || recipe.id).filter(Boolean));
 
   return (
     <main className={styles.container}>
       <section className={styles.dashboard}>
         <div className={styles.dashboardContent}>
           {featuredRecipes.length > 0 ? (
-            <div ref={carouselRef} className={styles.carouselTrack} onScroll={handleCarouselScroll}>
+            <div
+              className={styles.carouselTrack}
+              style={{ transform: `translate3d(-${activeSlideIndex * 100}%, 0, 0)` }}
+            >
               {featuredRecipes.map((recipe) => (
                 <Link key={recipe._id || recipe.id} href={`/recipes/${recipe._id || recipe.id}`} className={styles.slideCard}>
                   <img src={recipe.image!} alt={recipe.title} className={styles.slideImage} />
@@ -223,56 +209,51 @@ export default function HomePage() {
         <div className={styles.recipeGrid}>
           {visibleRecipes.map((r) => {
             const recipeId = r._id || r.id;
-            const alreadyInCart = cartIds.has(recipeId);
             const saved = isSaved(recipeId);
+            const author = getRecipeAuthor(r);
             return (
             <div key={recipeId} className={styles.recipeCardWrapper}>
-              <Link href={`/recipes/${recipeId}`} className={styles.recipeCard}>
-                <div className={styles.cardImage}>
-                  {r.image ? (
-                    <img src={r.image} alt={r.title} />
-                  ) : (
-                    <div className={styles.imagePlaceholder}>
-                      <span className="material-symbols-outlined">restaurant</span>
-                    </div>
-                  )}
+              <article className={styles.recipeCard}>
+                <Link href={`/recipes/${recipeId}`} className={styles.cardLink}>
+                  <div className={styles.cardImage}>
+                    {r.image ? (
+                      <img src={r.image} alt={r.title} />
+                    ) : (
+                      <div className={styles.imagePlaceholder}>
+                        <span className="material-symbols-outlined">restaurant</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className={styles.cardContent}>
+                    <h3 className={styles.cardTitle}>{r.title}</h3>
+                  </div>
+                </Link>
+
+                <div className={styles.cardFooter}>
+                  <div className={styles.uploaderLine}>
+                    <AccountAvatar account={author} size={24} />
+                    <span>{getAccountDisplayName(author)}</span>
+                  </div>
                 </div>
-                
-                <div className={styles.cardContent}>
-                  <h3 className={styles.cardTitle}>{r.title}</h3>
-                </div>
-              </Link>
-              
-              <div className={styles.cardActions}>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (saved) {
-                      removeFavorite(userId, recipeId);
-                    } else {
-                      addFavorite(userId, recipeId);
-                    }
-                  }}
-                  className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}
-                  title={saved ? "Remove from saved" : "Save recipe"}
-                >
-                  <span className="material-symbols-outlined">{saved ? "bookmark" : "bookmark_add"}</span>
-                  <span>Save</span>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    addToCart(userId, recipeId);
-                  }}
-                  className={`${styles.addCartButton} ${alreadyInCart ? styles.addCartButtonActive : ""}`}
-                  title={alreadyInCart ? "Add another to cart" : "Add to cart"}
-                >
-                  <span className="material-symbols-outlined">add_shopping_cart</span>
-                  <span>Add</span>
-                </button>
-              </div>
+              </article>
+
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (saved) {
+                    removeFavorite(undefined, recipeId);
+                  } else {
+                    addFavorite(undefined, recipeId);
+                  }
+                }}
+                className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}
+                title={saved ? "Remove from saved" : "Save recipe"}
+                aria-label={saved ? "Remove from saved" : "Save recipe"}
+              >
+                <span className="material-symbols-outlined">{saved ? "bookmark" : "bookmark_border"}</span>
+              </button>
             </div>
           );
           })}

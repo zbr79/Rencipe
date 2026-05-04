@@ -26,6 +26,10 @@
   border-radius: 8px;
   background: var(--primary-soft);
   color: var(--primary);
+  font-size: 24px;
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 .formHeader p {
@@ -121,8 +125,7 @@
   font-weight: 800;
 }
 
-.primaryButton,
-.demoButton {
+.primaryButton {
   min-height: 46px;
   border-radius: 8px;
   font-size: 15px;
@@ -137,19 +140,6 @@
   color: white;
 }
 
-.demoActions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.demoButton {
-  border: 1px solid var(--border);
-  background: var(--hover-bg);
-  color: var(--foreground);
-}
-
 .helperText {
   margin: 14px 0 0;
   color: var(--text-secondary);
@@ -157,8 +147,7 @@
   line-height: 1.45;
 }
 
-.primaryButton:disabled,
-.demoButton:disabled {
+.primaryButton:disabled {
   cursor: not-allowed;
   opacity: 0.65;
 }
@@ -168,7 +157,4 @@
     padding: 24px 18px;
   }
 
-  .demoActions {
-    grid-template-columns: 1fr;
-  }
 }

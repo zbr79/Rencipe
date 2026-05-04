@@ -4,6 +4,8 @@ export interface AuthUser {
   id: string;
   username: string;
   displayName: string;
+  email?: string;
+  phone?: string;
   role: "admin" | "user";
 }
 
@@ -41,6 +43,14 @@ export function clearAuthSession() {
 
 export function getAuthToken() {
   return readAuthSession()?.token || null;
+}
+
+export function getCurrentUser() {
+  return readAuthSession()?.user || null;
+}
+
+export function getCurrentUserId() {
+  return getCurrentUser()?.id || "";
 }
 
 export function authHeaders(existingHeaders?: HeadersInit) {

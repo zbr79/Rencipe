@@ -27,7 +27,10 @@ export function CreateFormProvider({ children }: { children: ReactNode }) {
       value={{
         isOpen,
         openCreateForm: () => setIsOpen(true),
-        closeCreateForm: () => setIsOpen(false),
+        closeCreateForm: () => {
+          setIsOpen(false);
+          setShowMealPlanForm(false);
+        },
         recipeImage,
         setRecipeImage,
         recipeImageFile,

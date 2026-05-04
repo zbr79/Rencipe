@@ -13,6 +13,23 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+function pickAuthor(author: any) {
+  if (!author || !author.displayName) return null;
+
+  return {
+    id: String(author._id),
+    username: author.username,
+    displayName: author.displayName,
+    role: author.role,
+  };
+}
+
+function getAuthorId(doc: any) {
+  if (!doc.authorId) return null;
+  if (doc.authorId._id) return String(doc.authorId._id);
+  return String(doc.authorId);
+}
+
 function pickRecipe(doc: any) {
   return {
     id: String(doc._id),
@@ -20,7 +37,8 @@ function pickRecipe(doc: any) {
     title: doc.title,
     description: doc.description,
     image: doc.image ?? null,
-    authorId: doc.authorId ?? null,
+    authorId: getAuthorId(doc),
+    author: pickAuthor(doc.authorId),
     component: doc.component ?? false,
     isPublic: doc.isPublic ?? false,
     mainIngredients: doc.mainIngredients ?? [],
@@ -56,14 +74,14 @@ function canAccessRecipe(req: Request, doc: any) {
   const user = getAuthUser(req);
   if (doc.isPublic) return true;
   if (user?.role === "admin") return true;
-  return Boolean(user && doc.authorId?.toString() === user.id);
+  return Boolean(user && getAuthorId(doc) === user.id);
 }
 
 function canMutateRecipe(req: Request, doc: any) {
   const user = getAuthUser(req);
   if (!user) return false;
   if (user.role === "admin") return true;
-  return doc.authorId?.toString() === user.id;
+  return getAuthorId(doc) === user.id;
 }
 
 /**
@@ -73,6 +91,7 @@ export async function listRecipes(req: Request, res: Response) {
   try {
     const limit = Math.min(parseInt(String(req.query.limit || "200"), 10) || 200, 1000);
     const docs = await Recipe.find(visibleRecipeQuery(req))
+      .populate("authorId", "username displayName role")
       .sort({ updatedAt: -1, createdAt: -1 })
       .limit(limit);
 
@@ -125,6 +144,8 @@ export async function createRecipe(req: Request, res: Response) {
       isPublic: authUser.role === "admin" ? Boolean(isPublic) : false,
     });
 
+    await doc.populate("authorId", "username displayName role");
+
     res.status(201).json({ recipe: pickRecipe(doc) });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Failed to create recipe" });
@@ -142,6 +163,8 @@ export async function getRecipeById(req: Request, res: Response) {
     const doc = await Recipe.findById(id);
     if (!doc) return res.status(404).json({ error: "recipe not found" });
     if (!canAccessRecipe(req, doc)) return res.status(404).json({ error: "recipe not found" });
+
+    await doc.populate("authorId", "username displayName role");
 
     res.json({ recipe: pickRecipe(doc) });
   } catch (e: any) {
@@ -195,6 +218,8 @@ export async function updateRecipe(req: Request, res: Response) {
     );
 
     if (!doc) return res.status(404).json({ error: "recipe not found" });
+
+    await doc.populate("authorId", "username displayName role");
 
     res.json({ recipe: pickRecipe(doc) });
   } catch (e: any) {
@@ -265,6 +290,8 @@ export async function uploadRecipeImage(req: Request, res: Response) {
 
         if (!doc) return res.status(404).json({ error: "recipe not found" });
 
+        await doc.populate("authorId", "username displayName role");
+
         res.json({ recipe: pickRecipe(doc) });
       }
     );
@@ -327,6 +354,8 @@ export async function uploadStepImage(req: Request, res: Response) {
         );
 
         if (!doc) return res.status(404).json({ error: "recipe not found" });
+
+        await doc.populate("authorId", "username displayName role");
 
         res.json({ recipe: pickRecipe(doc) });
       }

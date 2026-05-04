@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useSaved } from "../contexts/SavedContext";
+import { useCreateForm } from "../contexts/CreateFormContext";
 import { getScheduledPlanDisplayName } from "../utils/planDisplay";
 import styles from "../recipes/page.module.css";
 
@@ -17,12 +18,11 @@ export default function MealPlansPage() {
     deleteMealPlan,
     deleteWeeklyPlan,
   } = useSaved();
+  const { openCreateForm, setShowMealPlanForm } = useCreateForm();
   
-  const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
-
   useEffect(() => {
-    fetchMealPlans(userId);
-    fetchWeeklyPlans(userId);
+    fetchMealPlans();
+    fetchWeeklyPlans();
   }, []);
 
   const handleDeletePlan = async (planId: string) => {
@@ -46,6 +46,16 @@ export default function MealPlansPage() {
 
   const loading = loadingPlans || loadingWeeklyPlans;
   const hasPlans = mealPlans.length > 0 || weeklyPlans.length > 0;
+  const openMealPlanForm = () => {
+    setShowMealPlanForm(true);
+    openCreateForm();
+  };
+  const getPlanRecipeCount = (plan: any) => {
+    const scheduledCount = (plan.days || []).reduce((total: number, day: any) => {
+      return total + (day.meals || []).reduce((mealTotal: number, meal: any) => mealTotal + (meal.recipes?.length || 0), 0);
+    }, 0);
+    return scheduledCount || plan.recipes?.length || 0;
+  };
 
   return (
     <div className={styles.container}>
@@ -55,10 +65,10 @@ export default function MealPlansPage() {
           <h1>Meal Plans</h1>
           <p className={styles.headerMeta}>Create reusable plans or schedule meals across the week.</p>
         </div>
-        <Link href="/weekly-plans/create" className={styles.createButton}>
-          <span className="material-symbols-outlined">calendar_month</span>
-          New Scheduled Plan
-        </Link>
+        <button type="button" className={styles.createButton} onClick={openMealPlanForm}>
+          <span className="material-symbols-outlined">add</span>
+          New Meal Plan
+        </button>
       </header>
 
       {loading ? (
@@ -83,7 +93,7 @@ export default function MealPlansPage() {
                         {plan.people.length} people | {plan.numberOfDays} days | {plan.mealTypes.join(", ")}
                       </p>
                       <p>
-                        Needs {plan.totalMealsNeeded} meals | {plan.combinations.length} combinations set{Array.isArray(plan.recipes) && plan.recipes.length > 0 ? ` | ${plan.recipes.length} recipes` : ""}
+                        {plan.totalMealsNeeded} meal slots | {getPlanRecipeCount(plan)} recipes planned
                       </p>
                     </div>
                     <div className={styles.planActions}>

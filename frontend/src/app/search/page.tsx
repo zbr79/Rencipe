@@ -3,17 +3,23 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import AccountAvatar from "../components/AccountAvatar";
 import styles from "./page.module.css";
+import { useSaved } from "../contexts/SavedContext";
 import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
 import { matchesPinyinSearch } from "../utils/pinyinSearch";
-import { getPrimaryRecipeLabel, getVisibleTags } from "../utils/recipeTags";
+import { getVisibleTags } from "../utils/recipeTags";
 import { authFetch } from "../utils/authSession";
+import { getAccountDisplayName, type AccountIdentity } from "../utils/accountAvatar";
+import { getRecipeAuthor } from "../utils/recipeAuthor";
 
 interface Recipe {
   id: string;
   _id?: string;
   title: string;
   description: string;
+  author?: AccountIdentity | null;
+  authorId?: string | AccountIdentity | null;
   servings: number;
   tags: string[];
   likes: number;
@@ -28,15 +34,20 @@ const HISTORY_KEY = "rencipe-search-history";
 
 export default function SearchPage() {
   const router = useRouter();
+  const { isSaved, addFavorite, removeFavorite, fetchSaved } = useSaved();
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [allTags, setAllTags] = useState<string[]>([]);
   const [history, setHistory] = useState<string[]>([]);
 
   useEffect(() => {
     fetchAllRecipes();
+  }, []);
+
+  useEffect(() => {
+    fetchSaved();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -65,12 +76,6 @@ export default function SearchPage() {
       const data = await response.json();
       const enrichedRecipes = enrichRecipesWithMockImages<Recipe>((data.recipes || []) as Recipe[]);
       setAllRecipes(enrichedRecipes);
-
-      const tags = new Set<string>();
-      enrichedRecipes.forEach((recipe) => {
-        getVisibleTags(recipe.tags).forEach((tag) => tags.add(tag));
-      });
-      setAllTags(Array.from(tags).sort());
     } catch (err: any) {
       setError(err.message);
       console.error(err);
@@ -80,10 +85,16 @@ export default function SearchPage() {
   };
 
   const recommendationTags = useMemo(() => {
-    const preferred = ["High Protein", "Balanced", "Quick", "Dinner", "Vegetable", "Seafood", "Meal prep", "Keto Friendly"];
-    const merged = [...preferred, ...allTags];
-    return Array.from(new Set(merged)).filter(Boolean).slice(0, 12);
-  }, [allTags]);
+    const counts = new Map<string, number>();
+    allRecipes.forEach((recipe) => {
+      getVisibleTags(recipe.tags).forEach((tag) => counts.set(tag, (counts.get(tag) || 0) + 1));
+    });
+
+    return Array.from(counts.entries())
+      .sort((first, second) => second[1] - first[1] || first[0].localeCompare(second[0]))
+      .map(([tag]) => tag)
+      .slice(0, 8);
+  }, [allRecipes]);
 
   const updateSearchTerm = (value: string) => {
     setSearchTerm(value);
@@ -149,9 +160,7 @@ export default function SearchPage() {
           )}
         </div>
 
-        <Link href="/cart" className={styles.cartButton} aria-label="Shopping Cart">
-          <span className="material-symbols-outlined">shopping_cart</span>
-        </Link>
+        <span className={styles.headerSpacer} aria-hidden="true" />
       </header>
 
       {error && <div className={styles.error}>Error: {error}</div>}
@@ -193,7 +202,7 @@ export default function SearchPage() {
             <div className={styles.sectionHeader}>
               <h2>Recommended</h2>
             </div>
-            <div className={styles.chipList}>
+            <div className={`${styles.chipList} ${styles.recommendationList}`}>
               {recommendationTags.map((tag, index) => (
                 <button key={tag} type="button" className={styles.recommendChip} onClick={() => updateSearchTerm(tag)}>
                   {index < 3 && <span className="material-symbols-outlined">local_fire_department</span>}
@@ -225,36 +234,44 @@ export default function SearchPage() {
 
       {hasQuery && (
         <div className={styles.resultList}>
-          {filteredRecipes.map((recipe, index) => (
-            <Link
-              key={recipe._id || recipe.id}
-              href={`/recipes/${recipe._id || recipe.id}`}
-              className={`${styles.recipeCard} ${styles.resultCard}`}
-              onClick={() => commitSearchTerm()}
-            >
-              <span className={styles.discountBadge}>{index % 3 === 0 ? "New" : index % 3 === 1 ? "Popular" : "Fresh"}</span>
-              {recipe.image && (
-                <div className={styles.recipeImage}>
-                  <img src={recipe.image} alt={recipe.title} />
-                </div>
-              )}
-              <div className={styles.recipeBody}>
-                <div className={styles.recipeTopLine}>
-                  <span>{getPrimaryRecipeLabel(recipe.tags)}</span>
-                  <span>{recipe.servings || 1} servings</span>
-                </div>
-                <h3>{recipe.title}</h3>
-                {recipe.description && <p>{recipe.description}</p>}
-                {getVisibleTags(recipe.tags).length > 0 && (
-                  <div className={styles.cardTags}>
-                    {getVisibleTags(recipe.tags).slice(0, 2).map((tag) => (
-                      <span key={tag}>{tag}</span>
-                    ))}
+          {filteredRecipes.map((recipe) => {
+            const recipeId = recipe._id || recipe.id;
+            const author = getRecipeAuthor(recipe);
+            const saved = isSaved(recipeId);
+
+            return (
+              <article key={recipeId} className={`${styles.recipeCard} ${styles.resultCard}`}>
+                <Link href={`/recipes/${recipeId}`} className={styles.resultCardLink} onClick={() => commitSearchTerm()}>
+                  <div className={styles.recipeImage}>
+                    {recipe.image ? <img src={recipe.image} alt={recipe.title} /> : <span className="material-symbols-outlined">restaurant</span>}
                   </div>
-                )}
-              </div>
-            </Link>
-          ))}
+                  <div className={styles.recipeBody}>
+                    <h3>{recipe.title}</h3>
+                    <div className={styles.uploaderLine}>
+                      <AccountAvatar account={author} size={24} />
+                      <span>{getAccountDisplayName(author)}</span>
+                    </div>
+                  </div>
+                </Link>
+                <button
+                  type="button"
+                  className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (saved) {
+                      removeFavorite(undefined, recipeId);
+                    } else {
+                      addFavorite(undefined, recipeId);
+                    }
+                  }}
+                  aria-label={saved ? "Remove from saved" : "Save recipe"}
+                >
+                  <span className="material-symbols-outlined">{saved ? "bookmark" : "bookmark_border"}</span>
+                </button>
+              </article>
+            );
+          })}
         </div>
       )}
     </main>

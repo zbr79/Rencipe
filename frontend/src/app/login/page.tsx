@@ -47,17 +47,11 @@ export default function LoginPage() {
     }
   };
 
-  const fillAccount = (nextUsername: string, nextPassword: string) => {
-    setError("");
-    setUsername(nextUsername);
-    setPassword(nextPassword);
-  };
-
   return (
     <main className={styles.page}>
       <section className={styles.formPanel}>
         <div className={styles.brandLockup}>
-          <span className={`material-symbols-outlined ${styles.brandIcon}`}>restaurant</span>
+          <span className={styles.brandIcon} aria-hidden="true">R</span>
           <span>Rencipe</span>
         </div>
 
@@ -94,15 +88,6 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
-
-        <div className={styles.demoActions}>
-          <button type="button" className={styles.demoButton} onClick={() => fillAccount("admin", "admin")} disabled={loading}>
-            Use admin/admin
-          </button>
-          <button type="button" className={styles.demoButton} onClick={() => fillAccount("testuser1", "testuser1")} disabled={loading}>
-            Use testuser1
-          </button>
-        </div>
 
         <p className={styles.helperText}>Backend login controls which recipes you can see. Admin can see private drafts; testuser1 only sees public recipes.</p>
       </section>

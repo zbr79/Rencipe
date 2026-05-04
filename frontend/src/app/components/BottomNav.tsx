@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCreateForm } from "../contexts/CreateFormContext";
-import { useSaved } from "../contexts/SavedContext";
 import styles from "./bottom-nav.module.css";
 
 interface NavItem {
@@ -11,14 +10,11 @@ interface NavItem {
   icon: string;
   label: string;
   action?: () => void;
-  badge?: number;
 }
 
 export default function BottomNav() {
   const pathname = usePathname();
   const { openCreateForm } = useCreateForm();
-  const { savedCount, mealPlans } = useSaved();
-  const totalSavedCount = savedCount + mealPlans.length;
 
   if (pathname === "/login") return null;
 
@@ -26,7 +22,7 @@ export default function BottomNav() {
     { href: `/`, icon: "home", label: "Home" },
     { href: `/categories`, icon: "category", label: "Browse" },
     { href: null, icon: "add_circle", label: "Create", action: openCreateForm },
-    { href: `/saved`, icon: "bookmark", label: "Saved", badge: totalSavedCount },
+    { href: `/saved`, icon: "bookmark", label: "Saved" },
     { href: `/settings`, icon: "settings", label: "Settings" },
   ];
 
@@ -61,9 +57,6 @@ export default function BottomNav() {
               <span className={`material-symbols-outlined ${styles.icon}`}>
                 {item.icon}
               </span>
-              {item.badge !== undefined && item.badge > 0 && (
-                <span className={styles.badge}>{item.badge}</span>
-              )}
             </Link>
           );
         })}

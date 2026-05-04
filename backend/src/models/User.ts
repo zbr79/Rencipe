@@ -5,6 +5,8 @@ export type UserRole = "admin" | "user";
 export interface IUser extends Document {
   username: string;
   displayName: string;
+  email?: string;
+  phone?: string;
   role: UserRole;
   passwordHash: string;
   passwordSalt: string;
@@ -16,6 +18,8 @@ const UserSchema = new Schema<IUser>(
   {
     username: { type: String, required: true, unique: true, trim: true, lowercase: true },
     displayName: { type: String, required: true, trim: true },
+    email: { type: String, trim: true, default: "" },
+    phone: { type: String, trim: true, default: "" },
     role: { type: String, enum: ["admin", "user"], default: "user", required: true },
     passwordHash: { type: String, required: true },
     passwordSalt: { type: String, required: true },

@@ -11,10 +11,9 @@ export default function WeeklyPlansPage() {
   const { weeklyPlans, fetchWeeklyPlans, deleteWeeklyPlan, renameWeeklyPlan, loadingWeeklyPlans, errorWeeklyPlans } = useSaved();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
-  const userId = "507f1f77bcf86cd799439011"; // Hardcoded for now
 
   useEffect(() => {
-    fetchWeeklyPlans(userId);
+    fetchWeeklyPlans();
   }, []);
 
   const handleDelete = async (id: string) => {

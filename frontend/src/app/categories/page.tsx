@@ -1,18 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSaved } from "../contexts/SavedContext";
+import AccountAvatar from "../components/AccountAvatar";
 import styles from "../search/page.module.css";
 import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
-import { getPrimaryRecipeLabel, getVisibleTags, hasHealthTag } from "../utils/recipeTags";
+import { getVisibleTags } from "../utils/recipeTags";
 import { authFetch } from "../utils/authSession";
+import { getAccountDisplayName, type AccountIdentity } from "../utils/accountAvatar";
+import { getRecipeAuthor } from "../utils/recipeAuthor";
 
 interface Recipe {
   id: string;
   _id?: string;
   title: string;
   description: string;
+  author?: AccountIdentity | null;
+  authorId?: string | AccountIdentity | null;
   servings: number;
   tags: string[];
   likes: number;
@@ -23,36 +29,26 @@ interface Recipe {
   image?: string;
 }
 
-const categoryTabs = [
-  { id: "all", label: "All", icon: "tune" },
-  { id: "healthy", label: "Healthy", icon: "favorite" },
-  { id: "quick", label: "Quick", icon: "bolt" },
-  { id: "dinner", label: "Dinner", icon: "dinner_dining" },
-  { id: "seafood", label: "Seafood", icon: "set_meal" },
-  { id: "vegetarian", label: "Vegetarian", icon: "eco" },
-];
-
-const featureCategories = [
-  { id: "all", label: "Recommended", icon: "local_offer" },
-  { id: "all", label: "New", icon: "auto_awesome" },
-  { id: "all", label: "Popular", icon: "local_fire_department" },
-  { id: "healthy", label: "Healthy", icon: "nutrition" },
-  { id: "protein", label: "Protein", icon: "egg_alt" },
-];
-
 function matchesCategory(recipe: Recipe, category: string) {
-  const tags = recipe.tags || [];
-  if (category === "healthy") return hasHealthTag(tags);
-  if (category === "quick") return tags.some((tag) => ["Quick", "Easy", "Meal prep"].includes(tag));
-  if (category === "dinner") return tags.some((tag) => ["Dinner", "Family dinner", "Chicken", "Protein"].includes(tag));
-  if (category === "seafood") return tags.some((tag) => ["Seafood", "Salmon", "Shrimp"].includes(tag));
-  if (category === "vegetarian") return tags.some((tag) => ["Vegetarian", "Vegetable", "Salad"].includes(tag));
-  if (category === "protein") return tags.some((tag) => ["High Protein", "Protein", "Chicken", "Salmon"].includes(tag));
+  const tags = getVisibleTags(recipe.tags || []);
+  if (category !== "all") return tags.some((tag) => tag.toLowerCase() === category.toLowerCase());
   return true;
+}
+
+function iconForTag(tag: string) {
+  const normalized = tag.toLowerCase();
+  if (normalized.includes("spicy") || normalized.includes("sichuan")) return "local_fire_department";
+  if (normalized.includes("seafood") || normalized.includes("fish") || normalized.includes("shrimp")) return "set_meal";
+  if (normalized.includes("korean")) return "rice_bowl";
+  if (normalized.includes("cantonese") || normalized.includes("chinese")) return "restaurant";
+  if (normalized.includes("quick")) return "bolt";
+  if (normalized.includes("vegetable")) return "eco";
+  return "local_offer";
 }
 
 export default function CategoriesPage() {
   const router = useRouter();
+  const { isSaved, addFavorite, removeFavorite, fetchSaved } = useSaved();
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -60,6 +56,11 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     fetchAllRecipes();
+  }, []);
+
+  useEffect(() => {
+    fetchSaved();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAllRecipes = async () => {
@@ -83,22 +84,26 @@ export default function CategoriesPage() {
   };
 
   const filteredRecipes = allRecipes.filter((recipe) => matchesCategory(recipe, selectedCategory));
+  const tagCategories = useMemo(() => {
+    const counts = new Map<string, number>();
+    allRecipes.forEach((recipe) => {
+      getVisibleTags(recipe.tags || []).forEach((tag) => counts.set(tag, (counts.get(tag) || 0) + 1));
+    });
+
+    return Array.from(counts.entries())
+      .sort((first, second) => second[1] - first[1] || first[0].localeCompare(second[0]))
+      .map(([tag]) => ({ id: tag, label: tag, icon: iconForTag(tag) }));
+  }, [allRecipes]);
+  const featureCategories = tagCategories.slice(0, 5);
+  const categoryTabs = [{ id: "all", label: "All", icon: "tune" }, ...tagCategories.slice(0, 7)];
 
   return (
     <main className={styles.page}>
-      <header className={styles.searchHeader}>
-        <button type="button" className={styles.backButton} onClick={() => router.back()} aria-label="Back">
-          <span className="material-symbols-outlined">arrow_back</span>
-        </button>
-
-        <button type="button" className={styles.searchBoxButton} onClick={() => router.push("/search")}>
+      <header className={`${styles.searchHeader} ${styles.categorySearchHeader}`}>
+        <button type="button" className={`${styles.searchBoxButton} ${styles.categorySearchButton}`} onClick={() => router.push("/search")}>
           <span className={`material-symbols-outlined ${styles.searchIcon}`}>search</span>
           <span>Search recipes</span>
         </button>
-
-        <Link href="/cart" className={styles.cartButton} aria-label="Shopping Cart">
-          <span className="material-symbols-outlined">shopping_cart</span>
-        </Link>
       </header>
 
       {error && <div className={styles.error}>Error: {error}</div>}
@@ -106,7 +111,7 @@ export default function CategoriesPage() {
       <section className={styles.featureRail} aria-label="Browse categories">
         {featureCategories.map((category) => (
           <button
-            key={`${category.label}-${category.id}`}
+            key={category.id}
             type="button"
             className={styles.featureItem}
             onClick={() => setSelectedCategory(category.id)}
@@ -133,7 +138,6 @@ export default function CategoriesPage() {
 
       <div className={styles.resultsHeader}>
         <h2>Categories</h2>
-        <span>{filteredRecipes.length} recipes</span>
       </div>
 
       {loading && <p className={styles.loading}>Loading...</p>}
@@ -148,34 +152,48 @@ export default function CategoriesPage() {
       )}
 
       <div className={styles.recipeGrid}>
-        {filteredRecipes.map((recipe, index) => (
-          <Link
-            key={recipe._id || recipe.id}
-            href={`/recipes/${recipe._id || recipe.id}`}
-            className={styles.recipeCard}
-          >
-            <span className={styles.discountBadge}>{index % 3 === 0 ? "New" : index % 3 === 1 ? "Popular" : "Fresh"}</span>
-            {recipe.image && (
-              <div className={styles.recipeImage}>
-                <img src={recipe.image} alt={recipe.title} />
-              </div>
-            )}
-            <div className={styles.recipeBody}>
-              <div className={styles.recipeTopLine}>
-                <span>{getPrimaryRecipeLabel(recipe.tags)}</span>
-                <span>{recipe.servings || 1} servings</span>
-              </div>
-              <h3>{recipe.title}</h3>
-              {getVisibleTags(recipe.tags).length > 0 && (
-                <div className={styles.cardTags}>
-                  {getVisibleTags(recipe.tags).slice(0, 2).map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
+        {filteredRecipes.map((recipe) => {
+          const recipeId = recipe._id || recipe.id;
+          const saved = isSaved(recipeId);
+          const author = getRecipeAuthor(recipe);
+
+          return (
+            <div key={recipeId} className={styles.recipeCardWrapper}>
+              <article className={styles.recipeCard}>
+                <Link href={`/recipes/${recipeId}`} className={styles.recipeCardLink}>
+                  <div className={styles.recipeImage}>
+                    {recipe.image ? <img src={recipe.image} alt={recipe.title} /> : <span className="material-symbols-outlined">restaurant</span>}
+                  </div>
+                  <div className={styles.recipeBody}>
+                    <h3>{recipe.title}</h3>
+                  </div>
+                </Link>
+                <div className={styles.cardFooter}>
+                  <div className={styles.uploaderLine}>
+                    <AccountAvatar account={author} size={24} />
+                    <span>{getAccountDisplayName(author)}</span>
+                  </div>
                 </div>
-              )}
+              </article>
+              <button
+                type="button"
+                className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  if (saved) {
+                    removeFavorite(undefined, recipeId);
+                  } else {
+                    addFavorite(undefined, recipeId);
+                  }
+                }}
+                aria-label={saved ? "Remove from saved" : "Save recipe"}
+              >
+                <span className="material-symbols-outlined">{saved ? "bookmark" : "bookmark_border"}</span>
+              </button>
             </div>
-          </Link>
-        ))}
+          );
+        })}
       </div>
     </main>
   );

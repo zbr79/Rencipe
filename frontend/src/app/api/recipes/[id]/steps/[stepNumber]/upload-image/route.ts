@@ -7,6 +7,19 @@ function forwardHeaders(request: NextRequest): Record<string, string> {
   return authorization ? { Authorization: authorization } : {};
 }
 
+async function backendJson(response: Response) {
+  const text = await response.text();
+  let data: any = {};
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { error: text };
+    }
+  }
+  return NextResponse.json(data, { status: response.status });
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; stepNumber: string }> }
@@ -21,12 +34,7 @@ export async function POST(
       body: formData,
     });
 
-    if (!response.ok) {
-      throw new Error("Failed to upload step image");
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
+    return backendJson(response);
   } catch (error: any) {
     console.error("Error uploading step image:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
