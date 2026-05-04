@@ -228,6 +228,37 @@ export async function updateRecipe(req: Request, res: Response) {
 }
 
 /**
+ * POST /recipes/:id/rating
+ */
+export async function rateRecipe(req: Request, res: Response) {
+  try {
+    const id = String(req.params.id || "").trim();
+    const rating = Number(req.body.rating);
+
+    if (!id) return res.status(400).json({ error: "id is required" });
+    if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: "rating must be between 1 and 5" });
+    }
+
+    const existing = await Recipe.findById(id);
+    if (!existing) return res.status(404).json({ error: "recipe not found" });
+    if (!canAccessRecipe(req, existing)) return res.status(404).json({ error: "recipe not found" });
+
+    const nextCount = (existing.ratingCount ?? 0) + 1;
+    const nextAverage = (((existing.ratingAverage ?? 0) * (existing.ratingCount ?? 0)) + rating) / nextCount;
+
+    existing.ratingCount = nextCount;
+    existing.ratingAverage = Math.round(nextAverage * 10) / 10;
+    await existing.save();
+    await existing.populate("authorId", "username displayName role");
+
+    res.json({ recipe: pickRecipe(existing) });
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || "Failed to rate recipe" });
+  }
+}
+
+/**
  * DELETE /recipes/:id
  * Delete a recipe
  */

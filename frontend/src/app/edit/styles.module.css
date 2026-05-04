@@ -85,6 +85,7 @@
 .imageDisplay {
   position: relative;
   width: 100%;
+  display: block;
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: 8px;
@@ -92,6 +93,13 @@
   background: var(--hover-bg);
   box-shadow: var(--shadow-sm);
   margin-bottom: 20px;
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+}
+
+.imageDisplay:disabled {
+  cursor: progress;
 }
 
 .recipeImage {
@@ -119,6 +127,21 @@
   backdrop-filter: blur(12px);
 }
 
+.imageSavingBadge {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 2;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+}
+
 .replaceImageIconButton span {
   font-size: 22px;
 }
@@ -126,7 +149,7 @@
 .floatingPanel {
   position: fixed;
   top: 50%;
-  right: 14px;
+  right: 0;
   z-index: 900;
   display: flex;
   align-items: center;
@@ -155,8 +178,8 @@
 }
 
 .floatingPanelCollapsed .panelToggle {
-  border-right: 1px solid var(--border);
-  border-radius: 8px;
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
 }
 
 .panelToggle span {
@@ -169,7 +192,8 @@
   min-width: 48px;
   padding: 6px;
   border: 1px solid var(--border);
-  border-radius: 0 8px 8px 0;
+  border-left: 0;
+  border-radius: 0;
   background: color-mix(in srgb, var(--card-bg) 96%, transparent);
   box-shadow: var(--shadow-md);
   backdrop-filter: blur(16px);
@@ -259,7 +283,7 @@
   }
 
   .floatingPanel {
-    right: 8px;
+    right: 0;
   }
 
   .panelActions {

@@ -24,7 +24,6 @@
 .sectionHeader {
   display: flex;
   align-items: center;
-  gap: 12px;
   margin-bottom: 20px;
   padding-bottom: 0;
   border-bottom: none;
@@ -35,19 +34,6 @@
   font-weight: 700;
   color: var(--foreground);
   margin: 0;
-}
-
-.infoIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid var(--text-secondary);
-  font-size: 14px;
-  color: var(--text-secondary);
-  cursor: help;
 }
 
 .input,
@@ -163,9 +149,17 @@
 }
 
 .uploadIcon {
-  font-size: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
   color: var(--primary);
-  font-weight: 600;
+  font-weight: 900;
+}
+
+.uploadIcon span:first-child {
+  font-size: 20px;
 }
 
 .uploadText {
@@ -249,7 +243,14 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.addBtn span:first-child {
+  font-size: 19px;
 }
 
 .addBtn:hover {
@@ -268,13 +269,16 @@
   width: 28px;
   height: 28px;
   padding: 0;
-  font-size: 18px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 4px;
+}
+
+.deleteBtn span {
+  font-size: 18px;
 }
 
 .deleteBtn:hover {
@@ -327,10 +331,6 @@
 
   .imageUploadArea {
     min-height: 200px;
-  }
-
-  .uploadIcon {
-    font-size: 24px;
   }
 
   .uploadText {

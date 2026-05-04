@@ -68,8 +68,8 @@ export default function RecipeSelectionModal({
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2 className={styles.title}>{title}</h2>
-          <button className={styles.closeBtn} onClick={onClose}>
-            ✕
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
+            <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
@@ -123,7 +123,7 @@ export default function RecipeSelectionModal({
                   )}
                 </div>
                 <div className={styles.checkmark}>
-                  {selectedId === recipe.id && "✓"}
+                  {selectedId === recipe.id && <span className="material-symbols-outlined">check</span>}
                 </div>
               </div>
             ))}

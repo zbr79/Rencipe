@@ -48,7 +48,8 @@ export default function EditPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [recipeImage, setRecipeImage] = useState<string | null>(null);
-  const [recipeImageFile, setRecipeImageFile] = useState<File | null>(null);
+  const [, setRecipeImageFile] = useState<File | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const [originalRecipe, setOriginalRecipe] = useState<RecipeData | null>(null);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [stepImages, setStepImages] = useState<{ [key: number]: string }>({});
@@ -146,15 +147,38 @@ export default function EditPage() {
     if (recipeId) fetchRecipe();
   }, [recipeId]);
 
-  const handleRecipeImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRecipeImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (file) {
+      const previousImage = recipeImage;
       const reader = new FileReader();
-      reader.onload = (event) => {
-        setRecipeImage(event.target?.result as string);
-        setRecipeImageFile(file);
-      };
+      reader.onload = (event) => setRecipeImage(event.target?.result as string);
       reader.readAsDataURL(file);
+      setRecipeImageFile(null);
+      setImageUploading(true);
+
+      try {
+        const imageFormData = new FormData();
+        imageFormData.append("image", file);
+
+        const response = await authFetch(`/api/recipes/${recipeId}/upload-image`, {
+          method: "POST",
+          body: imageFormData,
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(data?.error || "Failed to update cover image");
+
+        const updatedRecipe: RecipeData = data.recipe;
+        setRecipeImage(updatedRecipe.image || previousImage);
+        setOriginalRecipe((current) => current ? { ...current, image: updatedRecipe.image } : updatedRecipe);
+        setRecipeImageFile(null);
+      } catch (err: any) {
+        setRecipeImage(previousImage);
+        alert(err.message || "Failed to update cover image");
+      } finally {
+        setImageUploading(false);
+      }
     }
   };
 
@@ -220,11 +244,12 @@ export default function EditPage() {
   };
 
   const addTag = () => {
-    if (!tagsInput.trim()) return;
-    if (!formData.tags.includes(tagsInput)) {
+    const nextTag = tagsInput.trim();
+    if (!nextTag) return;
+    if (!formData.tags.includes(nextTag)) {
       setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, tagsInput],
+        tags: [...prev.tags, nextTag],
       }));
     }
     setTagsInput("");
@@ -266,6 +291,10 @@ export default function EditPage() {
       alert("Please enter a recipe description");
       return;
     }
+    if (imageUploading) {
+      alert("Please wait for the cover image to finish saving.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -291,21 +320,6 @@ export default function EditPage() {
       }
 
       await updateResponse.json();
-
-      // Upload recipe image if changed and exists
-      if (recipeImageFile && recipeImage) {
-        const imageFormData = new FormData();
-        imageFormData.append("image", recipeImageFile);
-
-        const imageResponse = await authFetch(`/api/recipes/${recipeId}/upload-image`, {
-          method: "POST",
-          body: imageFormData,
-        });
-
-        if (!imageResponse.ok) {
-          console.warn("Image upload failed");
-        }
-      }
 
       // Upload step images - only upload files that were newly selected
       for (const [stepNumber, file] of Object.entries(stepImageFiles)) {
@@ -378,7 +392,8 @@ export default function EditPage() {
         <div className={styles.error}>
           <p>Error: {error}</p>
           <Link href="/" className={styles.backLink}>
-            ← Back
+            <span className="material-symbols-outlined">arrow_back</span>
+            Back
           </Link>
         </div>
       </div>
@@ -409,7 +424,7 @@ export default function EditPage() {
           <span className="material-symbols-outlined">{panelCollapsed ? "chevron_left" : "chevron_right"}</span>
         </button>
         <div className={styles.panelActions}>
-          <button type="button" className={`${styles.panelButton} ${styles.panelButtonPrimary}`} onClick={handleSubmit} disabled={submitting} aria-label={submitting ? "Saving recipe" : "Save recipe"} title={submitting ? "Saving" : "Save"}>
+          <button type="button" className={`${styles.panelButton} ${styles.panelButtonPrimary}`} onClick={handleSubmit} disabled={submitting || imageUploading} aria-label={submitting ? "Saving recipe" : "Save recipe"} title={submitting ? "Saving" : "Save"}>
             <span className="material-symbols-outlined">save</span>
           </button>
           <button type="button" className={styles.panelButton} onClick={handleRevert} disabled={!originalRecipe || submitting} aria-label="Revert changes" title="Revert">
@@ -422,16 +437,17 @@ export default function EditPage() {
       </aside>
 
       {recipeImage && (
-        <div className={styles.imageDisplay}>
+        <button type="button" className={styles.imageDisplay} onClick={() => fileInputRef.current?.click()} disabled={imageUploading} aria-label={imageUploading ? "Saving cover image" : "Replace cover image"} title={imageUploading ? "Saving cover image" : "Replace cover image"}>
             <img 
               src={recipeImage} 
               alt="Recipe cover" 
               className={styles.recipeImage}
             />
-            <button type="button" className={styles.replaceImageIconButton} onClick={() => fileInputRef.current?.click()} aria-label="Replace cover image" title="Replace cover image">
+            <span className={styles.replaceImageIconButton} aria-hidden="true">
               <span className="material-symbols-outlined">autorenew</span>
-            </button>
-        </div>
+            </span>
+            {imageUploading && <span className={styles.imageSavingBadge}>Saving...</span>}
+        </button>
       )}
 
       <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className={styles.form}>
@@ -439,11 +455,9 @@ export default function EditPage() {
           title={formData.title}
           description={formData.description}
           servings={formData.servings}
-          component={formData.component}
           onTitleChange={(title) => setFormData({ ...formData, title })}
           onDescriptionChange={(description) => setFormData({ ...formData, description })}
           onServingsChange={(servings) => setFormData({ ...formData, servings })}
-          onComponentChange={(component) => setFormData({ ...formData, component })}
         />
 
         <IngredientsSection
@@ -478,7 +492,7 @@ export default function EditPage() {
         <div className={styles.submitContainer}>
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || imageUploading}
             className={styles.submitBtn}
           >
             {submitting ? "Submitting..." : "Save Changes"}

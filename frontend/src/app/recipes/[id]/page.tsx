@@ -58,6 +58,9 @@ export default function RecipeDetailPage() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isSavingRecipe, setIsSavingRecipe] = useState(false);
   const [panelCollapsed, setPanelCollapsed] = useState(false);
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [ratingMessage, setRatingMessage] = useState("");
 
   useEffect(() => {
     fetchRecipe();
@@ -84,6 +87,7 @@ export default function RecipeDetailPage() {
       }
       
       setRecipe(recipeData);
+      setSelectedRating(Math.round(recipeData.ratingAverage || 0));
     } catch (err: any) {
       setError(err.message);
       console.error(err);
@@ -111,6 +115,28 @@ export default function RecipeDetailPage() {
     }
   };
 
+  const handleRatingSubmit = async (rating: number) => {
+    setSelectedRating(rating);
+    setRatingSubmitting(true);
+    setRatingMessage("");
+
+    try {
+      const response = await authFetch(`/api/recipes/${recipeId}/rating`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Rating failed");
+      setRecipe(data.recipe);
+      setRatingMessage("Rating submitted");
+    } catch (err: any) {
+      setRatingMessage(err.message || "Rating failed");
+    } finally {
+      setRatingSubmitting(false);
+    }
+  };
+
   const saved = isSaved(recipeId);
   const canEditRecipe = Boolean(recipe && currentUser && (recipe.authorId === currentUser.id || currentUser.role === "admin"));
 
@@ -124,7 +150,8 @@ export default function RecipeDetailPage() {
         <div className={styles.error}>
           <p>Error: {error || ""}</p>
           <Link href="/" className={styles.backLink}>
-            ← Back
+            <span className="material-symbols-outlined">arrow_back</span>
+            Back
           </Link>
         </div>
       </div>
@@ -135,7 +162,8 @@ export default function RecipeDetailPage() {
     <div className={styles.container}>
       <div className={styles.backButtonContainer}>
         <Link href="/" className={styles.backButtonNormal}>
-          ← Back
+          <span className="material-symbols-outlined">arrow_back</span>
+          Back
         </Link>
       </div>
 
@@ -189,7 +217,11 @@ export default function RecipeDetailPage() {
           {/* Rating */}
           {recipe.ratingCount > 0 && (
             <div className={styles.ratingRow}>
-              <span className={styles.stars}>★★★★★</span>
+              <span className={styles.stars} aria-hidden="true">
+                {Array.from({ length: 5 }, (_, index) => (
+                  <span key={index} className={`material-symbols-outlined ${index < Math.round(recipe.ratingAverage) ? styles.starFilled : ""}`}>star</span>
+                ))}
+              </span>
               <span className={styles.ratingText}>
                 {recipe.ratingAverage.toFixed(1)} ({recipe.ratingCount})
               </span>
@@ -276,6 +308,31 @@ export default function RecipeDetailPage() {
           </ol>
         </div>
       </div>
+
+      <section className={styles.submitRatingSection} aria-label="Rate this recipe">
+        <div>
+          <h3 className={styles.sectionTitle}>Rate this recipe</h3>
+          <p>Tap a star to submit your rating.</p>
+        </div>
+        <div className={styles.ratingButtons}>
+          {Array.from({ length: 5 }, (_, index) => {
+            const rating = index + 1;
+            return (
+              <button
+                key={rating}
+                type="button"
+                className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""}`}
+                onClick={() => handleRatingSubmit(rating)}
+                disabled={ratingSubmitting}
+                aria-label={`Rate ${rating} star${rating === 1 ? "" : "s"}`}
+              >
+                <span className="material-symbols-outlined">star</span>
+              </button>
+            );
+          })}
+        </div>
+        {ratingMessage && <span className={styles.ratingMessage}>{ratingMessage}</span>}
+      </section>
     </div>
   );
 }

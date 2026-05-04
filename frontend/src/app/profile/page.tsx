@@ -147,7 +147,8 @@ export default function ProfilePage() {
 
             <div className={styles.meta}>
               <span className={styles.metaItem}>
-                🍽️ {recipe.servings || 1} servings
+                <span className="material-symbols-outlined">restaurant</span>
+                {recipe.servings || 1} servings
               </span>
             </div>
 

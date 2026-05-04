@@ -74,7 +74,9 @@ export default function CreateFormModal() {
     return (
       <div className={styles.modalOverlay} onClick={closeCreateForm}>
         <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-          <button className={styles.closeBtn} onClick={() => { setShowMealPlanForm(false); closeCreateForm(); }}>✕</button>
+          <button className={styles.closeBtn} onClick={() => { setShowMealPlanForm(false); closeCreateForm(); }} aria-label="Close">
+            <span className="material-symbols-outlined">close</span>
+          </button>
           <div className={`${styles.formContainer} ${styles.mealPlanForm}`}>
             <h1 className={styles.menuTitle}>New Meal Plan</h1>
             {mealPlanState.error && (
@@ -129,12 +131,6 @@ export default function CreateFormModal() {
               </div>
             </div>
 
-            <div className={styles.mealPlanSummary}>
-              <span>{mealPlanState.numberOfDays} days</span>
-              <strong>{mealPlanState.numberOfDays * mealPlanState.mealTypes.length}</strong>
-              <span>meal slots</span>
-            </div>
-
             <button onClick={handleCreateMealPlan} disabled={mealPlanState.loading} className={styles.createPlanButton}>
               {mealPlanState.loading ? "Creating..." : "Create Plan"}
             </button>
@@ -147,15 +143,17 @@ export default function CreateFormModal() {
   return (
     <div className={styles.modalOverlay} onClick={closeCreateForm}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.closeBtn} onClick={closeCreateForm}>✕</button>
+        <button className={styles.closeBtn} onClick={closeCreateForm} aria-label="Close">
+          <span className="material-symbols-outlined">close</span>
+        </button>
         <div className={styles.menuContainer}>
-          <h1 className={styles.menuTitle}>Choose an Action</h1>
+          <h1 className={styles.menuTitle}>Create</h1>
           <button className={styles.menuOption} onClick={() => { closeCreateForm(); router.push("/create"); }}>
-            <span className={styles.menuIcon}>📝</span>
+            <span className={`material-symbols-outlined ${styles.menuIcon}`}>edit_note</span>
             <span className={styles.menuLabel}>Create Recipe</span>
           </button>
           <button className={styles.menuOption} onClick={() => setShowMealPlanForm(true)}>
-            <span className={styles.menuIcon}>📋</span>
+            <span className={`material-symbols-outlined ${styles.menuIcon}`}>event_note</span>
             <span className={styles.menuLabel}>Create Meal Plan</span>
           </button>
         </div>

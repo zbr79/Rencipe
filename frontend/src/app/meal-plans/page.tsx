@@ -93,7 +93,7 @@ export default function MealPlansPage() {
                         {plan.people.length} people | {plan.numberOfDays} days | {plan.mealTypes.join(", ")}
                       </p>
                       <p>
-                        {plan.totalMealsNeeded} meal slots | {getPlanRecipeCount(plan)} recipes planned
+                        {plan.totalMealsNeeded} planned meals | {getPlanRecipeCount(plan)} recipes planned
                       </p>
                     </div>
                     <div className={styles.planActions}>
@@ -126,7 +126,7 @@ export default function MealPlansPage() {
                       <h3>{getScheduledPlanDisplayName(plan.name)}</h3>
                       <p>Calendar-style meal schedule</p>
                       <p>
-                        {[plan.breakfastEnabled && "Breakfast", plan.lunchEnabled && "Lunch", plan.dinnerEnabled && "Dinner"].filter(Boolean).join(", ") || "No meal slots enabled"}
+                        {[plan.breakfastEnabled && "Breakfast", plan.lunchEnabled && "Lunch", plan.dinnerEnabled && "Dinner"].filter(Boolean).join(", ") || "No meals enabled"}
                       </p>
                     </div>
                     <div className={styles.planActions}>

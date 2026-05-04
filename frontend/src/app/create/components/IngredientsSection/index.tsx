@@ -44,7 +44,6 @@ export default function IngredientsSection({
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
         <h2>Ingredients</h2>
-        <span className={styles.infoIcon}>ⓘ</span>
       </div>
 
       {/* Main Ingredients Section */}
@@ -73,15 +72,16 @@ export default function IngredientsSection({
                 type="button"
                 onClick={() => onRemoveMainIngredient(idx)}
                 className={styles.removeBtn}
+                aria-label="Remove main ingredient"
               >
-                ✕
+                <span className="material-symbols-outlined">close</span>
               </button>
             </div>
           ))}
         </div>
 
-        <button type="button" onClick={onAddMainIngredient} className={styles.addBtn}>
-          + Add Main Ingredient
+        <button type="button" onClick={onAddMainIngredient} className={styles.addBtn} aria-label="Add main ingredient">
+          <span className="material-symbols-outlined">add</span>
         </button>
       </div>
 
@@ -111,15 +111,16 @@ export default function IngredientsSection({
                 type="button"
                 onClick={() => onRemoveSeasonings(idx)}
                 className={styles.removeBtn}
+                aria-label="Remove seasoning"
               >
-                ✕
+                <span className="material-symbols-outlined">close</span>
               </button>
             </div>
           ))}
         </div>
 
-        <button type="button" onClick={onAddSeasonings} className={styles.addBtn}>
-          + Add Seasoning
+        <button type="button" onClick={onAddSeasonings} className={styles.addBtn} aria-label="Add seasoning">
+          <span className="material-symbols-outlined">add</span>
         </button>
       </div>
     </section>

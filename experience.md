@@ -2,6 +2,13 @@
 
 Record mistakes, findings, deployment notes, and lessons learned during development.
 
+## 2026-05-04
+
+- After using `cd` inside the persistent VS Code terminal, the next sync command starts from that changed directory. Use absolute paths for follow-up build commands to avoid accidental `cd frontend` failures from inside `backend/`.
+- Loading Google Material Symbols once in `layout.tsx` plus mapping both existing Material Symbol classes in `globals.css` is the lowest-risk way to refresh app icons without rewriting every icon span at once.
+- Public Playwright checks confirmed recipe rating can be implemented as an incremental average/count endpoint for the Phase 1 demo; this does not yet prevent the same user from rating more than once.
+- In the VS Code Playwright code tool, `Buffer` may be unavailable and file paths may resolve to a local Windows-style path. For upload-flow tests, creating a browser-side `File` with `canvas.toBlob()` and dispatching a `change` event reliably exercises React file inputs.
+
 ## 2026-05-03
 
 - Existing live PM2 processes were named `backend` and `frontend`, and they were running from `/home/ubuntu/zhenchuan`, not `/home/ubuntu/rencipe`.

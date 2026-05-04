@@ -238,11 +238,12 @@ export default function CreatePage() {
   };
 
   const addTag = () => {
-    if (!tagsInput.trim()) return;
-    if (!formData.tags.includes(tagsInput)) {
+    const nextTag = tagsInput.trim();
+    if (!nextTag) return;
+    if (!formData.tags.includes(nextTag)) {
       setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, tagsInput],
+        tags: [...prev.tags, nextTag],
       }));
     }
     setTagsInput("");
@@ -418,7 +419,7 @@ export default function CreatePage() {
 
         {!recipeImage && (
           <div className={styles.uploadPrompt}>
-            <p className={styles.uploadPromptText}>Cover image required before publishing</p>
+            <p className={styles.uploadPromptText}>Cover image *</p>
             <button
               type="button"
               onClick={() => setShowPhotoStep(true)}
@@ -434,11 +435,9 @@ export default function CreatePage() {
             title={formData.title}
             description={formData.description}
             servings={formData.servings}
-            component={formData.component}
             onTitleChange={(value) => setFormData({ ...formData, title: value })}
             onDescriptionChange={(value) => setFormData({ ...formData, description: value })}
             onServingsChange={(value) => setFormData({ ...formData, servings: value })}
-            onComponentChange={(value) => setFormData({ ...formData, component: value })}
           />
 
           <IngredientsSection

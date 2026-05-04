@@ -37,7 +37,6 @@ export default function StepsSection({
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
         <h2>Cooking Steps</h2>
-        <span className={styles.infoIcon}>ⓘ</span>
       </div>
 
       <div className={styles.stepsList}>
@@ -49,8 +48,9 @@ export default function StepsSection({
                 type="button"
                 onClick={() => onRemoveStep(idx)}
                 className={styles.deleteBtn}
+                aria-label={`Remove step ${step.stepNumber}`}
               >
-                ✕
+                <span className="material-symbols-outlined">close</span>
               </button>
             </div>
 
@@ -94,7 +94,10 @@ export default function StepsSection({
                   </>
                 ) : (
                   <label htmlFor={`file-${idx}`} className={styles.uploadPlaceholder}>
-                    <div className={styles.uploadIcon}>+ Step Image</div>
+                    <div className={styles.uploadIcon}>
+                      <span className="material-symbols-outlined">add_photo_alternate</span>
+                      <span>Step Image</span>
+                    </div>
                     <div className={styles.uploadText}>Clear step photos make the recipe easier to follow</div>
                     <input
                       id={`file-${idx}`}
@@ -121,7 +124,8 @@ export default function StepsSection({
       </div>
 
       <button type="button" onClick={onAddStep} className={styles.addBtn}>
-        + Add Step
+        <span className="material-symbols-outlined">add</span>
+        <span>Add Step</span>
       </button>
     </section>
   );

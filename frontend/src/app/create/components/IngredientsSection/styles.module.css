@@ -24,7 +24,6 @@
 .sectionHeader {
   display: flex;
   align-items: center;
-  gap: 12px;
   margin-bottom: 20px;
   padding-bottom: 0;
   border-bottom: none;
@@ -35,19 +34,6 @@
   font-weight: 700;
   color: var(--foreground);
   margin: 0;
-}
-
-.infoIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid var(--text-secondary);
-  font-size: 14px;
-  color: var(--text-secondary);
-  cursor: help;
 }
 
 .input {
@@ -99,7 +85,6 @@
   width: 32px;
   height: 32px;
   padding: 0;
-  font-size: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -108,12 +93,18 @@
   flex-shrink: 0;
 }
 
+.removeBtn span {
+  font-size: 18px;
+}
+
 .removeBtn:hover {
   background-color: #dc2626;
 }
 
 .addBtn {
-  padding: 10px 16px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   background-color: var(--primary);
   color: white;
   border: none;
@@ -123,8 +114,14 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  align-self: flex-start;
-  display: inline-block;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addBtn span {
+  font-size: 19px;
 }
 
 .addBtn:hover {

@@ -34,6 +34,13 @@
   margin: 0;
 }
 
+.tagInputRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 42px;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 .input {
   width: 100%;
   padding: 12px 14px;
@@ -45,7 +52,19 @@
   color: var(--foreground);
   transition: all 0.2s ease;
   box-sizing: border-box;
-  margin-bottom: 12px;
+  margin-bottom: 0;
+}
+
+.addTagButton {
+  min-height: 42px;
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+}
+
+.addTagButton span {
+  font-size: 21px;
 }
 
 .input::placeholder {
@@ -100,13 +119,16 @@
   border: none;
   color: white;
   cursor: pointer;
-  font-size: 16px;
   padding: 0;
   width: auto;
   height: auto;
   display: flex;
   align-items: center;
   transition: opacity 0.2s ease;
+}
+
+.tagRemove span {
+  font-size: 16px;
 }
 
 .tagRemove:hover {

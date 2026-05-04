@@ -6,8 +6,11 @@ export interface AccountIdentity {
 }
 
 export function getAccountDisplayName(account?: AccountIdentity | null) {
-  if (account?.username?.trim().toLowerCase() === "admin") return "admin";
-  return account?.displayName?.trim() || account?.username?.trim() || "Rencipe Cook";
+  const username = account?.username?.trim() || "";
+  const displayName = account?.displayName?.trim() || "";
+  if (username.toLowerCase() === "admin" || displayName.toLowerCase() === "admin") return "Admin";
+  if (username.toLowerCase() === "testuser1" || displayName.toLowerCase() === "test user 1") return "Test User";
+  return displayName || username || "Rencipe Cook";
 }
 
 export function getAccountInitial(account?: AccountIdentity | null) {

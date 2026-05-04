@@ -89,7 +89,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className={styles.helperText}>Backend login controls which recipes you can see. Admin can see private drafts; testuser1 only sees public recipes.</p>
       </section>
     </main>
   );

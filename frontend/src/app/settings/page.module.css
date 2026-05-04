@@ -22,8 +22,59 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 0 0 16px;
+  padding: 0 0 12px;
   border-bottom: 1px solid var(--border);
+}
+
+.profileActionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.profileActionButton {
+  min-width: 0;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--hover-bg);
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.profileActionButton span:first-child {
+  flex: none;
+  color: var(--primary);
+  font-size: 20px;
+}
+
+.profileActionButton span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profileActionButtonActive {
+  background: var(--primary-soft);
+  border-color: color-mix(in srgb, var(--primary) 24%, var(--border));
+  color: var(--primary);
+}
+
+.signOutActionButton {
+  background: color-mix(in srgb, var(--error) 8%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--error) 28%, var(--border));
+  color: var(--error);
+}
+
+.signOutActionButton span:first-child {
+  color: var(--error);
 }
 
 .profileCard h1 {
@@ -89,7 +140,7 @@
 .profileEditor {
   display: grid;
   gap: 12px;
-  padding: 14px 0 0;
+  padding: 12px 0 0;
 }
 
 .profileEditor label {
@@ -113,14 +164,13 @@
 }
 
 .profileActions {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  display: flex;
+  justify-content: flex-end;
   gap: 10px;
   margin-top: 2px;
 }
 
 .primaryButton,
-.signOutButton,
 .shortcutButton,
 .customSelectButton,
 .customSelectOption,
@@ -141,16 +191,6 @@
 .primaryButton:disabled {
   cursor: wait;
   opacity: 0.72;
-}
-
-.signOutButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  border: 1px solid color-mix(in srgb, var(--error) 28%, var(--border));
-  background: color-mix(in srgb, var(--error) 8%, var(--card-bg));
-  color: var(--error);
 }
 
 .shortcutGrid {
@@ -268,9 +308,13 @@
     padding: 14px;
   }
 
-  .profileActions,
+  .profileActionGrid,
   .shortcutGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .signOutActionButton {
+    grid-column: 1 / -1;
   }
 
   .shortcutButton:nth-child(2) {

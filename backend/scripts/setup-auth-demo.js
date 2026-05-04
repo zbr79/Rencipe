@@ -98,7 +98,7 @@ async function run() {
   const admin = await upsertUser({
     username: "admin",
     password: "admin",
-    displayName: "admin",
+    displayName: "Admin",
     email: "admin@rencipe.demo",
     phone: "(555) 010-0001",
     role: "admin",
@@ -106,7 +106,7 @@ async function run() {
   const testUser = await upsertUser({
     username: "testuser1",
     password: "testuser1",
-    displayName: "Test User 1",
+    displayName: "Test User",
     email: "testuser1@rencipe.demo",
     phone: "(555) 010-0002",
     role: "user",

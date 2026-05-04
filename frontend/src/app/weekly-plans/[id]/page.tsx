@@ -509,7 +509,7 @@ export default function WeeklyPlanEditorPage() {
                             }}
                             title="Delete"
                           >
-                            ✕
+                            <span className="material-symbols-outlined">close</span>
                           </button>
                         </div>
                       </div>
@@ -532,7 +532,7 @@ export default function WeeklyPlanEditorPage() {
                     justifyContent: "center",
                   }}
                 >
-                  +
+                  <span className="material-symbols-outlined">add</span>
                 </button>
               </div>
             </div>
@@ -592,7 +592,7 @@ export default function WeeklyPlanEditorPage() {
                             }}
                             title="Delete"
                           >
-                            ✕
+                            <span className="material-symbols-outlined">close</span>
                           </button>
                         </div>
                       </div>
@@ -615,7 +615,7 @@ export default function WeeklyPlanEditorPage() {
                     justifyContent: "center",
                   }}
                 >
-                  +
+                  <span className="material-symbols-outlined">add</span>
                 </button>
               </div>
             </div>
@@ -675,7 +675,7 @@ export default function WeeklyPlanEditorPage() {
                             }}
                             title="Delete"
                           >
-                            ✕
+                            <span className="material-symbols-outlined">close</span>
                           </button>
                         </div>
                       </div>
@@ -698,7 +698,7 @@ export default function WeeklyPlanEditorPage() {
                     justifyContent: "center",
                   }}
                 >
-                  +
+                  <span className="material-symbols-outlined">add</span>
                 </button>
               </div>
             </div>

@@ -53,7 +53,6 @@
 .closeBtn {
   background: none;
   border: none;
-  font-size: 24px;
   color: #999;
   cursor: pointer;
   padding: 0;
@@ -64,6 +63,11 @@
   justify-content: center;
   border-radius: 6px;
   transition: all 0.2s ease;
+}
+
+.closeBtn span,
+.checkmark span {
+  font-size: 20px;
 }
 
 .closeBtn:hover {
@@ -167,7 +171,6 @@
   align-items: center;
   justify-content: center;
   margin-left: 12px;
-  font-size: 18px;
   color: #4CAF50;
   font-weight: bold;
 }

@@ -51,7 +51,7 @@
 .floatingPanel {
   position: fixed;
   top: 50%;
-  right: 14px;
+  right: 0;
   z-index: 900;
   display: flex;
   align-items: center;
@@ -80,8 +80,8 @@
 }
 
 .floatingPanelCollapsed .panelToggle {
-  border-right: 1px solid var(--border);
-  border-radius: 8px;
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
 }
 
 .panelToggle span {
@@ -94,7 +94,8 @@
   min-width: 48px;
   padding: 6px;
   border: 1px solid var(--border);
-  border-radius: 0 8px 8px 0;
+  border-left: 0;
+  border-radius: 0;
   background: color-mix(in srgb, var(--card-bg) 96%, transparent);
   box-shadow: var(--shadow-md);
   backdrop-filter: blur(16px);
@@ -217,7 +218,17 @@
 
 .stars {
   color: var(--warning);
-  font-size: 16px;
+  display: inline-flex;
+  gap: 1px;
+}
+
+.stars span {
+  color: var(--warning);
+  font-size: 17px;
+}
+
+.starFilled {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
 }
 
 .ratingText,
@@ -362,6 +373,55 @@
   display: block;
 }
 
+.submitRatingSection {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.submitRatingSection p {
+  margin: -8px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ratingButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.starButton {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--hover-bg);
+  color: var(--warning);
+}
+
+.starButton span {
+  font-size: 25px;
+}
+
+.starButtonActive span {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.ratingMessage {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 850;
+}
+
 @media (max-width: 820px) {
   .container {
     padding: 16px 12px 96px;
@@ -377,7 +437,7 @@
   }
 
   .floatingPanel {
-    right: 8px;
+    right: 0;
   }
 
   .panelActions {

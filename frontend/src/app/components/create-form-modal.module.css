@@ -16,7 +16,7 @@
 
 .modalContent {
   background-color: var(--card-bg);
-  border-radius: 12px;
+  border-radius: 16px;
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
@@ -52,12 +52,17 @@
   right: 16px;
   background: none;
   border: none;
-  font-size: 24px;
+  width: 36px;
+  height: 36px;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 0;
   z-index: 10;
   transition: all 0.2s ease;
+}
+
+.closeBtn span {
+  font-size: 21px;
 }
 
 .closeBtn:hover {
@@ -108,6 +113,7 @@
 }
 
 .menuIcon {
+  color: var(--primary);
   font-size: 32px;
 }
 
@@ -483,7 +489,7 @@
 @media (max-width: 600px) {
   .modalContent {
     max-height: 95vh;
-    border-radius: 12px 12px 0 0;
+    border-radius: 16px;
   }
 
   .formContainer {

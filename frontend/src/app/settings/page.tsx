@@ -26,11 +26,13 @@ interface ProfileForm {
   newPassword: string;
 }
 
+type ProfilePanel = "profile" | "password" | null;
+
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [session, setSession] = useState<AuthSession | null>(null);
-  const [profileOpen, setProfileOpen] = useState(false);
+  const [profilePanel, setProfilePanel] = useState<ProfilePanel>(null);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState<ProfileForm>({
@@ -136,15 +138,32 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <button type="button" className={styles.settingItemButton} onClick={() => setProfileOpen((value) => !value)} aria-expanded={profileOpen}>
-          <div className={styles.settingLabel}>
+        <div className={styles.profileActionGrid} aria-label="Profile actions">
+          <button
+            type="button"
+            className={`${styles.profileActionButton} ${profilePanel === "profile" ? styles.profileActionButtonActive : ""}`}
+            onClick={() => setProfilePanel((value) => value === "profile" ? null : "profile")}
+            aria-expanded={profilePanel === "profile"}
+          >
             <span className="material-symbols-outlined">manage_accounts</span>
             <span>Edit Profile</span>
-          </div>
-          <span className="material-symbols-outlined">{profileOpen ? "expand_less" : "chevron_right"}</span>
-        </button>
+          </button>
+          <button
+            type="button"
+            className={`${styles.profileActionButton} ${profilePanel === "password" ? styles.profileActionButtonActive : ""}`}
+            onClick={() => setProfilePanel((value) => value === "password" ? null : "password")}
+            aria-expanded={profilePanel === "password"}
+          >
+            <span className="material-symbols-outlined">password</span>
+            <span>Change Password</span>
+          </button>
+          <button type="button" className={`${styles.profileActionButton} ${styles.signOutActionButton}`} onClick={handleSignOut}>
+            <span className="material-symbols-outlined">logout</span>
+            <span>Sign Out</span>
+          </button>
+        </div>
 
-        {profileOpen && (
+        {profilePanel === "profile" && (
           <form className={styles.profileEditor} onSubmit={handleProfileSave}>
             <label>
               <span>Display name</span>
@@ -158,6 +177,16 @@ export default function SettingsPage() {
               <span>Phone</span>
               <input value={profileForm.phone} onChange={(event) => updateProfileField("phone", event.target.value)} />
             </label>
+            <div className={styles.profileActions}>
+              <button type="submit" className={styles.primaryButton} disabled={savingProfile}>
+                {savingProfile ? "Saving" : "Save profile"}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {profilePanel === "password" && (
+          <form className={styles.profileEditor} onSubmit={handleProfileSave}>
             <label>
               <span>Current password</span>
               <input type="password" value={profileForm.currentPassword} onChange={(event) => updateProfileField("currentPassword", event.target.value)} autoComplete="current-password" />
@@ -168,11 +197,7 @@ export default function SettingsPage() {
             </label>
             <div className={styles.profileActions}>
               <button type="submit" className={styles.primaryButton} disabled={savingProfile}>
-                {savingProfile ? "Saving" : "Save profile"}
-              </button>
-              <button type="button" className={styles.signOutButton} onClick={handleSignOut}>
-                <span className="material-symbols-outlined">logout</span>
-                <span>Sign Out</span>
+                {savingProfile ? "Saving" : "Save password"}
               </button>
             </div>
           </form>

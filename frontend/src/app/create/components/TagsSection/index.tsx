@@ -22,14 +22,19 @@ export default function TagsSection({
         <h2>Tags</h2>
       </div>
 
-      <input
-        type="text"
-        placeholder="Press Enter to add a tag"
-        value={tagsInput}
-        onChange={(e) => onTagsInputChange(e.target.value)}
-        onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), onAddTag())}
-        className={styles.input}
-      />
+      <div className={styles.tagInputRow}>
+        <input
+          type="text"
+          placeholder="Add tags"
+          value={tagsInput}
+          onChange={(e) => onTagsInputChange(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), onAddTag())}
+          className={styles.input}
+        />
+        <button type="button" className={styles.addTagButton} onClick={onAddTag} aria-label="Add tag">
+          <span className="material-symbols-outlined">add</span>
+        </button>
+      </div>
 
       {tags && tags.length > 0 && (
         <div className={styles.tagsList}>
@@ -40,8 +45,9 @@ export default function TagsSection({
                 type="button"
                 onClick={() => onRemoveTag(idx)}
                 className={styles.tagRemove}
+                aria-label={`Remove ${tag}`}
               >
-                ✕
+                <span className="material-symbols-outlined">close</span>
               </button>
             </span>
           ))}

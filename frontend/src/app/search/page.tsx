@@ -3,15 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import AccountAvatar from "../components/AccountAvatar";
 import styles from "./page.module.css";
 import { useSaved } from "../contexts/SavedContext";
 import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
 import { matchesPinyinSearch } from "../utils/pinyinSearch";
 import { getVisibleTags } from "../utils/recipeTags";
 import { authFetch } from "../utils/authSession";
-import { getAccountDisplayName, type AccountIdentity } from "../utils/accountAvatar";
-import { getRecipeAuthor } from "../utils/recipeAuthor";
+import { type AccountIdentity } from "../utils/accountAvatar";
 
 interface Recipe {
   id: string;
@@ -236,7 +234,6 @@ export default function SearchPage() {
         <div className={styles.resultList}>
           {filteredRecipes.map((recipe) => {
             const recipeId = recipe._id || recipe.id;
-            const author = getRecipeAuthor(recipe);
             const saved = isSaved(recipeId);
 
             return (
@@ -247,10 +244,6 @@ export default function SearchPage() {
                   </div>
                   <div className={styles.recipeBody}>
                     <h3>{recipe.title}</h3>
-                    <div className={styles.uploaderLine}>
-                      <AccountAvatar account={author} size={24} />
-                      <span>{getAccountDisplayName(author)}</span>
-                    </div>
                   </div>
                 </Link>
                 <button
