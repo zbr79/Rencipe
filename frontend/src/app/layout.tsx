@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { Viewport } from 'next';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { CreateFormProvider } from './contexts/CreateFormContext';
 import { SavedProvider } from './contexts/SavedContext';
@@ -13,6 +14,12 @@ import './globals.css';
 export const metadata = {
   title: 'Rencipe',
   description: 'Recipe sharing and meal planning platform',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({

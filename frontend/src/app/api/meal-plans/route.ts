@@ -28,11 +28,18 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, numberOfPeople, numberOfDays, mealTypes, name } = body;
+    const { userId, kind = "mealPlan", numberOfPeople, numberOfDays, mealTypes, name } = body;
 
-    if (!userId || numberOfPeople === undefined || numberOfDays === undefined || !mealTypes) {
+    if (!userId || numberOfPeople === undefined) {
       return NextResponse.json(
-        { error: "userId, numberOfPeople, numberOfDays, and mealTypes are required" },
+        { error: "userId and numberOfPeople are required" },
+        { status: 400 }
+      );
+    }
+
+    if (kind === "mealPlan" && (numberOfDays === undefined || !mealTypes)) {
+      return NextResponse.json(
+        { error: "numberOfDays and mealTypes are required for meal plans" },
         { status: 400 }
       );
     }
@@ -40,7 +47,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(`${BACKEND_URL}/meal-plans`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, numberOfPeople, numberOfDays, mealTypes, name }),
+      body: JSON.stringify({ userId, kind, numberOfPeople, numberOfDays, mealTypes, name }),
     });
 
     if (!response.ok) {

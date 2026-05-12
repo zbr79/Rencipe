@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSaved } from "../contexts/SavedContext";
-import { useCreateForm } from "../contexts/CreateFormContext";
+import { useQuickCreateMealPlan } from "../hooks/useQuickCreateMealPlan";
 import AccountAvatar from "../components/AccountAvatar";
 import styles from "./page.module.css";
 import { matchesPinyinSearch } from "../utils/pinyinSearch";
@@ -21,16 +21,12 @@ export default function SavedPage() {
     fetchMealPlans,
     deleteMealPlan,
   } = useSaved();
-  const { openCreateForm, setShowMealPlanForm } = useCreateForm();
+  const { creatingMealPlan, createAndOpenMealPlan } = useQuickCreateMealPlan();
 
   const [activeTab, setActiveTab] = useState<"recipes" | "plans">("recipes");
   const [filters, setFilters] = useState({
     searchTerm: "",
   });
-  const openMealPlanForm = () => {
-    setShowMealPlanForm(true);
-    openCreateForm();
-  };
 
   useEffect(() => {
     fetchSaved();
@@ -171,10 +167,11 @@ export default function SavedPage() {
               Total {filteredPlans.length} plans
             </div>
             <button
-              onClick={openMealPlanForm}
+              onClick={() => createAndOpenMealPlan()}
               className={styles.newPlanButton}
+              disabled={creatingMealPlan}
             >
-              New Plan
+              {creatingMealPlan ? "Creating Plan..." : "New Plan"}
             </button>
           </div>
 
@@ -188,10 +185,11 @@ export default function SavedPage() {
                   : "No matching plans found"}
               </p>
               <button
-                onClick={openMealPlanForm}
+                onClick={() => createAndOpenMealPlan()}
                 className={styles.newPlanButton}
+                disabled={creatingMealPlan}
               >
-                Create your first plan
+                {creatingMealPlan ? "Creating Plan..." : "Create your first plan"}
               </button>
             </div>
           )}

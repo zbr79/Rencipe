@@ -2,6 +2,22 @@
 
 Record mistakes, findings, deployment notes, and lessons learned during development.
 
+## 2026-05-11
+
+- Phase 1 is complete. Current work is Phase 2 improvement work on top of the Phase 1 baseline.
+- Phase 2 work reports no longer need the old demo-readiness status section.
+- In client components, helper `const` functions used by derived render-time values still need to be declared before those values. The type checker may stay quiet, but the page can still fail at runtime from temporal-dead-zone ordering.
+- The App Router layout needs explicit viewport metadata (`width=device-width`, `initial-scale=1`) for reliable phone-first rendering. Without it, mobile browsers can fall back to a wide layout viewport and make otherwise-correct responsive CSS look broken.
+
+## 2026-05-08
+
+- Phase 1 demo is complete; current work can optimize product UX instead of staying constrained to demo-only polish.
+- Do not use native HTML `input type="number"` anywhere in Rencipe. The browser spinner controls are not acceptable for this product; use a custom number-only text input instead.
+- Meal plan creation should be a one-step flow. Create a default plan and open the meal-plan editor immediately instead of showing a pre-create modal.
+- The bottom-bar `+` button should still open the first Create selector modal. Only the extra meal-plan sub-form step should be removed; selecting Create Meal Plan must jump straight to the editor.
+- New Meal creation can reuse the meal-plan editor shell, but the Meal schema itself is now simplified: keep people plus direct recipes only, and do not store days or meal types on meals.
+- When schema work is newer than the deployed API, public nginx verification can return misleading 500s from old validation rules. For pre-deploy browser checks, point a local frontend at the local backend instead of assuming the public backend reflects current code.
+
 ## 2026-05-04
 
 - After using `cd` inside the persistent VS Code terminal, the next sync command starts from that changed directory. Use absolute paths for follow-up build commands to avoid accidental `cd frontend` failures from inside `backend/`.

@@ -48,6 +48,8 @@ export interface MealCombination {
   portions: number;
 }
 
+export type MealEntryKind = "mealPlan" | "meal";
+
 export type MealPlanMealType = 'breakfast' | 'lunch' | 'dinner';
 
 export interface MealPlanMeal {
@@ -63,18 +65,28 @@ export interface MealPlanDay {
 export interface MealPlan {
   _id: string;
   id?: string;
+  kind?: MealEntryKind;
   userId: string;
   name: string;
   people: Person[];
-  numberOfDays: number;
-  mealTypes: MealPlanMealType[];
-  totalMealsNeeded: number;
+  numberOfDays?: number;
+  mealTypes?: MealPlanMealType[];
+  totalMealsNeeded?: number;
   days?: MealPlanDay[];
   recipes?: SavedRecipe[];
   combinations: MealCombination[];
   checkedIngredients: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CreateMealPlanInput {
+  userId?: string;
+  kind?: MealEntryKind;
+  numberOfPeople: number;
+  numberOfDays?: number;
+  mealTypes?: MealPlanMealType[];
+  name?: string;
 }
 
 export interface MealSlot {
@@ -117,7 +129,7 @@ interface SavedContextType {
   loadingPlans: boolean;
   errorPlans: string | null;
   fetchMealPlans: (userId?: string) => Promise<void>;
-  createMealPlan: (userId: string | undefined, numberOfPeople: number, numberOfDays: number, mealTypes: MealPlanMealType[], name?: string) => Promise<MealPlan>;
+  createMealPlan: (input: CreateMealPlanInput) => Promise<MealPlan>;
   renameMealPlan: (planId: string, newName: string) => Promise<MealPlan>;
   deleteMealPlan: (planId: string) => Promise<void>;
   addRecipeToMealPlan: (planId: string, recipeId: string) => Promise<MealPlan>;
@@ -278,19 +290,19 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const createMealPlan = async (userId: string | undefined, numberOfPeople: number, numberOfDays: number, mealTypes: MealPlanMealType[], name?: string): Promise<MealPlan> => {
+  const createMealPlan = async ({ userId, kind = "mealPlan", numberOfPeople, numberOfDays, mealTypes, name }: CreateMealPlanInput): Promise<MealPlan> => {
     const accountId = resolveUserId(userId);
-    if (!accountId) throw new Error("Sign in before creating a meal plan");
+    if (!accountId) throw new Error(kind === "meal" ? "Sign in before creating a meal" : "Sign in before creating a meal plan");
 
     try {
       const response = await authFetch(`/api/meal-plans`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: accountId, numberOfPeople, numberOfDays, mealTypes, name }),
+        body: JSON.stringify({ userId: accountId, kind, numberOfPeople, numberOfDays, mealTypes, name }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create meal plan");
+        throw new Error(kind === "meal" ? "Failed to create meal" : "Failed to create meal plan");
       }
 
       const data = await response.json();

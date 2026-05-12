@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "../styles.module.css";
+import FloatingActionPanel from "../../components/FloatingActionPanel";
 import RecipeBasicsForm from "../../create/components/RecipeBasicsForm";
 import IngredientsSection from "../../create/components/IngredientsSection";
 import StepsSection from "../../create/components/StepsSection";
@@ -81,7 +82,6 @@ export default function EditPage() {
   const [tagsInput, setTagsInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [panelCollapsed, setPanelCollapsed] = useState(false);
 
   const normalizeRecipeForm = (recipe: RecipeData) => ({
     title: recipe.title,
@@ -413,28 +413,36 @@ export default function EditPage() {
         </div>
       </div>
 
-      <aside className={`${styles.floatingPanel} ${panelCollapsed ? styles.floatingPanelCollapsed : ""}`} aria-label="Edit recipe actions">
-        <button
-          type="button"
-          className={styles.panelToggle}
-          onClick={() => setPanelCollapsed((value) => !value)}
-          aria-label={panelCollapsed ? "Open edit actions" : "Minimize edit actions"}
-          aria-expanded={!panelCollapsed}
-        >
-          <span className="material-symbols-outlined">{panelCollapsed ? "chevron_left" : "chevron_right"}</span>
-        </button>
-        <div className={styles.panelActions}>
-          <button type="button" className={`${styles.panelButton} ${styles.panelButtonPrimary}`} onClick={handleSubmit} disabled={submitting || imageUploading} aria-label={submitting ? "Saving recipe" : "Save recipe"} title={submitting ? "Saving" : "Save"}>
-            <span className="material-symbols-outlined">save</span>
-          </button>
-          <button type="button" className={styles.panelButton} onClick={handleRevert} disabled={!originalRecipe || submitting} aria-label="Revert changes" title="Revert">
-            <span className="material-symbols-outlined">history</span>
-          </button>
-          <button type="button" className={`${styles.panelButton} ${styles.panelButtonDanger}`} onClick={handleDelete} disabled={deleting} aria-label={deleting ? "Deleting recipe" : "Delete recipe"} title={deleting ? "Deleting" : "Delete"}>
-            <span className="material-symbols-outlined">delete</span>
-          </button>
-        </div>
-      </aside>
+      <FloatingActionPanel
+        ariaLabel="Edit recipe actions"
+        toggleOpenLabel="Open edit actions"
+        toggleCloseLabel="Minimize edit actions"
+        actions={[
+          {
+            id: "save",
+            icon: "save",
+            label: submitting ? "Saving recipe" : "Save recipe",
+            onClick: handleSubmit,
+            disabled: submitting || imageUploading,
+            tone: "primary",
+          },
+          {
+            id: "revert",
+            icon: "history",
+            label: "Revert changes",
+            onClick: handleRevert,
+            disabled: !originalRecipe || submitting,
+          },
+          {
+            id: "delete",
+            icon: "delete",
+            label: deleting ? "Deleting recipe" : "Delete recipe",
+            onClick: handleDelete,
+            disabled: deleting,
+            tone: "danger",
+          },
+        ]}
+      />
 
       {recipeImage && (
         <button type="button" className={styles.imageDisplay} onClick={() => fileInputRef.current?.click()} disabled={imageUploading} aria-label={imageUploading ? "Saving cover image" : "Replace cover image"} title={imageUploading ? "Saving cover image" : "Replace cover image"}>

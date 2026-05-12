@@ -248,8 +248,7 @@
   font-weight: 900;
 }
 
-.mealPlanField input[type="text"],
-.mealPlanField input[type="number"] {
+.mealPlanField > input {
   min-height: 46px;
   border-radius: 8px;
   font-size: 16px;

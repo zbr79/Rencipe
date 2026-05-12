@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export type MealType = "breakfast" | "lunch" | "dinner";
+export type MealEntryKind = "mealPlan" | "meal";
 
 export interface IPerson {
   name: string;
@@ -25,12 +26,13 @@ export interface IMealPlanDay {
 }
 
 export interface IMealPlan extends Document {
+  kind: MealEntryKind;
   userId: mongoose.Types.ObjectId;
   name: string;
   people: IPerson[];
-  numberOfDays: number;
-  mealTypes: MealType[];
-  totalMealsNeeded: number;
+  numberOfDays?: number;
+  mealTypes?: MealType[];
+  totalMealsNeeded?: number;
   days: IMealPlanDay[];
   recipes: mongoose.Types.ObjectId[];
   combinations: IMealCombination[];
@@ -114,6 +116,13 @@ const mealPlanDaySchema = new Schema<IMealPlanDay>(
 
 const mealPlanSchema = new Schema<IMealPlan>(
   {
+    kind: {
+      type: String,
+      enum: ["mealPlan", "meal"],
+      required: true,
+      default: "mealPlan",
+      index: true,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -137,18 +146,15 @@ const mealPlanSchema = new Schema<IMealPlan>(
     },
     numberOfDays: {
       type: Number,
-      required: true,
       min: 1,
     },
     mealTypes: {
       type: [String],
       enum: ["breakfast", "lunch", "dinner"],
-      required: true,
     },
     totalMealsNeeded: {
       type: Number,
-      required: true,
-      min: 1,
+      min: 0,
     },
     days: {
       type: [mealPlanDaySchema],

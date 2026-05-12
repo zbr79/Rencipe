@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import NumberOnlyInput from "../../components/NumberOnlyInput";
+import FloatingActionPanel from "../../components/FloatingActionPanel";
 import { useSaved } from "../../contexts/SavedContext";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { authFetch } from "../../utils/authSession";
@@ -10,6 +12,7 @@ import { matchesPinyinSearch } from "../../utils/pinyinSearch";
 import styles from "./page.module.css";
 
 type MealType = "breakfast" | "lunch" | "dinner";
+type MealEntryKind = "mealPlan" | "meal";
 type RecipeSource = "plan" | "website" | "saved";
 
 interface Ingredient {
@@ -44,12 +47,13 @@ interface PlannedDay {
 
 interface MealPlan {
   _id: string;
+  kind?: MealEntryKind;
   userId: string;
   name: string;
   people: Person[];
-  numberOfDays: number;
-  mealTypes: MealType[];
-  totalMealsNeeded: number;
+  numberOfDays?: number;
+  mealTypes?: MealType[];
+  totalMealsNeeded?: number;
   days?: PlannedDay[];
   recipes?: Recipe[];
   checkedIngredients: string[];
@@ -77,6 +81,10 @@ function titleCaseMeal(type: MealType) {
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
+function getMealEntryKind(plan?: { kind?: MealEntryKind }) {
+  return plan?.kind === "meal" ? "meal" : "mealPlan";
+}
+
 function uniqueRecipes(recipes: Recipe[]) {
   const seen = new Set<string>();
   return recipes.filter((recipe) => {
@@ -94,10 +102,24 @@ function normalizeMealTypes(types?: MealType[]): MealType[] {
 }
 
 function normalizePlan(rawPlan: MealPlan): MealPlan {
+  const kind = getMealEntryKind(rawPlan);
+  const inboxRecipes = enrichRecipesWithMockImages<Recipe>((rawPlan.recipes || []) as Recipe[]);
+
+  if (kind === "meal") {
+    return {
+      ...rawPlan,
+      kind,
+      people: rawPlan.people?.length ? rawPlan.people : [{ name: "Person 1", modifier: 1 }],
+      recipes: uniqueRecipes(inboxRecipes),
+      mealTypes: [],
+      days: [],
+      totalMealsNeeded: inboxRecipes.length,
+    };
+  }
+
   const mealTypes = normalizeMealTypes(rawPlan.mealTypes);
   const dayCount = Math.max(1, rawPlan.numberOfDays || rawPlan.days?.length || 1);
   const existingDays = rawPlan.days || [];
-  const inboxRecipes = enrichRecipesWithMockImages<Recipe>((rawPlan.recipes || []) as Recipe[]);
 
   const days = Array.from({ length: dayCount }, (_, index) => {
     const dayNumber = index + 1;
@@ -117,6 +139,7 @@ function normalizePlan(rawPlan: MealPlan): MealPlan {
 
   return {
     ...rawPlan,
+    kind,
     people: rawPlan.people?.length ? rawPlan.people : [{ name: "Person 1", modifier: 1 }],
     numberOfDays: dayCount,
     mealTypes,
@@ -134,6 +157,33 @@ function serializeDays(days: PlannedDay[]) {
       recipes: meal.recipes.map(getRecipeId).filter(Boolean),
     })),
   }));
+}
+
+function serializeRecipes(recipes: Recipe[]) {
+  return recipes.map(getRecipeId).filter(Boolean);
+}
+
+function getSettingsFromPlan(plan: MealPlan): {
+  name: string;
+  peopleCount: number;
+  numberOfDays: number;
+  mealTypes: MealType[];
+} {
+  return {
+    name: plan.name,
+    peopleCount: plan.people.length,
+    numberOfDays: plan.numberOfDays || 1,
+    mealTypes: plan.mealTypes?.length ? normalizeMealTypes(plan.mealTypes) : ["dinner"],
+  };
+}
+
+function getInitialSlot(plan: MealPlan): ActiveSlot | null {
+  if (getMealEntryKind(plan) === "meal") return null;
+
+  return {
+    dayNumber: plan.days?.[0]?.dayNumber || 1,
+    mealType: plan.mealTypes?.[0] || "dinner",
+  };
 }
 
 export default function MealPlanDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -177,13 +227,8 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
         const data = await response.json();
         const normalizedPlan = normalizePlan(data.plan);
         setPlan(normalizedPlan);
-        setSettings({
-          name: normalizedPlan.name,
-          peopleCount: normalizedPlan.people.length,
-          numberOfDays: normalizedPlan.numberOfDays,
-          mealTypes: normalizedPlan.mealTypes,
-        });
-        setActiveSlot({ dayNumber: 1, mealType: normalizedPlan.mealTypes[0] });
+        setSettings(getSettingsFromPlan(normalizedPlan));
+        setActiveSlot(getInitialSlot(normalizedPlan));
       } catch (err: any) {
         setError(err.message || "Failed to load meal plan");
       } finally {
@@ -214,6 +259,9 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
 
   const recipesInPlan = useMemo(() => {
     if (!plan) return [];
+    if (getMealEntryKind(plan) === "meal") {
+      return uniqueRecipes(plan.recipes || []);
+    }
     const scheduledRecipes = (plan.days || []).flatMap((day) => day.meals.flatMap((meal) => meal.recipes));
     return uniqueRecipes([...scheduledRecipes, ...(plan.recipes || [])]);
   }, [plan]);
@@ -249,14 +297,22 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
   async function savePlan(nextPlan: MealPlan, successMessage: string) {
     setSaving(true);
     try {
+      const body = getMealEntryKind(nextPlan) === "meal"
+        ? { recipes: serializeRecipes(nextPlan.recipes || []) }
+        : { days: serializeDays(nextPlan.days || []) };
+
       const response = await authFetch(`/api/meal-plans/${nextPlan._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ days: serializeDays(nextPlan.days || []) }),
+        body: JSON.stringify(body),
       });
       if (!response.ok) throw new Error("Failed to update meal plan");
       const data = await response.json();
-      setPlan(normalizePlan(data.plan));
+      const normalizedPlan = normalizePlan(data.plan);
+      setPlan(normalizedPlan);
+      if (getMealEntryKind(normalizedPlan) === "meal") {
+        setActiveSlot(null);
+      }
       toastSuccess(successMessage);
       return true;
     } catch (err: any) {
@@ -269,11 +325,12 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
 
   async function saveSettings() {
     if (!plan) return;
+    const entryKind = getMealEntryKind(plan);
     if (!settings.name.trim()) {
-      toastError("Name the meal plan before saving");
+      toastError(entryKind === "meal" ? "Name the meal before saving" : "Name the meal plan before saving");
       return;
     }
-    if (settings.mealTypes.length === 0) {
+    if (entryKind === "mealPlan" && settings.mealTypes.length === 0) {
       toastError("Choose at least one meal type");
       return;
     }
@@ -282,6 +339,33 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       name: plan.people[index]?.name || `Person ${index + 1}`,
       modifier: 1,
     }));
+
+    if (entryKind === "meal") {
+      setSaving(true);
+      try {
+        const response = await authFetch(`/api/meal-plans/${plan._id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: settings.name.trim(),
+            people,
+          }),
+        });
+        if (!response.ok) throw new Error("Failed to save meal settings");
+        const data = await response.json();
+        const normalizedPlan = normalizePlan(data.plan);
+        setPlan(normalizedPlan);
+        setSettings(getSettingsFromPlan(normalizedPlan));
+        setActiveSlot(null);
+        toastSuccess("Meal updated");
+      } catch (err: any) {
+        toastError(err.message || "Could not save meal settings");
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
     const nextDays = normalizePlan({
       ...plan,
       name: settings.name.trim(),
@@ -307,7 +391,8 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       const data = await response.json();
       const normalizedPlan = normalizePlan(data.plan);
       setPlan(normalizedPlan);
-      setActiveSlot({ dayNumber: 1, mealType: normalizedPlan.mealTypes[0] });
+      setSettings(getSettingsFromPlan(normalizedPlan));
+      setActiveSlot(getInitialSlot(normalizedPlan));
       toastSuccess("Meal plan updated");
     } catch (err: any) {
       toastError(err.message || "Could not save plan settings");
@@ -330,9 +415,37 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     setPickerOpen(true);
   }
 
+  function openMealRecipePicker() {
+    setActiveSlot(null);
+    setPickerOpen(true);
+  }
+
+  function revertSettings() {
+    if (!plan) return;
+    setSettings(getSettingsFromPlan(plan));
+    if (!activeSlot) {
+      setActiveSlot(getInitialSlot(plan));
+    }
+  }
+
   async function addRecipeToActiveMeal(recipe: Recipe) {
-    if (!plan || !activeSlot) return;
+    if (!plan) return;
     const recipeId = getRecipeId(recipe);
+
+    if (getMealEntryKind(plan) === "meal") {
+      if ((plan.recipes || []).some((item) => getRecipeId(item) === recipeId)) return;
+
+      const nextPlan = {
+        ...plan,
+        recipes: [...(plan.recipes || []), recipe],
+      };
+
+      const saved = await savePlan(nextPlan, "Recipe added to meal");
+      if (saved) setPickerOpen(false);
+      return;
+    }
+
+    if (!activeSlot) return;
     const nextPlan = {
       ...plan,
       days: (plan.days || []).map((day) => {
@@ -352,8 +465,19 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     if (saved) setPickerOpen(false);
   }
 
-  async function removeRecipeFromMeal(dayNumber: number, mealType: MealType, recipeId: string) {
+  async function removeRecipeFromMeal(recipeId: string, dayNumber?: number, mealType?: MealType) {
     if (!plan) return;
+
+    if (getMealEntryKind(plan) === "meal") {
+      const nextPlan = {
+        ...plan,
+        recipes: (plan.recipes || []).filter((recipe) => getRecipeId(recipe) !== recipeId),
+      };
+
+      await savePlan(nextPlan, "Recipe removed");
+      return;
+    }
+
     const nextPlan = {
       ...plan,
       days: (plan.days || []).map((day) => {
@@ -386,103 +510,179 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     );
   }
 
+  const isMeal = getMealEntryKind(plan) === "meal";
+  const currentSettings = getSettingsFromPlan(plan);
+  const hasPendingSettingsChanges = isMeal
+    ? settings.name.trim() !== currentSettings.name || settings.peopleCount !== currentSettings.peopleCount
+    : settings.name.trim() !== currentSettings.name
+      || settings.peopleCount !== currentSettings.peopleCount
+      || settings.numberOfDays !== currentSettings.numberOfDays
+      || normalizeMealTypes(settings.mealTypes).join("|") !== currentSettings.mealTypes.join("|");
+
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <Link href="/meal-plans" className={styles.backLink}>
+        <Link href={isMeal ? "/meal-plans?kind=meal" : "/meal-plans"} className={styles.backLink}>
           <span className="material-symbols-outlined">arrow_back</span>
-          Meal Plans
+          {isMeal ? "Meals" : "Meal Plans"}
         </Link>
         <div>
-          <p className={styles.kicker}>Planning</p>
+          {!isMeal && <p className={styles.kicker}>Planning</p>}
           <h1>{plan.name}</h1>
         </div>
       </header>
 
-      <section className={styles.settingsPanel}>
+      <FloatingActionPanel
+        ariaLabel={isMeal ? "Meal actions" : "Meal plan actions"}
+        toggleOpenLabel={isMeal ? "Open meal actions" : "Open meal plan actions"}
+        toggleCloseLabel={isMeal ? "Minimize meal actions" : "Minimize meal plan actions"}
+        actions={[
+          {
+            id: "save",
+            icon: "save",
+            label: saving ? (isMeal ? "Saving meal" : "Saving meal plan") : (isMeal ? "Save meal" : "Save meal plan"),
+            onClick: saveSettings,
+            disabled: saving || !hasPendingSettingsChanges,
+            tone: "primary",
+          },
+          {
+            id: "revert",
+            icon: "history",
+            label: "Revert settings",
+            onClick: revertSettings,
+            disabled: saving || !hasPendingSettingsChanges,
+          },
+        ]}
+      />
+
+      <section className={`${styles.settingsPanel} ${isMeal ? styles.settingsPanelMeal : ""}`}>
         <label className={styles.field}>
           <span>Name</span>
           <input value={settings.name} onChange={(event) => setSettings((current) => ({ ...current, name: event.target.value }))} />
         </label>
 
-        <div className={styles.inlineFields}>
+        {isMeal ? (
           <label className={styles.field}>
             <span>People</span>
-            <input type="number" min="1" value={settings.peopleCount} onChange={(event) => setSettings((current) => ({ ...current, peopleCount: Math.max(1, parseInt(event.target.value) || 1) }))} />
+            <NumberOnlyInput min={1} value={settings.peopleCount} onValueChange={(value) => setSettings((current) => ({ ...current, peopleCount: value }))} />
           </label>
-          <label className={styles.field}>
-            <span>Days</span>
-            <input type="number" min="1" value={settings.numberOfDays} onChange={(event) => setSettings((current) => ({ ...current, numberOfDays: Math.max(1, parseInt(event.target.value) || 1) }))} />
-          </label>
-        </div>
-
-        <div className={styles.field}>
-          <span>Meal Types</span>
-          <div className={styles.mealTypeGrid}>
-            {MEAL_TYPES.map((type) => (
-              <label key={type} className={styles.mealTypeOption}>
-                <input type="checkbox" checked={settings.mealTypes.includes(type)} onChange={() => toggleMealType(type)} />
-                <span>{titleCaseMeal(type)}</span>
-              </label>
-            ))}
+        ) : (
+          <div className={styles.inlineFields}>
+            <label className={styles.field}>
+              <span>People</span>
+              <NumberOnlyInput min={1} value={settings.peopleCount} onValueChange={(value) => setSettings((current) => ({ ...current, peopleCount: value }))} />
+            </label>
+            <label className={styles.field}>
+              <span>Days</span>
+              <NumberOnlyInput min={1} value={settings.numberOfDays} onValueChange={(value) => setSettings((current) => ({ ...current, numberOfDays: value }))} />
+            </label>
           </div>
-        </div>
+        )}
 
-        <button type="button" className={styles.saveButton} onClick={saveSettings} disabled={saving}>
-          {saving ? "Saving..." : "Save Plan"}
-        </button>
+        {!isMeal && (
+          <div className={styles.field}>
+            <span>Meal Types</span>
+            <div className={styles.mealTypeGrid}>
+              {MEAL_TYPES.map((type) => (
+                <label key={type} className={styles.mealTypeOption}>
+                  <input type="checkbox" checked={settings.mealTypes.includes(type)} onChange={() => toggleMealType(type)} />
+                  <span>{titleCaseMeal(type)}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!isMeal && (
+          <button type="button" className={styles.saveButton} onClick={saveSettings} disabled={saving}>
+            {saving ? "Saving..." : "Save Plan"}
+          </button>
+        )}
       </section>
 
       <section className={styles.plannerShell}>
         <div className={styles.dayColumn}>
-          {(plan.days || []).map((day) => (
-            <section key={day.dayNumber} className={styles.dayCard}>
-              <h2>Day {day.dayNumber}</h2>
-              <div className={styles.mealList}>
-                {day.meals.map((meal) => {
-                  const active = activeSlot?.dayNumber === day.dayNumber && activeSlot.mealType === meal.mealType;
-                  return (
-                    <div key={`${day.dayNumber}-${meal.mealType}`} className={`${styles.mealCard} ${active ? styles.mealCardActive : ""}`}>
-                      <div className={styles.mealHeader}>
-                        <div>
-                          <h3>{titleCaseMeal(meal.mealType)} ({meal.recipes.length})</h3>
-                        </div>
-                        <button type="button" onClick={() => openRecipePicker(day.dayNumber, meal.mealType)} aria-label={`Add recipe to Day ${day.dayNumber} ${titleCaseMeal(meal.mealType)}`}>
-                          <span className="material-symbols-outlined">add</span>
+          {isMeal ? (
+            <section className={`${styles.dayCard} ${pickerOpen ? styles.mealCardActive : ""}`}>
+              <h2>Meal Recipes</h2>
+              {(plan.recipes || []).length === 0 ? (
+                <p className={styles.emptyMeal}>No recipes yet</p>
+              ) : (
+                <div className={styles.scheduledRecipes}>
+                  {(plan.recipes || []).map((recipe) => {
+                    const recipeId = getRecipeId(recipe);
+                    return (
+                      <div key={recipeId} className={`${styles.scheduledRecipe} ${styles.scheduledRecipeWithImage}`}>
+                        {recipe.image ? (
+                          <img className={styles.scheduledRecipeImage} src={recipe.image} alt={recipe.title} />
+                        ) : (
+                          <span className={`material-symbols-outlined ${styles.scheduledRecipeImage}`}>restaurant</span>
+                        )}
+                        <Link href={`/recipes/${recipeId}`}>{recipe.title}</Link>
+                        <button type="button" onClick={() => removeRecipeFromMeal(recipeId)} aria-label="Remove recipe">
+                          <span className="material-symbols-outlined">close</span>
                         </button>
                       </div>
+                    );
+                  })}
+                </div>
+              )}
 
-                      {meal.recipes.length === 0 ? (
-                        <p className={styles.emptyMeal}>No recipes yet</p>
-                      ) : (
-                        <div className={styles.scheduledRecipes}>
-                          {meal.recipes.map((recipe) => {
-                            const recipeId = getRecipeId(recipe);
-                            return (
-                              <div key={recipeId} className={styles.scheduledRecipe}>
-                                <Link href={`/recipes/${recipeId}`}>{recipe.title}</Link>
-                                <button type="button" onClick={() => removeRecipeFromMeal(day.dayNumber, meal.mealType, recipeId)} aria-label="Remove recipe">
-                                  <span className="material-symbols-outlined">close</span>
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              <button type="button" className={`${styles.mealActionButton} ${styles.mealFooterButton}`} onClick={openMealRecipePicker} aria-label="Add recipes to this meal">
+                <span className="material-symbols-outlined">add</span>
+                <span>Add</span>
+              </button>
             </section>
-          ))}
+          ) : (
+            (plan.days || []).map((day) => (
+              <section key={day.dayNumber} className={styles.dayCard}>
+                <h2>Day {day.dayNumber}</h2>
+                <div className={styles.mealList}>
+                  {day.meals.map((meal) => {
+                    const active = activeSlot?.dayNumber === day.dayNumber && activeSlot.mealType === meal.mealType;
+                    return (
+                      <div key={`${day.dayNumber}-${meal.mealType}`} className={`${styles.mealCard} ${active ? styles.mealCardActive : ""}`}>
+                        <div className={styles.mealHeader}>
+                          <div>
+                            <h3>{titleCaseMeal(meal.mealType)} ({meal.recipes.length})</h3>
+                          </div>
+                          <button type="button" onClick={() => openRecipePicker(day.dayNumber, meal.mealType)} aria-label={`Add recipe to Day ${day.dayNumber} ${titleCaseMeal(meal.mealType)}`}>
+                            <span className="material-symbols-outlined">add</span>
+                          </button>
+                        </div>
+
+                        {meal.recipes.length === 0 ? (
+                          <p className={styles.emptyMeal}>No recipes yet</p>
+                        ) : (
+                          <div className={styles.scheduledRecipes}>
+                            {meal.recipes.map((recipe) => {
+                              const recipeId = getRecipeId(recipe);
+                              return (
+                                <div key={recipeId} className={styles.scheduledRecipe}>
+                                  <Link href={`/recipes/${recipeId}`}>{recipe.title}</Link>
+                                  <button type="button" onClick={() => removeRecipeFromMeal(recipeId, day.dayNumber, meal.mealType)} aria-label="Remove recipe">
+                                    <span className="material-symbols-outlined">close</span>
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            ))
+          )}
         </div>
 
         <button type="button" className={`${styles.panelScrim} ${pickerOpen ? styles.panelScrimOpen : ""}`} onClick={() => setPickerOpen(false)} aria-label="Close recipe search" />
         <aside className={`${styles.recipePanel} ${pickerOpen ? styles.recipePanelOpen : ""}`}>
           <div className={styles.recipePanelHeader}>
             <div>
-              <p className={styles.kicker}>Add Recipes</p>
-              <h2>{activeSlot ? `Day ${activeSlot.dayNumber} ${titleCaseMeal(activeSlot.mealType)}` : "Choose a meal"}</h2>
+              <p className={styles.kicker}>{isMeal ? "Build This Meal" : "Add Recipes"}</p>
+              <h2>{isMeal ? "Choose recipes for the whole meal" : activeSlot ? `Day ${activeSlot.dayNumber} ${titleCaseMeal(activeSlot.mealType)}` : "Choose a meal"}</h2>
             </div>
             <button type="button" className={styles.closePickerButton} onClick={() => setPickerOpen(false)} aria-label="Close recipe search">
               <span className="material-symbols-outlined">close</span>
@@ -497,7 +697,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
             ))}
           </div>
 
-          <input className={styles.recipeSearch} value={recipeSearch} onChange={(event) => setRecipeSearch(event.target.value)} placeholder={`Search ${SOURCE_TABS.find((tab) => tab.id === recipeSource)?.label.toLowerCase()}`} />
+          <input className={styles.recipeSearch} value={recipeSearch} onChange={(event) => setRecipeSearch(event.target.value)} placeholder={isMeal ? `Search ${SOURCE_TABS.find((tab) => tab.id === recipeSource)?.label.toLowerCase()} recipes for this meal` : `Search ${SOURCE_TABS.find((tab) => tab.id === recipeSource)?.label.toLowerCase()}`} />
 
           <div className={styles.recipeResults}>
             {loadingRecipes && recipeSource === "website" ? (
@@ -508,7 +708,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
               filteredSourceRecipes.slice(0, 80).map((recipe) => {
                 const recipeId = getRecipeId(recipe);
                 return (
-                  <button key={recipeId} type="button" className={styles.recipeResult} onClick={() => addRecipeToActiveMeal(recipe)} disabled={!activeSlot || saving}>
+                  <button key={recipeId} type="button" className={styles.recipeResult} onClick={() => addRecipeToActiveMeal(recipe)} disabled={saving || (!isMeal && !activeSlot)} aria-label={isMeal ? `Add ${recipe.title} to this meal` : `Add ${recipe.title} to ${activeSlot ? `Day ${activeSlot.dayNumber} ${titleCaseMeal(activeSlot.mealType)}` : "the selected meal"}`}>
                     {recipe.image ? <img src={recipe.image} alt={recipe.title} /> : <span className="material-symbols-outlined">restaurant</span>}
                     <span>{recipe.title}</span>
                     <span className="material-symbols-outlined">add</span>
@@ -526,9 +726,11 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
           <div className={styles.ingredientList}>
             {ingredientList.map((ingredient) => (
               <div key={ingredient.name} className={styles.ingredientItem}>
-                <strong>{ingredient.name}</strong>
-                <span>{ingredient.quantities.join(" + ") || "As needed"}</span>
-                <small>{ingredient.sources.join(", ")}</small>
+                <div className={styles.ingredientSummary}>
+                  <strong>{ingredient.name}</strong>
+                  <span className={styles.ingredientQuantity}>{ingredient.quantities.join(" + ") || "As needed"}</span>
+                </div>
+                <small className={styles.ingredientSources}>{ingredient.sources.join(", ")}</small>
               </div>
             ))}
           </div>
