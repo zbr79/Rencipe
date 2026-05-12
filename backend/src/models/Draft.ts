@@ -5,8 +5,13 @@ export interface IDraft extends Document {
   name: string; // Draft name (e.g., "My First Recipe", "Pasta Ideas")
   title: string;
   description: string;
+  tips?: string;
+  recipeOrigin: "original" | "shared";
+  sharedSource?: string;
+  sharedSourceLink?: string;
   image?: string;
   component: boolean;
+  isPublic: boolean;
   mainIngredients: Array<{ name: string; quantity: string }>;
   seasonings: Array<{ name: string; quantity: string }>;
   steps: Array<{ stepNumber: number; instruction: string; image?: string }>;
@@ -22,8 +27,13 @@ const DraftSchema = new Schema<IDraft>(
     name: { type: String, required: true, default: "Untitled Draft" },
     title: { type: String, default: "" },
     description: { type: String, default: "" },
+    tips: { type: String, default: "" },
+    recipeOrigin: { type: String, enum: ["original", "shared"], default: "original" },
+    sharedSource: { type: String, default: "" },
+    sharedSourceLink: { type: String, default: "" },
     image: { type: String, default: undefined },
     component: { type: Boolean, default: false },
+    isPublic: { type: Boolean, default: false },
     mainIngredients: [
       {
         name: { type: String, default: "" },

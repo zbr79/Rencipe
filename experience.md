@@ -5,9 +5,28 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 ## 2026-05-11
 
 - Phase 1 is complete. Current work is Phase 2 improvement work on top of the Phase 1 baseline.
+- For linked homepage hero slides, use pointer-event swipe handling instead of touch-only handlers and pause autoplay after manual movement. That keeps finger swipes working on the carousel while avoiding the feeling that the app fights the user immediately after a manual slide.
+- For a home carousel that feels native, apply the live drag offset to the track transform while the pointer is down and disable the transition during that drag. If the offset is only used after release, the slide feels like it snaps late instead of following the finger.
+- Home carousel release logic should use a width-based swipe threshold plus peak-drag fallback. If the user drags far enough toward the next slide and then pulls back toward the start before release, treat that as a canceled flip instead of forcing the page change.
+- Demo seed recipes can share nearly identical `createdAt` timestamps because they are bulk inserted in one run. For a visible `Newest` sort, use `createdAt` first and then a stable fallback such as the recipe ObjectId instead of letting equal timestamps fall back to unrelated backend order.
+- Homepage slide indicators should keep a constant width across active and inactive states. Stretching the active marker makes the dot row visibly shift on each slide change.
+- Edit forms need an explicit cover-image add/change control even when the current recipe has no cover. A hidden file input plus a clickable existing image is too implicit and leaves no visible entry point for cover editing.
+- The shared floating action panel should sit flush to the mobile viewport edge with no right-side inner gutter. Keep the action stack's right edge square, remove right padding in the opened stack, and center the toggle ear against the action column instead of bottom-aligning it.
 - Phase 2 work reports no longer need the old demo-readiness status section.
+- Account settings should not insert a redundant "Edit Profile" hub page. From Settings, the Account page itself should expose direct rows for profile fields, with any deeper editing routes attached to those rows instead of a separate intermediate layer.
+- Avatar upload needs the full auth contract wired together: user schema, auth middleware/JWT payload, `/auth/me`, and frontend session typing. If one layer misses `avatarUrl`, the photo appears to save and then disappears on the next session refresh.
+- When search moves from a route/page strip into a top-bar overlay, remove the old page-level search entry points in the layout and category page at the same time. Keep the overlay fixed below the top bar and above the bottom nav, and use the first matched recipe image as the right-side preview for history rows.
+- Do not mount a fixed overlay inside the sticky top bar when that header uses blur or filter effects. The fixed child can inherit the header as its containing block and collapse to header height instead of covering the page; render the overlay as a sibling or portal instead.
 - In client components, helper `const` functions used by derived render-time values still need to be declared before those values. The type checker may stay quiet, but the page can still fail at runtime from temporal-dead-zone ordering.
 - The App Router layout needs explicit viewport metadata (`width=device-width`, `initial-scale=1`) for reliable phone-first rendering. Without it, mobile browsers can fall back to a wide layout viewport and make otherwise-correct responsive CSS look broken.
+- Do not use native browser `alert()` or `confirm()` in Rencipe. Always use the shared app-level confirmation modal provider so warning/confirm flows stay consistent in styling, mobile layout, and intent colors.
+- When adding recipe metadata fields, wire them through draft autosave and draft reload in the same round. Otherwise users can fill the new fields, reload the create page, and silently lose that data.
+- Recipe publish visibility must be wired through create/edit UI, the recipe controller, and draft autosave together. If one layer is missed, the checkbox either saves nothing or resets after reload.
+- For save success that does not require a user choice, use a toast instead of a confirm modal. Reserve the confirm modal for real decisions such as delete or publish warnings.
+- Recipe updates must preserve the existing cover image when the client does not send an `image` field. Treating missing image input as `undefined` clears the stored cover and makes the UI fall back to generated mock images that look random after publish/save.
+- The create-page cover image entry should open the file picker directly instead of a separate staging modal, and its top cover section should reuse the same edge alignment and border rhythm as the rest of the form. Mixing a boxed upload prompt with border-bottom sections makes the page feel uneven on mobile.
+- Cooking steps should default to instructions first with no step image shown. A compact Add image button works better than a large empty upload tile, and step-image inputs should reset their value after each selection so replacing with the same file still fires `change`.
+- Freeform recipe text fields like `tips` need to be wired through the full path in one round: create/edit form state, draft autosave/load, recipe schema/controller, and detail-page rendering. If one layer is skipped, the field appears to work locally but disappears after save or reload.
 
 ## 2026-05-08
 

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import { useSaved } from "../contexts/SavedContext";
 import { useQuickCreateMealPlan } from "../hooks/useQuickCreateMealPlan";
 import { getScheduledPlanDisplayName } from "../utils/planDisplay";
@@ -20,6 +21,7 @@ export default function MealPlansPage() {
     deleteWeeklyPlan,
   } = useSaved();
   const { creatingMealPlan, creatingMeal, createAndOpenMealPlan, createAndOpenMeal } = useQuickCreateMealPlan();
+  const { confirm, notify } = useConfirmDialog();
   const searchParams = useSearchParams();
   const kindFilter = searchParams.get("kind");
   const showMealsOnly = kindFilter === "meal";
@@ -31,21 +33,41 @@ export default function MealPlansPage() {
   }, []);
 
   const handleDeletePlan = async (planId: string) => {
-    if (confirm("Delete this plan?")) {
-      try {
-        await deleteMealPlan(planId);
-      } catch (error) {
-        console.error("Failed to delete plan:", error);
-      }
+    if (!(await confirm({
+      title: "Delete plan",
+      message: "Delete this plan?",
+      intent: "danger",
+      confirmText: "Delete",
+    }))) return;
+
+    try {
+      await deleteMealPlan(planId);
+    } catch (error) {
+      console.error("Failed to delete plan:", error);
+      await notify({
+        title: "Delete failed",
+        message: "Failed to delete this plan.",
+        intent: "danger",
+      });
     }
   };
 
   const handleDeleteScheduledPlan = async (planId: string) => {
-    if (!confirm("Delete this scheduled meal plan?")) return;
+    if (!(await confirm({
+      title: "Delete scheduled meal plan",
+      message: "Delete this scheduled meal plan?",
+      intent: "danger",
+      confirmText: "Delete",
+    }))) return;
     try {
       await deleteWeeklyPlan(planId);
     } catch (error) {
       console.error("Failed to delete scheduled meal plan:", error);
+      await notify({
+        title: "Delete failed",
+        message: "Failed to delete this scheduled meal plan.",
+        intent: "danger",
+      });
     }
   };
 
@@ -67,10 +89,18 @@ export default function MealPlansPage() {
           <h1>{showMealsOnly ? "Meals" : "Meal Plans"}</h1>
           <p className={styles.headerMeta}>{showMealsOnly ? "Create and collect recipe combinations as reusable meals." : "Create reusable plans or schedule meals across the week."}</p>
         </div>
-        <button type="button" className={styles.createButton} onClick={() => showMealsOnly ? createAndOpenMeal() : createAndOpenMealPlan()} disabled={showMealsOnly ? creatingMeal : creatingMealPlan}>
-          <span className="material-symbols-outlined">add</span>
-          {showMealsOnly ? (creatingMeal ? "Creating Meal..." : "New Meal") : (creatingMealPlan ? "Creating Meal Plan..." : "New Meal Plan")}
-        </button>
+        <div className={styles.headerActions}>
+          {!showMealsOnly && (
+            <Link href="/weekly-plans" className={styles.subtleButton}>
+              <span className="material-symbols-outlined">calendar_month</span>
+              Scheduled Plans
+            </Link>
+          )}
+          <button type="button" className={styles.createButton} onClick={() => showMealsOnly ? createAndOpenMeal() : createAndOpenMealPlan()} disabled={showMealsOnly ? creatingMeal : creatingMealPlan}>
+            <span className="material-symbols-outlined">add</span>
+            {showMealsOnly ? (creatingMeal ? "Creating Meal..." : "New Meal") : (creatingMealPlan ? "Creating Meal Plan..." : "New Meal Plan")}
+          </button>
+        </div>
       </header>
 
       {loading ? (

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSaved } from "../contexts/SavedContext";
+import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import type { WeeklyPlan } from "../contexts/SavedContext";
 import { getScheduledPlanDisplayName } from "../utils/planDisplay";
 import Link from "next/link";
@@ -11,17 +12,28 @@ export default function WeeklyPlansPage() {
   const { weeklyPlans, fetchWeeklyPlans, deleteWeeklyPlan, renameWeeklyPlan, loadingWeeklyPlans, errorWeeklyPlans } = useSaved();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const { confirm, notify } = useConfirmDialog();
 
   useEffect(() => {
     fetchWeeklyPlans();
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this scheduled meal plan?")) return;
+    if (!(await confirm({
+      title: "Delete scheduled meal plan",
+      message: "Delete this scheduled meal plan?",
+      intent: "danger",
+      confirmText: "Delete",
+    }))) return;
     try {
       await deleteWeeklyPlan(id);
     } catch (err) {
       console.error("Failed to delete:", err);
+      await notify({
+        title: "Delete failed",
+        message: "Failed to delete this scheduled meal plan.",
+        intent: "danger",
+      });
     }
   };
 

@@ -36,6 +36,10 @@ function pickRecipe(doc: any) {
     _id: String(doc._id),
     title: doc.title,
     description: doc.description,
+    tips: doc.tips ?? "",
+    recipeOrigin: doc.recipeOrigin === "shared" ? "shared" : "original",
+    sharedSource: doc.sharedSource ?? "",
+    sharedSourceLink: doc.sharedSourceLink ?? "",
     image: doc.image ?? null,
     authorId: getAuthorId(doc),
     author: pickAuthor(doc.authorId),
@@ -84,6 +88,15 @@ function canMutateRecipe(req: Request, doc: any) {
   return getAuthorId(doc) === user.id;
 }
 
+function normalizeRecipeOrigin(value: unknown): "original" | "shared" {
+  return value === "shared" ? "shared" : "original";
+}
+
+function normalizeOptionalText(value: unknown) {
+  if (typeof value !== "string") return "";
+  return value.trim();
+}
+
 /**
  * GET /recipes
  */
@@ -105,13 +118,17 @@ export async function listRecipes(req: Request, res: Response) {
 
 /**
  * POST /recipes
- * body: { title, description, mainIngredients, seasonings, steps, servings, tags, image, component, isPublic }
+ * body: { title, description, tips, recipeOrigin, sharedSource, sharedSourceLink, mainIngredients, seasonings, steps, servings, tags, image, component, isPublic }
  */
 export async function createRecipe(req: Request, res: Response) {
   try {
     const {
       title,
       description,
+      tips: rawTips,
+      recipeOrigin: rawRecipeOrigin,
+      sharedSource: rawSharedSource,
+      sharedSourceLink: rawSharedSourceLink,
       mainIngredients,
       seasonings,
       steps,
@@ -130,9 +147,22 @@ export async function createRecipe(req: Request, res: Response) {
     if (!description)
       return res.status(400).json({ error: "description is required" });
 
+    const recipeOrigin = normalizeRecipeOrigin(rawRecipeOrigin);
+  const tips = normalizeOptionalText(rawTips);
+    const sharedSource = normalizeOptionalText(rawSharedSource);
+    const sharedSourceLink = normalizeOptionalText(rawSharedSourceLink);
+
+    if (recipeOrigin === "shared" && !sharedSource) {
+      return res.status(400).json({ error: "sharedSource is required when recipeOrigin is shared" });
+    }
+
     const doc = await Recipe.create({
       title,
       description,
+      tips: tips || undefined,
+      recipeOrigin,
+      sharedSource: recipeOrigin === "shared" ? sharedSource : undefined,
+      sharedSourceLink: recipeOrigin === "shared" && sharedSourceLink ? sharedSourceLink : undefined,
       authorId: new mongoose.Types.ObjectId(authUser.id),
       mainIngredients: mainIngredients || [],
       seasonings: seasonings || [],
@@ -141,7 +171,7 @@ export async function createRecipe(req: Request, res: Response) {
       tags: tags || [],
       image: image || undefined,
       component: component ?? false,
-      isPublic: authUser.role === "admin" ? Boolean(isPublic) : false,
+      isPublic: Boolean(isPublic),
     });
 
     await doc.populate("authorId", "username displayName role");
@@ -184,6 +214,10 @@ export async function updateRecipe(req: Request, res: Response) {
     const {
       title,
       description,
+      tips: rawTips,
+      recipeOrigin: rawRecipeOrigin,
+      sharedSource: rawSharedSource,
+      sharedSourceLink: rawSharedSourceLink,
       mainIngredients,
       seasonings,
       steps,
@@ -199,29 +233,40 @@ export async function updateRecipe(req: Request, res: Response) {
     if (!canMutateRecipe(req, existing)) return res.status(403).json({ error: "Not allowed to update this recipe" });
 
     const authUser = getAuthUser(req);
+    const recipeOrigin = normalizeRecipeOrigin(rawRecipeOrigin);
+    const tips = normalizeOptionalText(rawTips);
+    const sharedSource = normalizeOptionalText(rawSharedSource);
+    const sharedSourceLink = normalizeOptionalText(rawSharedSourceLink);
 
-    const doc = await Recipe.findByIdAndUpdate(
-      id,
-      {
-        title,
-        description,
-        mainIngredients: mainIngredients || [],
-        seasonings: seasonings || [],
-        steps: steps || [],
-        servings: servings || 1,
-        tags: tags || [],
-        image: image || undefined,
-        component: component ?? undefined,
-        ...(authUser?.role === "admin" && typeof isPublic === "boolean" ? { isPublic } : {}),
-      },
-      { new: true }
-    );
+    if (recipeOrigin === "shared" && !sharedSource) {
+      return res.status(400).json({ error: "sharedSource is required when recipeOrigin is shared" });
+    }
 
-    if (!doc) return res.status(404).json({ error: "recipe not found" });
+    existing.title = title;
+    existing.description = description;
+    existing.tips = tips || undefined;
+    existing.recipeOrigin = recipeOrigin;
+    existing.sharedSource = recipeOrigin === "shared" ? sharedSource : undefined;
+    existing.sharedSourceLink = recipeOrigin === "shared" && sharedSourceLink ? sharedSourceLink : undefined;
+    existing.mainIngredients = mainIngredients || [];
+    existing.seasonings = seasonings || [];
+    existing.steps = steps || [];
+    existing.servings = servings || 1;
+    existing.tags = tags || [];
+    if (typeof image === "string") {
+      existing.image = image || undefined;
+    }
+    if (typeof component === "boolean") {
+      existing.component = component;
+    }
+    if (typeof isPublic === "boolean") {
+      existing.isPublic = isPublic;
+    }
 
-    await doc.populate("authorId", "username displayName role");
+    await existing.save();
+    await existing.populate("authorId", "username displayName role");
 
-    res.json({ recipe: pickRecipe(doc) });
+    res.json({ recipe: pickRecipe(existing) });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Failed to update recipe" });
   }

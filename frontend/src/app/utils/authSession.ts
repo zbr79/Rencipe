@@ -4,6 +4,7 @@ export interface AuthUser {
   id: string;
   username: string;
   displayName: string;
+  avatarUrl?: string;
   email?: string;
   phone?: string;
   role: "admin" | "user";

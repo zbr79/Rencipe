@@ -1,0 +1,149 @@
+.section {
+  background-color: var(--card-bg);
+  border-radius: 0;
+  padding: 18px 0;
+  box-shadow: none;
+  animation: fadeIn 0.4s ease-out;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sectionHeader {
+  margin-bottom: 0;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.sectionHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  display: block;
+  margin: 0 0 6px;
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: inherit;
+  box-sizing: border-box;
+  background: var(--card-bg);
+  color: var(--foreground);
+}
+
+.input:hover {
+  border-color: var(--text-secondary);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.originToggle {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, auto));
+  gap: 8px;
+}
+
+.originOption {
+  min-height: 38px;
+  min-width: 52px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.originOption:hover {
+  border-color: color-mix(in srgb, var(--primary) 24%, var(--border));
+}
+
+.originOptionActive {
+  border-color: color-mix(in srgb, var(--primary) 26%, var(--border));
+  background: var(--primary-soft);
+  color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+}
+
+.originOption:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.sharedFields {
+  display: grid;
+  gap: 0;
+}
+
+@media (max-width: 600px) {
+  .section {
+    padding: 16px 0;
+  }
+
+  .sectionHeaderRow {
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sectionHeader h2 {
+    font-size: 16px;
+  }
+
+  .originOption {
+    min-height: 36px;
+    min-width: 48px;
+    padding: 0 10px;
+  }
+}

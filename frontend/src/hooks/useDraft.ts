@@ -7,8 +7,13 @@ interface DraftData {
   name?: string;
   title: string;
   description: string;
+  tips?: string;
+  recipeOrigin?: "original" | "shared";
+  sharedSource?: string;
+  sharedSourceLink?: string;
   image?: string;
   component?: boolean;
+  isPublic?: boolean;
   mainIngredients?: Array<{ name: string; quantity: string }>;
   seasonings?: Array<{ name: string; quantity: string }>;
   ingredients?: Array<{ name: string; quantity: string }>;

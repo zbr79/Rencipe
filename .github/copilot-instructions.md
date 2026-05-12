@@ -21,7 +21,6 @@ Before every response, read [project-goal.md](../project-goal.md) and [experienc
 
 - Answer every question mark from the user prompt explicitly.
 - For every point the user makes, finalize with a report table that includes at least `What was done` and `What to test`.
-- At the end of every work report, include a demo-readiness section/table that says what this round completed and what remains for the Phase 1 demo.
 - After working on code, run backend and frontend builds before returning.
 - Use Playwright to test new features before returning when a browser-visible feature or flow changed.
 - For port/nginx work, verify with Playwright against `https://rencipe.renstoolbox.com` after nginx reload, then separately verify local listeners on `4000` and `6000`.

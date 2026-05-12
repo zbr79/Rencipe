@@ -8,7 +8,24 @@ import mongoose from "mongoose";
  */
 export async function saveDraft(req: Request, res: Response) {
   try {
-    const { authorId, name, title, description, image, component, mainIngredients, seasonings, steps, servings, tags } = req.body;
+    const {
+      authorId,
+      name,
+      title,
+      description,
+      tips,
+      recipeOrigin,
+      sharedSource,
+      sharedSourceLink,
+      image,
+      component,
+      isPublic,
+      mainIngredients,
+      seasonings,
+      steps,
+      servings,
+      tags,
+    } = req.body;
 
     if (!authorId) {
       return res.status(400).json({ error: "authorId is required" });
@@ -24,8 +41,13 @@ export async function saveDraft(req: Request, res: Response) {
       name: name || "Untitled Draft",
       title: title || "",
       description: description || "",
+      tips: tips || "",
+      recipeOrigin: recipeOrigin === "shared" ? "shared" : "original",
+      sharedSource: sharedSource || "",
+      sharedSourceLink: sharedSourceLink || "",
       image: image || undefined,
       component: component ?? false,
+      isPublic: isPublic ?? false,
       mainIngredients: mainIngredients || [],
       seasonings: seasonings || [],
       steps: steps || [],
@@ -87,7 +109,24 @@ export async function updateDraft(req: Request, res: Response) {
   try {
     const rawId = req.params.id || req.body.id;
     const id = Array.isArray(rawId) ? rawId[0] : rawId;
-    const { authorId, name, title, description, image, component, mainIngredients, seasonings, steps, servings, tags } = req.body;
+    const {
+      authorId,
+      name,
+      title,
+      description,
+      tips,
+      recipeOrigin,
+      sharedSource,
+      sharedSourceLink,
+      image,
+      component,
+      isPublic,
+      mainIngredients,
+      seasonings,
+      steps,
+      servings,
+      tags,
+    } = req.body;
 
     if (!authorId) {
       return res.status(400).json({ error: "authorId is required" });
@@ -110,8 +149,13 @@ export async function updateDraft(req: Request, res: Response) {
         name: name,
         title: title,
         description: description,
+        tips: tips || "",
+        recipeOrigin: recipeOrigin === "shared" ? "shared" : "original",
+        sharedSource: sharedSource || "",
+        sharedSourceLink: sharedSourceLink || "",
         image: image,
         component: component ?? false,
+        isPublic: isPublic ?? false,
         mainIngredients: mainIngredients,
         seasonings: seasonings,
         steps: steps,

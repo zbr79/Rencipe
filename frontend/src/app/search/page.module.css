@@ -1,20 +1,33 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10010;
+  overflow-y: auto;
+  background: color-mix(in srgb, var(--background) 98%, transparent);
+}
+
 .page {
   width: min(100%, 1320px);
   margin: 0 auto;
-  padding: 14px 18px 104px;
+  padding: 0 18px 104px;
 }
 
 .searchHeader {
   position: sticky;
-  top: 64px;
+  top: 0;
   z-index: 850;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  grid-template-columns: 42px minmax(0, 1fr);
   gap: 10px;
   align-items: center;
-  padding: 10px 0 14px;
+  min-height: 64px;
+  padding: 10px 0;
   background: color-mix(in srgb, var(--background) 94%, transparent);
   backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
 }
 
 .categorySearchHeader {
@@ -84,26 +97,32 @@
   font-size: 24px;
 }
 
-.searchBox input {
+.searchBox > input[type="text"] {
   width: 100%;
   min-width: 0;
   min-height: 0;
   padding: 0;
-  border: 0;
+  border: 0 !important;
+  border-radius: 0;
   outline: none;
   background: transparent;
   color: var(--text-primary);
   font-size: 16px;
   font-weight: 800;
-  box-shadow: none;
+  box-shadow: none !important;
+  appearance: none;
 }
 
-.searchBox input:focus {
-  border: 0;
-  box-shadow: none;
+.searchBox > input[type="text"]:hover,
+.searchBox > input[type="text"]:focus,
+.searchBox > input[type="text"]:active,
+.searchBox > input[type="text"]:focus-visible {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none;
 }
 
-.searchBox input::placeholder {
+.searchBox > input[type="text"]::placeholder {
   color: var(--text-muted);
 }
 
@@ -125,6 +144,10 @@
 
 .sectionBlock {
   margin-top: 18px;
+}
+
+.historySection {
+  margin-top: 12px;
 }
 
 .sectionHeader,
@@ -172,9 +195,43 @@
   gap: 10px;
 }
 
-.recommendationList {
-  max-height: 82px;
+.historyList {
+  display: grid;
+  gap: 10px;
+}
+
+.historyRow {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 8px 10px 8px 14px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.historyRowText {
+  min-width: 0;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.historyPreview {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
 }
 
 .emptyHistory {
@@ -199,6 +256,7 @@
   font-weight: 850;
   box-shadow: var(--shadow-sm);
 }
+
 
 .historyChip .material-symbols-outlined,
 .recommendChip .material-symbols-outlined,
@@ -649,13 +707,15 @@
 
 @media (max-width: 768px) {
   .page {
-    padding: 10px 12px 96px;
+    padding: 0 12px 96px;
   }
 
   .searchHeader {
-    top: 56px;
-    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    top: 0;
+    grid-template-columns: 40px minmax(0, 1fr);
     gap: 8px;
+    min-height: 56px;
+    padding: 8px 0;
   }
 
   .categorySearchHeader {
@@ -680,6 +740,16 @@
   .featureRail {
     grid-template-columns: repeat(5, minmax(68px, 1fr));
     gap: 8px;
+  }
+
+  .historyRow {
+    min-height: 52px;
+    padding: 7px 8px 7px 12px;
+  }
+
+  .historyPreview {
+    width: 40px;
+    height: 40px;
   }
 
   .featureIcon {

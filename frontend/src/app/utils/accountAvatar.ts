@@ -2,6 +2,7 @@ export interface AccountIdentity {
   id?: string | null;
   username?: string | null;
   displayName?: string | null;
+  avatarUrl?: string | null;
   role?: string | null;
 }
 

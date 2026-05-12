@@ -8,6 +8,7 @@ export interface AuthUser {
   id: string;
   username: string;
   displayName: string;
+  avatarUrl?: string;
   email?: string;
   phone?: string;
   role: UserRole;
@@ -35,6 +36,7 @@ export async function authenticateOptional(req: Request, _res: Response, next: N
         id: String(user._id),
         username: user.username,
         displayName: user.displayName,
+        avatarUrl: user.avatarUrl || "",
         email: user.email || "",
         phone: user.phone || "",
         role: user.role,
@@ -60,6 +62,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       id: String(user._id),
       username: user.username,
       displayName: user.displayName,
+      avatarUrl: user.avatarUrl || "",
       email: user.email || "",
       phone: user.phone || "",
       role: user.role,

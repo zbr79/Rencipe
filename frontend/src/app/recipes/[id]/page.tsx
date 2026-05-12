@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useConfirmDialog } from "../../components/ConfirmDialogProvider";
 import { useSaved } from "../../contexts/SavedContext";
 import { getRecipeImageUrl } from "../../utils/recipeImageUtils";
 import { getVisibleTags } from "../../utils/recipeTags";
@@ -13,6 +14,7 @@ interface Recipe {
   id: string;
   title: string;
   description: string;
+  tips?: string;
   authorId: string;
   image?: string;
   mainIngredients: Array<{
@@ -61,6 +63,7 @@ export default function RecipeDetailPage() {
   const [selectedRating, setSelectedRating] = useState(0);
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
   const [ratingMessage, setRatingMessage] = useState("");
+  const { notify } = useConfirmDialog();
 
   useEffect(() => {
     fetchRecipe();
@@ -109,7 +112,11 @@ export default function RecipeDetailPage() {
         await addFavorite(undefined, recipeId);
       }
     } catch (err: any) {
-      alert("Save failed: " + err.message);
+      await notify({
+        title: "Save failed",
+        message: `Save failed: ${err.message}`,
+        intent: "danger",
+      });
     } finally {
       setIsSavingRecipe(false);
     }
@@ -308,6 +315,13 @@ export default function RecipeDetailPage() {
           </ol>
         </div>
       </div>
+
+      {recipe.tips?.trim() && (
+        <section className={styles.tipsSection}>
+          <h3 className={styles.sectionTitle}>Tips</h3>
+          <p className={styles.tipsText}>{recipe.tips}</p>
+        </section>
+      )}
 
       <section className={styles.submitRatingSection} aria-label="Rate this recipe">
         <div>

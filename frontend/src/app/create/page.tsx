@@ -4,11 +4,14 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./styles.module.css";
 import { useCreateForm } from "../contexts/CreateFormContext";
-import PhotoUploadStep from "./components/PhotoUploadStep";
+import FloatingActionPanel from "../components/FloatingActionPanel";
 import RecipeBasicsForm from "./components/RecipeBasicsForm";
 import IngredientsSection from "./components/IngredientsSection";
 import StepsSection from "./components/StepsSection";
 import TagsSection from "./components/TagsSection";
+import RecipeOriginSection from "./components/RecipeOriginSection";
+import TipsSection from "./components/TipsSection";
+import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import { useDraft } from "../../hooks/useDraft";
 import { authFetch, getCurrentUserId } from "../utils/authSession";
 
@@ -23,10 +26,19 @@ interface Step {
   image?: string;
 }
 
+type RecipeOrigin = "original" | "shared";
+
+const DEFAULT_INGREDIENT_ROWS = 3;
+
+function createEmptyIngredients(count = DEFAULT_INGREDIENT_ROWS): Ingredient[] {
+  return Array.from({ length: count }, () => ({ name: "", quantity: "" }));
+}
+
 export default function CreatePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const draftId = searchParams.get("draftId");
+  const { confirm } = useConfirmDialog();
   const { recipeImage: contextImage, recipeImageFile: contextImageFile, setRecipeImage, setRecipeImageFile } = useCreateForm();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [accountId, setAccountId] = useState("");
@@ -40,7 +52,6 @@ export default function CreatePage() {
 
   const [draftName, setDraftName] = useState("Untitled Draft");
 
-  const [showPhotoStep, setShowPhotoStep] = useState(false);
   const [recipeImage, setLocalRecipeImage] = useState<string | null>(contextImage);
   const [recipeImageFile, setLocalRecipeImageFile] = useState<File | null>(contextImageFile);
 
@@ -48,19 +59,14 @@ export default function CreatePage() {
     title: "",
     description: "",
     authorId: "",
+    recipeOrigin: "original" as RecipeOrigin,
+    sharedSource: "",
+    sharedSourceLink: "",
+    tips: "",
     component: false,
-    mainIngredients: [
-      {
-        name: "",
-        quantity: "",
-      },
-    ] as Ingredient[],
-    seasonings: [
-      {
-        name: "",
-        quantity: "",
-      },
-    ] as Ingredient[],
+    isPublic: false,
+    mainIngredients: createEmptyIngredients(),
+    seasonings: createEmptyIngredients(),
     steps: [
       {
         stepNumber: 1,
@@ -95,9 +101,14 @@ export default function CreatePage() {
         title: draft.title || "",
         description: draft.description || "",
         authorId: accountId,
+        recipeOrigin: draft.recipeOrigin === "shared" ? "shared" : "original",
+        sharedSource: draft.sharedSource || "",
+        sharedSourceLink: draft.sharedSourceLink || "",
+        tips: draft.tips || "",
         component: draft.component ?? false,
-        mainIngredients: draft.mainIngredients || [],
-        seasonings: draft.seasonings || [],
+        isPublic: draft.isPublic ?? false,
+        mainIngredients: draft.mainIngredients?.length ? draft.mainIngredients : createEmptyIngredients(),
+        seasonings: draft.seasonings?.length ? draft.seasonings : createEmptyIngredients(),
         steps: draft.steps || [],
         servings: draft.servings || 1,
         tags: draft.tags || [],
@@ -117,6 +128,7 @@ export default function CreatePage() {
 
   const handleRecipeImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (file) {
       setLocalRecipeImageFile(file);
       setRecipeImageFile(file);
@@ -125,8 +137,6 @@ export default function CreatePage() {
         const imageData = reader.result as string;
         setLocalRecipeImage(imageData);
         setRecipeImage(imageData);
-        // Move to form step after photo is selected
-        setShowPhotoStep(false);
       };
       reader.readAsDataURL(file);
     }
@@ -134,6 +144,7 @@ export default function CreatePage() {
 
   const handleStepImageChange = (e: React.ChangeEvent<HTMLInputElement>, stepNumber: number) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (file) {
       setStepImageFiles((prev) => ({ ...prev, [stepNumber]: file }));
       const reader = new FileReader();
@@ -148,6 +159,10 @@ export default function CreatePage() {
     return Boolean(
       formData.title.trim() ||
       formData.description.trim() ||
+      formData.recipeOrigin === "shared" ||
+      formData.sharedSource.trim() ||
+      formData.sharedSourceLink.trim() ||
+      formData.tips.trim() ||
       recipeImage ||
       formData.tags.length > 0 ||
       formData.mainIngredients.some((ingredient) => ingredient.name.trim() || ingredient.quantity.trim()) ||
@@ -159,8 +174,13 @@ export default function CreatePage() {
   const getDraftData = () => ({
     title: formData.title,
     description: formData.description,
+    recipeOrigin: formData.recipeOrigin,
+    sharedSource: formData.sharedSource,
+    sharedSourceLink: formData.sharedSourceLink,
+    tips: formData.tips,
     image: recipeImage || undefined,
     component: formData.component ?? false,
+    isPublic: formData.isPublic ?? false,
     mainIngredients: formData.mainIngredients,
     seasonings: formData.seasonings,
     steps: formData.steps,
@@ -186,6 +206,21 @@ export default function CreatePage() {
       setMessage("Draft could not be saved. Please try again.");
       setMessageType("error");
     }
+  };
+
+  const handlePublishChange = async (checked: boolean) => {
+    if (checked && !formData.isPublic) {
+      const approved = await confirm({
+        title: "Publish recipe",
+        message: "This will make everyone see this recipe. Are you sure?",
+        intent: "warning",
+        confirmText: "Publish",
+      });
+
+      if (!approved) return;
+    }
+
+    setFormData((prev) => ({ ...prev, isPublic: checked }));
   };
 
   // Auto-save draft when form changes
@@ -269,8 +304,7 @@ export default function CreatePage() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setLoading(true);
     setMessage("");
     setMessageType("");
@@ -278,6 +312,13 @@ export default function CreatePage() {
     try {
       if (!recipeImage) {
         setMessage("Add a cover image before publishing this recipe.");
+        setMessageType("error");
+        setLoading(false);
+        return;
+      }
+
+      if (formData.recipeOrigin === "shared" && !formData.sharedSource.trim()) {
+        setMessage("Enter the source for this shared recipe.");
         setMessageType("error");
         setLoading(false);
         return;
@@ -292,6 +333,10 @@ export default function CreatePage() {
         },
         body: JSON.stringify({
           ...formData,
+          sharedSource: formData.recipeOrigin === "shared" ? formData.sharedSource.trim() : "",
+          sharedSourceLink: formData.recipeOrigin === "shared" ? formData.sharedSourceLink.trim() : "",
+          tips: formData.tips.trim(),
+          isPublic: formData.isPublic,
           image: recipeImageFile ? undefined : recipeImage,
         }),
       });
@@ -337,9 +382,14 @@ export default function CreatePage() {
         title: "",
         description: "",
         authorId: accountId,
+        recipeOrigin: "original",
+        sharedSource: "",
+        sharedSourceLink: "",
+        tips: "",
         component: false,
-        mainIngredients: [],
-        seasonings: [],
+        isPublic: false,
+        mainIngredients: createEmptyIngredients(),
+        seasonings: createEmptyIngredients(),
         steps: [],
         servings: 1,
         tags: [],
@@ -368,7 +418,7 @@ export default function CreatePage() {
     <>
       {/* Draft saved indicator */}
       {(isSaving || lastSaved) && (
-        <div style={{ position: "fixed", bottom: "20px", right: "20px", zIndex: 1000 }}>
+        <div style={{ position: "fixed", bottom: "20px", left: "20px", zIndex: 1000 }}>
           <div style={{
             backgroundColor: "var(--card-bg)",
             color: "var(--text-secondary)",
@@ -383,31 +433,54 @@ export default function CreatePage() {
         </div>
       )}
 
-      {showPhotoStep && (
-        <div className={styles.modalOverlay}>
-          <PhotoUploadStep
-            recipeImage={recipeImage}
-            onImageChange={handleRecipeImageChange}
-            onContinue={() => setShowPhotoStep(false)}
-          />
-        </div>
-      )}
-
-      <div className={styles.container} style={{ opacity: showPhotoStep ? 0.3 : 1, pointerEvents: showPhotoStep ? "none" : "auto" }}>
-        <div className={styles.draftToolbar}>
-          <button type="button" className={styles.saveDraftBtn} onClick={handleManualSaveDraft} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save Draft"}
-          </button>
-        </div>
+      <div className={styles.container}>
+        <FloatingActionPanel
+          ariaLabel="Create recipe actions"
+          toggleOpenLabel="Open create recipe actions"
+          toggleCloseLabel="Minimize create recipe actions"
+          actions={[
+            {
+              id: "save-draft",
+              icon: "draft",
+              label: isSaving ? "Saving draft" : "Save draft",
+              onClick: handleManualSaveDraft,
+              disabled: isSaving || loading || !hasDraftContent(),
+            },
+            {
+              id: "create-recipe",
+              icon: "check_circle",
+              label: loading ? "Creating recipe" : "Create recipe",
+              onClick: handleSubmit,
+              disabled: loading,
+              tone: "primary",
+            },
+          ]}
+        />
 
         {recipeImage && (
-          <div className={styles.imageDisplay}>
-            <img 
-              src={recipeImage} 
-              alt="Recipe cover" 
-              className={styles.recipeImage}
+          <div className={styles.coverImageSection}>
+            <button
+              type="button"
+              className={`${styles.imageDisplay} ${styles.imageDisplayButton}`}
               onClick={() => fileInputRef.current?.click()}
-            />
+            >
+              <img
+                src={recipeImage}
+                alt="Recipe cover"
+                className={styles.recipeImage}
+              />
+            </button>
+
+            <div className={styles.coverActionsRow}>
+              <p className={styles.uploadPromptText}>Cover image</p>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className={styles.uploadPromptBtn}
+              >
+                Change cover
+              </button>
+            </div>
           </div>
         )}
 
@@ -422,7 +495,7 @@ export default function CreatePage() {
             <p className={styles.uploadPromptText}>Cover image *</p>
             <button
               type="button"
-              onClick={() => setShowPhotoStep(true)}
+              onClick={() => fileInputRef.current?.click()}
               className={styles.uploadPromptBtn}
             >
               Add cover
@@ -430,14 +503,20 @@ export default function CreatePage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit();
+        }} className={styles.form}>
           <RecipeBasicsForm
             title={formData.title}
             description={formData.description}
             servings={formData.servings}
+            isPublic={formData.isPublic}
+            publishDisabled={loading}
             onTitleChange={(value) => setFormData({ ...formData, title: value })}
             onDescriptionChange={(value) => setFormData({ ...formData, description: value })}
             onServingsChange={(value) => setFormData({ ...formData, servings: value })}
+            onPublishChange={handlePublishChange}
           />
 
           <IngredientsSection
@@ -469,11 +548,20 @@ export default function CreatePage() {
             onRemoveTag={removeTag}
           />
 
-          <div className={styles.submitContainer}>
-            <button type="submit" disabled={loading} className={styles.submitBtn}>
-              {loading ? "Submitting..." : "Create Recipe"}
-            </button>
-          </div>
+          <RecipeOriginSection
+            recipeOrigin={formData.recipeOrigin}
+            sharedSource={formData.sharedSource}
+            sharedSourceLink={formData.sharedSourceLink}
+            onRecipeOriginChange={(recipeOrigin: RecipeOrigin) => setFormData({ ...formData, recipeOrigin })}
+            onSharedSourceChange={(sharedSource) => setFormData({ ...formData, sharedSource })}
+            onSharedSourceLinkChange={(sharedSourceLink) => setFormData({ ...formData, sharedSourceLink })}
+          />
+
+          <TipsSection
+            tips={formData.tips}
+            onTipsChange={(tips) => setFormData({ ...formData, tips })}
+          />
+
         </form>
 
         <input

@@ -80,6 +80,23 @@
   min-width: 42px;
 }
 
+.searchButton {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--foreground);
+  box-shadow: none;
+}
+
+.searchButton span {
+  font-size: 28px;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 0 12px;
@@ -97,5 +114,14 @@
 
   .navLinks {
     display: none;
+  }
+
+  .searchButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .searchButton span {
+    font-size: 26px;
   }
 }

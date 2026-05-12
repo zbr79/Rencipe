@@ -6,6 +6,10 @@ export interface IRecipe extends Document {
   titlePinyin?: string; // Full pinyin of title
   titleFirstLetters?: string; // First-letter abbreviation of title
   description: string;
+  tips?: string;
+  recipeOrigin: "original" | "shared";
+  sharedSource?: string;
+  sharedSourceLink?: string;
   authorId: mongoose.Types.ObjectId;
   image?: string; // Cloudinary image URL
   component: boolean; // Can be used as a component in meal prep
@@ -46,6 +50,23 @@ const RecipeSchema = new Schema<IRecipe>(
     titlePinyin: String, // Auto-generated full pinyin
     titleFirstLetters: String, // Auto-generated first-letter abbreviation
     description: { type: String, required: true, trim: true },
+    tips: { type: String, trim: true },
+    recipeOrigin: {
+      type: String,
+      enum: ["original", "shared"],
+      default: "original",
+    },
+    sharedSource: {
+      type: String,
+      trim: true,
+      required(this: IRecipe) {
+        return this.recipeOrigin === "shared";
+      },
+    },
+    sharedSourceLink: {
+      type: String,
+      trim: true,
+    },
     authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     image: String,
     component: { type: Boolean, default: false }, // Can be used as a component in meal prep

@@ -4,10 +4,10 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { CreateFormProvider } from './contexts/CreateFormContext';
 import { SavedProvider } from './contexts/SavedContext';
 import TopBar from './components/TopBar';
-import GlobalSearchBar from './components/GlobalSearchBar';
 import BottomNav from './components/BottomNav';
 import CreateFormModal from './components/CreateFormModal';
 import AuthGate from './components/AuthGate';
+import ConfirmDialogProvider from './components/ConfirmDialogProvider';
 import ToastProvider from './components/toast/ToastProvider';
 import './globals.css';
 
@@ -36,15 +36,16 @@ export default function RootLayout({
         <ThemeProvider>
           <ToastProvider />
           <SavedProvider>
-            <CreateFormProvider>
-              <AuthGate>
-                <TopBar />
-                <GlobalSearchBar />
-                {children}
-                <BottomNav />
-                <CreateFormModal />
-              </AuthGate>
-            </CreateFormProvider>
+            <ConfirmDialogProvider>
+              <CreateFormProvider>
+                <AuthGate>
+                  <TopBar />
+                  {children}
+                  <BottomNav />
+                  <CreateFormModal />
+                </AuthGate>
+              </CreateFormProvider>
+            </ConfirmDialogProvider>
           </SavedProvider>
         </ThemeProvider>
       </body>

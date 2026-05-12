@@ -14,6 +14,7 @@ import styles from "./page.module.css";
 type MealType = "breakfast" | "lunch" | "dinner";
 type MealEntryKind = "mealPlan" | "meal";
 type RecipeSource = "plan" | "website" | "saved";
+type IngredientViewMode = "combined" | "byRecipe";
 
 interface Ingredient {
   name: string;
@@ -199,6 +200,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
   const [pickerOpen, setPickerOpen] = useState(false);
   const [recipeSource, setRecipeSource] = useState<RecipeSource>("website");
   const [recipeSearch, setRecipeSearch] = useState("");
+  const [ingredientViewMode, setIngredientViewMode] = useState<IngredientViewMode>("combined");
   const [settings, setSettings] = useState({
     name: "",
     peopleCount: 1,
@@ -280,6 +282,21 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     });
 
     return Array.from(ingredients.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [recipesInPlan]);
+
+  const ingredientsByRecipe = useMemo(() => {
+    return recipesInPlan
+      .map((recipe) => ({
+        recipeId: getRecipeId(recipe),
+        recipeTitle: recipe.title,
+        ingredients: [...(recipe.mainIngredients || []), ...(recipe.seasonings || [])]
+          .filter((ingredient) => ingredient.name.trim() || ingredient.quantity.trim())
+          .map((ingredient) => ({
+            name: ingredient.name.trim() || "Unnamed ingredient",
+            quantity: ingredient.quantity.trim() || "As needed",
+          })),
+      }))
+      .filter((recipeGroup) => recipeGroup.ingredients.length > 0);
   }, [recipesInPlan]);
 
   const sourceRecipes = useMemo(() => {
@@ -536,6 +553,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
         ariaLabel={isMeal ? "Meal actions" : "Meal plan actions"}
         toggleOpenLabel={isMeal ? "Open meal actions" : "Open meal plan actions"}
         toggleCloseLabel={isMeal ? "Minimize meal actions" : "Minimize meal plan actions"}
+        mobilePlacement={isMeal ? "middle-right" : "bottom-right"}
         actions={[
           {
             id: "save",
@@ -722,18 +740,60 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
 
       {ingredientList.length > 0 && (
         <section className={styles.ingredientsPanel}>
-          <h2>Ingredient List</h2>
-          <div className={styles.ingredientList}>
-            {ingredientList.map((ingredient) => (
-              <div key={ingredient.name} className={styles.ingredientItem}>
-                <div className={styles.ingredientSummary}>
-                  <strong>{ingredient.name}</strong>
-                  <span className={styles.ingredientQuantity}>{ingredient.quantities.join(" + ") || "As needed"}</span>
-                </div>
-                <small className={styles.ingredientSources}>{ingredient.sources.join(", ")}</small>
-              </div>
-            ))}
+          <div className={styles.ingredientsHeader}>
+            <h2>Ingredient List</h2>
+            <div className={styles.ingredientModeTabs} role="tablist" aria-label="Ingredient list mode">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={ingredientViewMode === "combined"}
+                className={ingredientViewMode === "combined" ? styles.ingredientModeTabActive : styles.ingredientModeTab}
+                onClick={() => setIngredientViewMode("combined")}
+              >
+                Combined
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={ingredientViewMode === "byRecipe"}
+                className={ingredientViewMode === "byRecipe" ? styles.ingredientModeTabActive : styles.ingredientModeTab}
+                onClick={() => setIngredientViewMode("byRecipe")}
+              >
+                By Recipe
+              </button>
+            </div>
           </div>
+
+          {ingredientViewMode === "combined" ? (
+            <div className={styles.ingredientList}>
+              {ingredientList.map((ingredient) => (
+                <div key={ingredient.name} className={styles.ingredientItem}>
+                  <div className={styles.ingredientSummary}>
+                    <strong>{ingredient.name}</strong>
+                    <span className={styles.ingredientQuantity}>{ingredient.quantities.join(" + ") || "As needed"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.recipeIngredientGroups}>
+              {ingredientsByRecipe.map((recipeGroup) => (
+                <section key={recipeGroup.recipeId || recipeGroup.recipeTitle} className={styles.recipeIngredientGroup}>
+                  <h3>{recipeGroup.recipeTitle}</h3>
+                  <div className={styles.ingredientList}>
+                    {recipeGroup.ingredients.map((ingredient, index) => (
+                      <div key={`${recipeGroup.recipeId || recipeGroup.recipeTitle}-${ingredient.name}-${index}`} className={styles.ingredientItem}>
+                        <div className={styles.ingredientSummary}>
+                          <strong>{ingredient.name}</strong>
+                          <span className={styles.ingredientQuantity}>{ingredient.quantity}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
         </section>
       )}
     </main>

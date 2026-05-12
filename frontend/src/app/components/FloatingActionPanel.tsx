@@ -20,6 +20,7 @@ interface FloatingActionPanelProps {
   toggleOpenLabel?: string;
   toggleCloseLabel?: string;
   initiallyCollapsed?: boolean;
+  mobilePlacement?: "bottom-right" | "middle-right";
 }
 
 export default function FloatingActionPanel({
@@ -28,11 +29,15 @@ export default function FloatingActionPanel({
   toggleOpenLabel = "Open actions",
   toggleCloseLabel = "Minimize actions",
   initiallyCollapsed = false,
+  mobilePlacement = "bottom-right",
 }: FloatingActionPanelProps) {
   const [collapsed, setCollapsed] = useState(initiallyCollapsed);
 
   return (
-    <aside className={`${styles.floatingPanel} ${collapsed ? styles.floatingPanelCollapsed : ""}`} aria-label={ariaLabel}>
+    <aside
+      className={`${styles.floatingPanel} ${mobilePlacement === "middle-right" ? styles.floatingPanelMobileMiddle : ""} ${collapsed ? styles.floatingPanelCollapsed : ""}`}
+      aria-label={ariaLabel}
+    >
       <button
         type="button"
         className={styles.panelToggle}

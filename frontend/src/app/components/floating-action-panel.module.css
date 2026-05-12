@@ -18,9 +18,8 @@
   width: 24px;
   height: 42px;
   flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   border: 1px solid var(--border);
   border-right: 0;
   border-radius: 8px 0 0 8px;
@@ -30,16 +29,21 @@
 }
 
 .panelToggle span {
+  display: block;
   font-size: 19px;
+  line-height: 1;
 }
 
 .panelActions {
   display: grid;
   gap: 6px;
-  min-width: 48px;
-  padding: 6px;
+  min-width: 44px;
+  width: fit-content;
+  justify-items: end;
+  padding: 6px 0 6px 6px;
   border: 1px solid var(--border);
-  border-left: 0;
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
   background: color-mix(in srgb, var(--card-bg) 96%, transparent);
   box-shadow: var(--shadow-md);
   backdrop-filter: blur(16px);
@@ -52,7 +56,7 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 8px 0 0 8px;
   background: var(--card-bg);
   color: var(--foreground);
 }
@@ -74,16 +78,29 @@
 }
 
 .panelButton:disabled {
-  cursor: wait;
-  opacity: 0.7;
+  cursor: not-allowed;
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--border) 92%, var(--background));
+  background: color-mix(in srgb, var(--hover-bg) 82%, var(--card-bg));
+  box-shadow: none;
+}
+
+.panelButton:disabled,
+.panelButton:disabled span {
+  color: var(--text-muted);
+}
+
+.panelButtonPrimary:disabled {
+  background: color-mix(in srgb, var(--hover-bg) 88%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--border) 92%, var(--background));
 }
 
 @media (max-width: 600px) {
   .floatingPanel {
     top: auto;
-    right: 8px;
+    right: 0;
     bottom: calc(88px + env(safe-area-inset-bottom));
-    align-items: flex-end;
+    align-items: center;
     transform: translateX(0);
   }
 
@@ -91,9 +108,21 @@
     transform: translateX(calc(100% - 24px));
   }
 
+  .floatingPanelMobileMiddle {
+    top: 50%;
+    right: 0;
+    bottom: auto;
+    align-items: center;
+    transform: translateX(0) translateY(-50%);
+  }
+
+  .floatingPanelMobileMiddle.floatingPanelCollapsed {
+    transform: translateX(calc(100% - 24px)) translateY(-50%);
+  }
+
   .panelActions {
-    min-width: 42px;
-    padding: 4px;
+    min-width: 38px;
+    padding: 4px 0 4px 4px;
   }
 
   .panelButton {

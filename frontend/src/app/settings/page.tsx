@@ -1,57 +1,32 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AccountAvatar from "../components/AccountAvatar";
-import { toastError, toastSuccess } from "../components/toast/toast";
+import { toastSuccess } from "../components/toast/toast";
 import { useTheme } from "../contexts/ThemeContext";
 import { getAccountDisplayName } from "../utils/accountAvatar";
-import { authFetch, clearAuthSession, readAuthSession, writeAuthSession, type AuthSession } from "../utils/authSession";
+import { authFetch, readAuthSession, writeAuthSession, type AuthSession } from "../utils/authSession";
 import styles from "./page.module.css";
 
 const languageOptions = [{ value: "en", label: "English" }];
 
 const shortcutItems = [
   { label: "Drafts", icon: "description", href: "/drafts" },
-  { label: "Meal Preferences", icon: "tune", message: "Meal preferences ready" },
+  { label: "My Recipes", icon: "library_books", href: "/profile" },
+  { label: "Scheduled Plans", icon: "calendar_month", href: "/weekly-plans" },
   { label: "Notifications", icon: "notifications", message: "Notifications ready" },
-  { label: "Privacy", icon: "lock", message: "Privacy controls ready" },
 ];
-
-interface ProfileForm {
-  displayName: string;
-  email: string;
-  phone: string;
-  currentPassword: string;
-  newPassword: string;
-}
-
-type ProfilePanel = "profile" | "password" | null;
 
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [session, setSession] = useState<AuthSession | null>(null);
-  const [profilePanel, setProfilePanel] = useState<ProfilePanel>(null);
   const [languageOpen, setLanguageOpen] = useState(false);
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [profileForm, setProfileForm] = useState<ProfileForm>({
-    displayName: "",
-    email: "",
-    phone: "",
-    currentPassword: "",
-    newPassword: "",
-  });
 
   useEffect(() => {
     const nextSession = readAuthSession();
     setSession(nextSession);
-    setProfileForm((current) => ({
-      ...current,
-      displayName: nextSession?.user.displayName || "",
-      email: nextSession?.user.email || "",
-      phone: nextSession?.user.phone || "",
-    }));
 
     if (!nextSession) return;
 
@@ -64,12 +39,6 @@ export default function SettingsPage() {
         const refreshedSession = { ...nextSession, user: data.user } satisfies AuthSession;
         writeAuthSession(refreshedSession);
         setSession(refreshedSession);
-        setProfileForm((current) => ({
-          ...current,
-          displayName: data.user.displayName || "",
-          email: data.user.email || "",
-          phone: data.user.phone || "",
-        }));
       })
       .catch(() => undefined);
 
@@ -77,15 +46,6 @@ export default function SettingsPage() {
       ignore = true;
     };
   }, []);
-
-  const updateProfileField = (field: keyof ProfileForm, value: string) => {
-    setProfileForm((current) => ({ ...current, [field]: value }));
-  };
-
-  const handleSignOut = () => {
-    clearAuthSession();
-    router.replace("/login");
-  };
 
   const handleShortcut = (item: typeof shortcutItems[number]) => {
     if (item.href) {
@@ -96,112 +56,19 @@ export default function SettingsPage() {
     toastSuccess(item.message || `${item.label} ready`);
   };
 
-  const handleProfileSave = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSavingProfile(true);
-
-    try {
-      const response = await authFetch("/api/auth/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profileForm),
-      });
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error || "Failed to update profile");
-
-      const nextSession = {
-        token: data.token,
-        user: data.user,
-        signedInAt: session?.signedInAt || new Date().toISOString(),
-      } satisfies AuthSession;
-
-      writeAuthSession(nextSession);
-      setSession(nextSession);
-      setProfileForm((current) => ({ ...current, currentPassword: "", newPassword: "" }));
-      toastSuccess("Profile updated");
-    } catch (error: any) {
-      toastError(error.message || "Failed to update profile");
-    } finally {
-      setSavingProfile(false);
-    }
-  };
-
   return (
     <div className={styles.container}>
       <div className={styles.group}>
-        <div className={styles.profileCard}>
-          <AccountAvatar account={session?.user} size={52} />
-          <div>
-            <h1>{getAccountDisplayName(session?.user)}</h1>
-            <p>{session?.user.email || session?.user.username || "Current account"}</p>
-          </div>
-        </div>
-
-        <div className={styles.profileActionGrid} aria-label="Profile actions">
-          <button
-            type="button"
-            className={`${styles.profileActionButton} ${profilePanel === "profile" ? styles.profileActionButtonActive : ""}`}
-            onClick={() => setProfilePanel((value) => value === "profile" ? null : "profile")}
-            aria-expanded={profilePanel === "profile"}
-          >
-            <span className="material-symbols-outlined">manage_accounts</span>
-            <span>Edit Profile</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.profileActionButton} ${profilePanel === "password" ? styles.profileActionButtonActive : ""}`}
-            onClick={() => setProfilePanel((value) => value === "password" ? null : "password")}
-            aria-expanded={profilePanel === "password"}
-          >
-            <span className="material-symbols-outlined">password</span>
-            <span>Change Password</span>
-          </button>
-          <button type="button" className={`${styles.profileActionButton} ${styles.signOutActionButton}`} onClick={handleSignOut}>
-            <span className="material-symbols-outlined">logout</span>
-            <span>Sign Out</span>
-          </button>
-        </div>
-
-        {profilePanel === "profile" && (
-          <form className={styles.profileEditor} onSubmit={handleProfileSave}>
-            <label>
-              <span>Display name</span>
-              <input value={profileForm.displayName} onChange={(event) => updateProfileField("displayName", event.target.value)} />
-            </label>
-            <label>
-              <span>Email</span>
-              <input type="email" value={profileForm.email} onChange={(event) => updateProfileField("email", event.target.value)} />
-            </label>
-            <label>
-              <span>Phone</span>
-              <input value={profileForm.phone} onChange={(event) => updateProfileField("phone", event.target.value)} />
-            </label>
-            <div className={styles.profileActions}>
-              <button type="submit" className={styles.primaryButton} disabled={savingProfile}>
-                {savingProfile ? "Saving" : "Save profile"}
-              </button>
-            </div>
-          </form>
-        )}
-
-        {profilePanel === "password" && (
-          <form className={styles.profileEditor} onSubmit={handleProfileSave}>
-            <label>
-              <span>Current password</span>
-              <input type="password" value={profileForm.currentPassword} onChange={(event) => updateProfileField("currentPassword", event.target.value)} autoComplete="current-password" />
-            </label>
-            <label>
-              <span>New password</span>
-              <input type="password" value={profileForm.newPassword} onChange={(event) => updateProfileField("newPassword", event.target.value)} autoComplete="new-password" />
-            </label>
-            <div className={styles.profileActions}>
-              <button type="submit" className={styles.primaryButton} disabled={savingProfile}>
-                {savingProfile ? "Saving" : "Save password"}
-              </button>
-            </div>
-          </form>
-        )}
+        <button type="button" className={styles.accountSummaryButton} onClick={() => router.push("/settings/account")}>
+          <span className={styles.accountSummaryMain}>
+            <AccountAvatar account={session?.user} size={52} />
+            <span className={styles.accountSummaryText}>
+              <span className={styles.accountSummaryTitle}>{getAccountDisplayName(session?.user)}</span>
+              <span className={styles.accountSummarySubtitle}>{session?.user.email || session?.user.username || "Account settings"}</span>
+            </span>
+          </span>
+          <span className={`material-symbols-outlined ${styles.accountSummaryChevron}`}>chevron_right</span>
+        </button>
       </div>
 
       <div className={styles.shortcutGrid} aria-label="Account shortcuts">

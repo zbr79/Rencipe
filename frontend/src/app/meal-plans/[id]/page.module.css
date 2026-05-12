@@ -406,10 +406,65 @@
   padding: 14px;
 }
 
+.ingredientsHeader {
+  display: grid;
+  gap: 10px;
+}
+
+.ingredientModeTabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+}
+
+.ingredientModeTab,
+.ingredientModeTabActive {
+  min-height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ingredientModeTabActive {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
 .ingredientList {
   display: grid;
   gap: 8px;
   margin-top: 12px;
+}
+
+.recipeIngredientGroups {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.recipeIngredientGroup {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+}
+
+.recipeIngredientGroup h3 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.recipeIngredientGroup .ingredientList {
+  margin-top: 10px;
 }
 
 .ingredientItem {
@@ -443,13 +498,6 @@
   line-height: 1.45;
   text-align: right;
   white-space: nowrap;
-}
-
-.ingredientSources {
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.35;
 }
 
 .loading,
@@ -626,6 +674,14 @@
 
   .mealList {
     grid-template-columns: 1fr;
+  }
+
+  .ingredientModeTabs {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .recipeIngredientGroup {
+    padding: 10px;
   }
 
   .mealActionButton {

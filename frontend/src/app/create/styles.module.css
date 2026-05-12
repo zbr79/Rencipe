@@ -45,12 +45,22 @@
 .imageDisplay {
   width: min(100%, 560px);
   aspect-ratio: 4 / 3;
-  margin-bottom: 18px;
+  margin-bottom: 0;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: var(--shadow-sm);
   background: var(--hover-bg);
+}
+
+.imageDisplayButton {
+  display: block;
+  padding: 0;
+  cursor: pointer;
+}
+
+.imageDisplayButton:disabled {
+  cursor: progress;
 }
 
 .recipeImage {
@@ -61,27 +71,34 @@
   cursor: pointer;
 }
 
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
+.coverImageSection {
+  width: 100%;
+  margin-bottom: 0;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.coverActionsRow {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: rgba(23, 32, 25, 0.55);
-  backdrop-filter: blur(8px);
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .uploadPrompt {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 18px;
-  padding: 18px;
-  background: var(--card-bg);
-  border: 1px dashed var(--border);
-  border-radius: 8px;
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 0;
+  padding: 18px 0;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
 }
 
 .uploadPromptText {
@@ -100,24 +117,6 @@
   color: var(--primary);
   font-size: 13px;
   font-weight: 800;
-}
-
-.saveDraftBtn {
-  min-height: 38px;
-  padding: 0 14px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--card-bg);
-  color: var(--primary);
-  font-size: 13px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.draftToolbar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 14px;
 }
 
 /* Messages */
@@ -183,43 +182,6 @@
   }
 }
 
-/* Submit Button */
-.submitBtn {
-  min-height: 42px;
-  padding: 0 18px;
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.submitBtn:hover:not(:disabled) {
-  background-color: var(--primary-hover);
-  transform: none;
-  box-shadow: var(--shadow-md);
-}
-
-.submitBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Submit Container */
-.submitContainer {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
-  padding: 0 0 20px 0;
-}
-
 /* Responsive */
 @media (max-width: 600px) {
   .container {
@@ -243,21 +205,9 @@
     padding: 18px;
   }
 
+  .coverImageSection,
   .uploadPrompt {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .draftToolbar {
-    justify-content: stretch;
-  }
-
-  .saveDraftBtn {
-    width: 100%;
-  }
-
-  .submitBtn {
-    width: 100%;
+    padding: 16px 0;
   }
 }
 
@@ -268,9 +218,5 @@
 
   .header h1 {
     font-size: 20px;
-  }
-
-  .submitBtn {
-    width: 100%;
   }
 }

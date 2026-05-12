@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./drafts.module.css";
+import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import { getCurrentUserId } from "../utils/authSession";
 
 interface Draft {
@@ -23,6 +24,7 @@ export default function DraftsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const router = useRouter();
+  const { confirm, notify } = useConfirmDialog();
 
   useEffect(() => {
     fetchDrafts();
@@ -51,7 +53,12 @@ export default function DraftsPage() {
   };
 
   const handleDeleteDraft = async (draftId: string) => {
-    if (!confirm("Delete this draft?")) return;
+    if (!(await confirm({
+      title: "Delete draft",
+      message: "Delete this draft?",
+      intent: "danger",
+      confirmText: "Delete",
+    }))) return;
     try {
       const userId = getCurrentUserId();
       if (!userId) throw new Error("Sign in before deleting drafts");
@@ -61,7 +68,11 @@ export default function DraftsPage() {
       if (!response.ok) throw new Error("Failed to delete draft");
       setDrafts(drafts.filter((d) => d._id !== draftId));
     } catch (err: any) {
-      alert("Delete failed: " + err.message);
+      await notify({
+        title: "Delete failed",
+        message: `Delete failed: ${err.message}`,
+        intent: "danger",
+      });
     }
   };
 
@@ -84,7 +95,11 @@ export default function DraftsPage() {
       setDrafts(drafts.map((d) => (d._id === draftId ? { ...d, name: editingName } : d)));
       setEditingId(null);
     } catch (err: any) {
-      alert("Rename failed: " + err.message);
+      await notify({
+        title: "Rename failed",
+        message: `Rename failed: ${err.message}`,
+        intent: "danger",
+      });
     }
   };
 

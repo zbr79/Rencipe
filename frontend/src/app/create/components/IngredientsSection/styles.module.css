@@ -142,7 +142,7 @@
 
 @media (max-width: 480px) {
   .section {
-    padding: 16px;
+    padding: 16px 0;
   }
 
   .ingredientRow {

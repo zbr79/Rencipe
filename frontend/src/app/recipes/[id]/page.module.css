@@ -264,7 +264,8 @@
 }
 
 .ingredientsSection,
-.directionsSection {
+.directionsSection,
+.tipsSection {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -276,11 +277,23 @@
   min-width: 0;
 }
 
+.tipsSection {
+  margin-top: 20px;
+}
+
 .sectionTitle {
   margin: 0 0 16px;
   color: var(--foreground);
   font-size: 18px;
   font-weight: 900;
+}
+
+.tipsText {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
 }
 
 .ingredientsList {

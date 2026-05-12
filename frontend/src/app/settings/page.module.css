@@ -18,6 +18,91 @@
   padding: 18px;
 }
 
+.accountSummaryButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  text-align: left;
+}
+
+.accountSummaryMain {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.accountSummaryText {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.accountSummaryTitle {
+  color: var(--foreground);
+  font-size: 20px;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.accountSummarySubtitle {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountSummaryChevron {
+  flex: none;
+  color: var(--text-secondary);
+  font-size: 24px;
+}
+
+.backLink {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.backLink span {
+  font-size: 18px;
+}
+
+.accountPageHeader {
+  margin-bottom: 16px;
+}
+
+.accountPageHeader h1 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.accountPageHeader p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .profileCard {
   display: flex;
   align-items: center;
@@ -92,6 +177,33 @@
   font-weight: 800;
 }
 
+.accountActionList {
+  padding-top: 8px;
+}
+
+.accountDetailGroup {
+  padding: 0 16px;
+}
+
+.accountListButton {
+  text-decoration: none;
+}
+
+.accountListChevron {
+  flex: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+}
+
+.accountListButtonDanger {
+  color: var(--error);
+}
+
+.accountListButtonDanger .settingLabel > span:first-child,
+.accountListButtonDanger .settingLabel > span:last-child {
+  color: var(--error);
+}
+
 .settingItem,
 .settingItemButton {
   width: 100%;
@@ -125,22 +237,113 @@
   flex: 1;
 }
 
-.settingLabel span:first-child {
+.settingLabel > span:first-child {
   color: var(--primary);
   font-size: 21px;
 }
 
-.settingLabel span:last-child {
+.settingLabel > span:last-child {
   min-width: 0;
   color: var(--foreground);
   font-size: 14px;
   font-weight: 850;
 }
 
+.settingTextStack {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  flex: 1;
+}
+
+.settingItemTitle {
+  min-width: 0;
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.settingItemValue {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountHiddenInput {
+  display: none;
+}
+
+.accountRowButton {
+  text-decoration: none;
+}
+
+.accountRowButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.accountRowLabel {
+  min-width: 0;
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.accountRowValueWrap {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.accountRowValue {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 750;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountRowAvatar {
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06), var(--shadow-sm);
+}
+
+.accountCompactRow {
+  min-height: 42px;
+  padding: 10px 0;
+}
+
+.accountRowButtonDanger .accountRowLabel,
+.accountRowButtonDanger .accountRowValue {
+  color: var(--error);
+}
+
+.accountCenteredDangerRow {
+  justify-content: center;
+}
+
+.accountCenteredDangerText {
+  color: var(--error);
+  font-size: 15px;
+  font-weight: 900;
+}
+
 .profileEditor {
   display: grid;
   gap: 12px;
   padding: 12px 0 0;
+}
+
+.profileEditorCompact {
+  padding-top: 0;
 }
 
 .profileEditor label {
@@ -171,6 +374,7 @@
 }
 
 .primaryButton,
+.secondaryButton,
 .shortcutButton,
 .customSelectButton,
 .customSelectOption,
@@ -189,6 +393,18 @@
 }
 
 .primaryButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.secondaryButton {
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  padding: 0 14px;
+}
+
+.secondaryButton:disabled {
   cursor: wait;
   opacity: 0.72;
 }
@@ -299,6 +515,69 @@
   border-color: color-mix(in srgb, var(--primary) 22%, var(--border));
 }
 
+.passwordModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.passwordModalCard {
+  width: min(420px, 100%);
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-xl);
+}
+
+.passwordModalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.passwordModalHeader h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 22px;
+  line-height: 1.05;
+  font-weight: 950;
+}
+
+.passwordModalHeader p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.passwordModalClose {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+}
+
+.passwordModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 2px;
+}
+
 @media (max-width: 640px) {
   .container {
     padding: 16px 12px 96px;
@@ -308,6 +587,14 @@
     padding: 14px;
   }
 
+  .accountSummaryTitle {
+    font-size: 18px;
+  }
+
+  .accountPageHeader h1 {
+    font-size: 24px;
+  }
+
   .profileActionGrid,
   .shortcutGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -315,6 +602,14 @@
 
   .signOutActionButton {
     grid-column: 1 / -1;
+  }
+
+  .passwordModalCard {
+    padding: 16px;
+  }
+
+  .passwordModalActions {
+    flex-direction: row;
   }
 
   .shortcutButton:nth-child(2) {

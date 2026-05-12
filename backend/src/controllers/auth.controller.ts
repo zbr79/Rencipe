@@ -1,13 +1,21 @@
 import { Request, Response } from "express";
+import { v2 as cloudinary } from "cloudinary";
 import User from "../models/User";
 import { hashPassword, verifyPassword } from "../utils/password";
 import { getAuthUser, signAuthToken } from "../middleware/auth";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 function pickUser(user: any) {
   return {
     id: String(user._id),
     username: user.username,
     displayName: user.displayName,
+    avatarUrl: user.avatarUrl || "",
     email: user.email || "",
     phone: user.phone || "",
     role: user.role,
@@ -55,14 +63,16 @@ export async function updateProfile(req: Request, res: Response) {
     if (!user) return res.status(401).json({ error: "Invalid session" });
 
     const displayName = cleanText(req.body.displayName, user.displayName);
-    const email = cleanText(req.body.email);
-    const phone = cleanText(req.body.phone);
+    const avatarUrl = cleanText(req.body.avatarUrl, user.avatarUrl);
+    const email = cleanText(req.body.email, user.email);
+    const phone = cleanText(req.body.phone, user.phone);
     const currentPassword = String(req.body.currentPassword || "");
     const newPassword = String(req.body.newPassword || "");
 
     if (!displayName) return res.status(400).json({ error: "display name is required" });
 
     user.displayName = displayName;
+    user.avatarUrl = avatarUrl;
     user.email = email;
     user.phone = phone;
 
@@ -84,5 +94,47 @@ export async function updateProfile(req: Request, res: Response) {
     res.json({ token, user: nextUser });
   } catch (err: any) {
     res.status(500).json({ error: err?.message || "Failed to update profile" });
+  }
+}
+
+export async function uploadAvatar(req: Request, res: Response) {
+  try {
+    const authUser = getAuthUser(req);
+    if (!authUser) return res.status(401).json({ error: "Authentication required" });
+
+    const user = await User.findById(authUser.id);
+    if (!user) return res.status(401).json({ error: "Invalid session" });
+
+    const file = (req as any).file;
+    if (!file) return res.status(400).json({ error: "image file is required" });
+
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: `rencipe/users/${authUser.id}/avatar`,
+        resource_type: "image",
+        width: 256,
+        height: 256,
+        crop: "fill",
+        gravity: "auto",
+        quality: "auto",
+        fetch_format: "auto",
+      },
+      async (error: any, result: any) => {
+        if (error || !result?.secure_url) {
+          return res.status(500).json({ error: "Failed to upload avatar" });
+        }
+
+        user.avatarUrl = result.secure_url;
+        await user.save();
+
+        const nextUser = pickUser(user);
+        const token = signAuthToken(nextUser);
+        res.json({ token, user: nextUser });
+      }
+    );
+
+    uploadStream.end(file.buffer);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || "Failed to upload avatar" });
   }
 }

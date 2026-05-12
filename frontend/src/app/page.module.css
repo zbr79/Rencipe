@@ -14,17 +14,19 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: var(--shadow-sm);
+  --hero-height: 270px;
 }
 
 .dashboardContent {
   position: relative;
-  min-height: 320px;
+  min-height: var(--hero-height);
   overflow: hidden;
   background-color: var(--hover-bg);
+  touch-action: pan-y;
 }
 
 .carouselTrack {
-  min-height: 320px;
+  min-height: var(--hero-height);
   display: flex;
   transition: transform 520ms ease;
   will-change: transform;
@@ -34,10 +36,10 @@
 .slideFallback {
   flex: 0 0 100%;
   position: relative;
-  min-height: 320px;
+  min-height: var(--hero-height);
   display: flex;
   align-items: flex-end;
-  padding: 28px;
+  padding: 20px 22px;
   overflow: hidden;
   scroll-snap-align: start;
   color: white;
@@ -71,9 +73,9 @@
 .slideContent {
   position: relative;
   z-index: 1;
-  max-width: 650px;
+  max-width: 560px;
   color: white;
-  padding-bottom: 34px;
+  padding-bottom: 20px;
   animation: slideTitleIn 520ms ease both;
 }
 
@@ -88,9 +90,9 @@
 .dashboardContent h1,
 .slideFallback h1 {
   margin: 0;
-  max-width: 620px;
-  font-size: clamp(34px, 5vw, 64px);
-  line-height: 0.95;
+  max-width: 540px;
+  font-size: clamp(26px, 4.1vw, 48px);
+  line-height: 0.98;
   font-weight: 900;
   color: inherit;
 }
@@ -111,45 +113,12 @@
   border: none;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.46);
+  transition: background-color 0.2s ease, opacity 0.2s ease;
 }
 
 .slideDots .slideDotActive {
-  width: 22px;
   background: white;
-}
-
-.slideArrow {
-  position: absolute;
-  top: 50%;
-  z-index: 2;
-  width: 66px;
-  height: 46px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: white;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
-  transform: translateY(-50%);
-}
-
-.slideArrow span {
-  font-size: 28px;
-}
-
-.slideArrowLeft {
-  left: 14px;
-}
-
-.slideArrowRight {
-  right: 14px;
-}
-
-.slideArrow:hover {
-  background: rgba(0, 0, 0, 0.22);
-  transform: translateY(-50%) scale(1.03);
+  opacity: 1;
 }
 
 @keyframes slideImageIn {
@@ -439,40 +408,24 @@
     padding: 12px 12px 112px;
   }
 
-  .dashboardContent,
-  .carouselTrack,
-  .slideCard,
-  .slideFallback {
-    min-height: 260px;
+  .dashboardContent {
+    --hero-height: 218px;
   }
 
   .slideCard,
   .slideFallback {
-    padding: 20px;
+    padding: 16px;
   }
 
   .dashboardContent h1,
   .slideFallback h1 {
-    font-size: 34px;
-    line-height: 1.02;
+    font-size: 28px;
+    line-height: 1.04;
   }
 
   .slideDots {
-    left: 20px;
-    bottom: 14px;
-  }
-
-  .slideArrow {
-    width: 62px;
-    height: 40px;
-  }
-
-  .slideArrowLeft {
-    left: 10px;
-  }
-
-  .slideArrowRight {
-    right: 10px;
+    left: 16px;
+    bottom: 12px;
   }
 
   .recipeGrid {
@@ -482,21 +435,18 @@
 }
 
 @media (max-width: 520px) {
-  .dashboardContent,
-  .carouselTrack,
-  .slideCard,
-  .slideFallback {
-    min-height: 246px;
+  .dashboardContent {
+    --hero-height: 206px;
   }
 
   .slideCard,
   .slideFallback {
-    padding: 18px;
+    padding: 14px;
   }
 
   .dashboardContent h1,
   .slideFallback h1 {
-    font-size: 32px;
+    font-size: 24px;
   }
 
   .cardTitle {

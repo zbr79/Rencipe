@@ -54,7 +54,3 @@ Features that need work before the Phase 1 demo:
 6. Decide and document the keto scope: add a small visible feature or mark it as future work.
 7. Test desktop and mobile responsive layouts for the demo paths.
 8. Finish report sections that are marked incomplete or not started: problem statement, significance, proposed approaches, results, non-functional requirements, use cases, architecture, implementation, testing, summary, and appendix.
-
-### Demo Readiness Reporting
-
-Every development report should end with a short table that names what was completed in the round and what still remains for the Phase 1 demo.

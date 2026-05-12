@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useSaved } from "../contexts/SavedContext";
 import AccountAvatar from "../components/AccountAvatar";
 import styles from "../search/page.module.css";
@@ -54,7 +53,6 @@ function iconForTag(tag: string) {
 }
 
 export default function CategoriesPage() {
-  const router = useRouter();
   const { isSaved, addFavorite, removeFavorite, fetchSaved } = useSaved();
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,13 +105,6 @@ export default function CategoriesPage() {
 
   return (
     <main className={styles.page}>
-      <header className={`${styles.searchHeader} ${styles.categorySearchHeader}`}>
-        <button type="button" className={`${styles.searchBoxButton} ${styles.categorySearchButton}`} onClick={() => router.push("/search")}>
-          <span className={`material-symbols-rounded ${styles.searchIcon}`}>search</span>
-          <span>Search recipes</span>
-        </button>
-      </header>
-
       {error && <div className={styles.error}>Error: {error}</div>}
 
       <div className={styles.visibilityTabs} role="tablist" aria-label="Recipe visibility">

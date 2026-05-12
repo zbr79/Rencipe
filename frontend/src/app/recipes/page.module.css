@@ -17,6 +17,14 @@
   box-shadow: var(--shadow-sm);
 }
 
+.headerActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .kicker {
   margin: 0 0 8px;
   color: var(--secondary);
@@ -518,6 +526,10 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+  .headerActions {
+    width: 100%;
+  }
 
 @media (max-width: 820px) {
   .container {

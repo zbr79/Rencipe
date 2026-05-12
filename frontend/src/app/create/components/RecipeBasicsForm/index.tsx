@@ -4,36 +4,64 @@ interface RecipeBasicsFormProps {
   title: string;
   description: string;
   servings: number;
+  isPublic: boolean;
+  publishDisabled?: boolean;
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onServingsChange: (value: number) => void;
+  onPublishChange: (checked: boolean) => void | Promise<void>;
 }
 
 export default function RecipeBasicsForm({
   title,
   description,
   servings,
+  isPublic,
+  publishDisabled = false,
   onTitleChange,
   onDescriptionChange,
   onServingsChange,
+  onPublishChange,
 }: RecipeBasicsFormProps) {
   return (
     <>
       {/* Recipe Basics */}
       <section className={styles.section}>
-        <div className={styles.formGroup}>
-          <label htmlFor="title" className={styles.label}>
-            Recipe Name
+        <div className={styles.titleRow}>
+          <div className={`${styles.formGroup} ${styles.titleGroup}`}>
+            <label htmlFor="title" className={styles.label}>
+              Recipe Name
+            </label>
+            <input
+              id="title"
+              type="text"
+              placeholder="Enter recipe name..."
+              value={title}
+              onChange={(e) => onTitleChange(e.target.value)}
+              required
+              className={styles.input}
+            />
+          </div>
+
+          <label
+            className={`${styles.publishToggle} ${isPublic ? styles.publishToggleActive : ""} ${publishDisabled ? styles.publishToggleDisabled : ""}`}
+            htmlFor="publish-toggle"
+          >
+            <input
+              id="publish-toggle"
+              type="checkbox"
+              checked={isPublic}
+              disabled={publishDisabled}
+              onChange={(e) => {
+                void onPublishChange(e.target.checked);
+              }}
+              className={styles.publishCheckbox}
+            />
+            <span className={styles.publishSwitch} aria-hidden="true">
+              <span className={styles.publishKnob} />
+            </span>
+            <span className={styles.publishLabel}>Publish</span>
           </label>
-          <input
-            id="title"
-            type="text"
-            placeholder="Enter recipe name..."
-            value={title}
-            onChange={(e) => onTitleChange(e.target.value)}
-            required
-            className={styles.input}
-          />
         </div>
 
         <div className={styles.formGroup}>

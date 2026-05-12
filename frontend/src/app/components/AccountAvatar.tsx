@@ -10,6 +10,7 @@ interface AccountAvatarProps {
 
 export default function AccountAvatar({ account, size = 32, className = "" }: AccountAvatarProps) {
   const label = getAccountDisplayName(account);
+  const avatarUrl = account?.avatarUrl?.trim() || "";
   const style = {
     "--avatar-size": `${size}px`,
     "--avatar-bg": getAccountAvatarColor(account),
@@ -17,7 +18,7 @@ export default function AccountAvatar({ account, size = 32, className = "" }: Ac
 
   return (
     <span className={`${styles.avatar} ${className}`} style={style} aria-label={label} title={label}>
-      {getAccountInitial(account)}
+      {avatarUrl ? <img className={styles.image} src={avatarUrl} alt="" /> : getAccountInitial(account)}
     </span>
   );
 }

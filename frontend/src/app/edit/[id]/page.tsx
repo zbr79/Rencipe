@@ -5,10 +5,14 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "../styles.module.css";
 import FloatingActionPanel from "../../components/FloatingActionPanel";
+import { useConfirmDialog } from "../../components/ConfirmDialogProvider";
+import { toastSuccess } from "../../components/toast/toast";
 import RecipeBasicsForm from "../../create/components/RecipeBasicsForm";
 import IngredientsSection from "../../create/components/IngredientsSection";
 import StepsSection from "../../create/components/StepsSection";
 import TagsSection from "../../create/components/TagsSection";
+import RecipeOriginSection from "../../create/components/RecipeOriginSection";
+import TipsSection from "../../create/components/TipsSection";
 import { authFetch, getCurrentUser, type AuthUser } from "../../utils/authSession";
 
 interface Ingredient {
@@ -26,14 +30,42 @@ interface RecipeData {
   id: string;
   title: string;
   description: string;
+  tips: string;
+  recipeOrigin: "original" | "shared";
+  sharedSource: string;
+  sharedSourceLink: string;
   authorId: string;
   component: boolean;
+  isPublic: boolean;
   image?: string;
   mainIngredients: Ingredient[];
   seasonings: Ingredient[];
   steps: Step[];
   servings: number;
   tags: string[];
+}
+
+interface RecipeFormData {
+  title: string;
+  description: string;
+  tips: string;
+  authorId: string;
+  recipeOrigin: "original" | "shared";
+  sharedSource: string;
+  sharedSourceLink: string;
+  component: boolean;
+  isPublic: boolean;
+  mainIngredients: Ingredient[];
+  seasonings: Ingredient[];
+  steps: Step[];
+  servings: number;
+  tags: string[];
+}
+
+const DEFAULT_INGREDIENT_ROWS = 3;
+
+function createEmptyIngredients(count = DEFAULT_INGREDIENT_ROWS): Ingredient[] {
+  return Array.from({ length: count }, () => ({ name: "", quantity: "" }));
 }
 
 function canEditRecipe(recipe: RecipeData, user: AuthUser | null) {
@@ -57,23 +89,18 @@ export default function EditPage() {
   const [stepImageFiles, setStepImageFiles] = useState<{ [key: number]: File }>({});
   const [originalStepImages, setOriginalStepImages] = useState<{ [key: number]: string }>({});
 
-  const [formData, setFormData] = useState<{
-    title: string;
-    description: string;
-    authorId: string;
-    component: boolean;
-    mainIngredients: Ingredient[];
-    seasonings: Ingredient[];
-    steps: Step[];
-    servings: number;
-    tags: string[];
-  }>({
+  const [formData, setFormData] = useState<RecipeFormData>({
     title: "",
     description: "",
+    tips: "",
     authorId: "",
+    recipeOrigin: "original",
+    sharedSource: "",
+    sharedSourceLink: "",
     component: false,
-    mainIngredients: [{ name: "", quantity: "" }],
-    seasonings: [{ name: "", quantity: "" }],
+    isPublic: false,
+    mainIngredients: createEmptyIngredients(),
+    seasonings: createEmptyIngredients(),
     steps: [{ stepNumber: 1, instruction: "" }],
     servings: 1,
     tags: [],
@@ -82,14 +109,20 @@ export default function EditPage() {
   const [tagsInput, setTagsInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const { confirm, notify } = useConfirmDialog();
 
-  const normalizeRecipeForm = (recipe: RecipeData) => ({
+  const normalizeRecipeForm = (recipe: RecipeData): RecipeFormData => ({
     title: recipe.title,
     description: recipe.description,
+    tips: recipe.tips || "",
     authorId: recipe.authorId,
+    recipeOrigin: recipe.recipeOrigin === "shared" ? "shared" : "original",
+    sharedSource: recipe.sharedSource || "",
+    sharedSourceLink: recipe.sharedSourceLink || "",
     component: recipe.component ?? false,
-    mainIngredients: recipe.mainIngredients || [{ name: "", quantity: "" }],
-    seasonings: recipe.seasonings || [{ name: "", quantity: "" }],
+    isPublic: recipe.isPublic ?? false,
+    mainIngredients: recipe.mainIngredients?.length ? recipe.mainIngredients : createEmptyIngredients(),
+    seasonings: recipe.seasonings?.length ? recipe.seasonings : createEmptyIngredients(),
     steps: recipe.steps || [{ stepNumber: 1, instruction: "" }],
     servings: recipe.servings || 1,
     tags: recipe.tags || [],
@@ -175,7 +208,11 @@ export default function EditPage() {
         setRecipeImageFile(null);
       } catch (err: any) {
         setRecipeImage(previousImage);
-        alert(err.message || "Failed to update cover image");
+        await notify({
+          title: "Image update failed",
+          message: err.message || "Failed to update cover image",
+          intent: "danger",
+        });
       } finally {
         setImageUploading(false);
       }
@@ -184,6 +221,7 @@ export default function EditPage() {
 
   const handleStepImageChange = (e: React.ChangeEvent<HTMLInputElement>, stepNumber: number) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (file) {
       // Store the File object for upload
       setStepImageFiles((prev) => ({ ...prev, [stepNumber]: file }));
@@ -191,10 +229,10 @@ export default function EditPage() {
       // Create preview URL
       const reader = new FileReader();
       reader.onload = (event) => {
-        setStepImages({
-          ...stepImages,
+        setStepImages((prev) => ({
+          ...prev,
           [stepNumber]: event.target?.result as string,
-        });
+        }));
       };
       reader.readAsDataURL(file);
     }
@@ -277,22 +315,61 @@ export default function EditPage() {
     });
   };
 
+  const handlePublishChange = async (checked: boolean) => {
+    if (checked && !formData.isPublic) {
+      const approved = await confirm({
+        title: "Publish recipe",
+        message: "This will make everyone see this recipe. Are you sure?",
+        intent: "warning",
+        confirmText: "Publish",
+      });
+
+      if (!approved) return;
+    }
+
+    setFormData((prev) => ({ ...prev, isPublic: checked }));
+  };
+
   const handleSubmit = async () => {
     if (!originalRecipe || !canEditRecipe(originalRecipe, currentUser)) {
-      alert("You can only edit recipes you created.");
+      await notify({
+        title: "Editing blocked",
+        message: "You can only edit recipes you created.",
+        intent: "warning",
+      });
       return;
     }
 
     if (!formData.title.trim()) {
-      alert("Please enter a recipe name");
+      await notify({
+        title: "Recipe name required",
+        message: "Please enter a recipe name.",
+        intent: "warning",
+      });
       return;
     }
     if (!formData.description.trim()) {
-      alert("Please enter a recipe description");
+      await notify({
+        title: "Recipe description required",
+        message: "Please enter a recipe description.",
+        intent: "warning",
+      });
+      return;
+    }
+    if (formData.recipeOrigin === "shared" && !formData.sharedSource.trim()) {
+      await notify({
+        title: "Shared recipe source required",
+        message: "Please enter the source for this shared recipe.",
+        intent: "warning",
+      });
       return;
     }
     if (imageUploading) {
-      alert("Please wait for the cover image to finish saving.");
+      await notify({
+        title: "Image still saving",
+        message: "Please wait for the cover image to finish saving.",
+        intent: "neutral",
+      });
       return;
     }
 
@@ -305,7 +382,12 @@ export default function EditPage() {
         body: JSON.stringify({
           title: formData.title,
           description: formData.description,
+          tips: formData.tips.trim(),
+          recipeOrigin: formData.recipeOrigin,
+          sharedSource: formData.recipeOrigin === "shared" ? formData.sharedSource.trim() : "",
+          sharedSourceLink: formData.recipeOrigin === "shared" ? formData.sharedSourceLink.trim() : "",
           component: formData.component,
+          isPublic: formData.isPublic,
           mainIngredients: formData.mainIngredients,
           seasonings: formData.seasonings,
           steps: formData.steps,
@@ -344,10 +426,14 @@ export default function EditPage() {
         setStepImageFiles({});
       }
 
-      alert("Recipe updated successfully!");
+      toastSuccess("Recipe updated");
       router.push(`/recipes/${recipeId}`);
     } catch (err: any) {
-      alert("Submit failed: " + (err.message || "Unknown error"));
+      await notify({
+        title: "Save failed",
+        message: `Submit failed: ${err.message || "Unknown error"}`,
+        intent: "danger",
+      });
       console.error(err);
     } finally {
       setSubmitting(false);
@@ -356,18 +442,31 @@ export default function EditPage() {
 
   const handleDelete = async () => {
     if (!originalRecipe || !canEditRecipe(originalRecipe, currentUser)) {
-      alert("You can only delete recipes you created.");
+      await notify({
+        title: "Delete blocked",
+        message: "You can only delete recipes you created.",
+        intent: "warning",
+      });
       return;
     }
 
-    if (!confirm("Delete this recipe? This cannot be undone.")) return;
+    if (!(await confirm({
+      title: "Delete recipe",
+      message: "Delete this recipe? This cannot be undone.",
+      intent: "danger",
+      confirmText: "Delete",
+    }))) return;
     setDeleting(true);
     try {
       const response = await authFetch(`/api/recipes/${recipeId}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Failed to delete recipe");
       router.push("/profile");
     } catch (err: any) {
-      alert("Delete failed: " + (err.message || "Unknown error"));
+      await notify({
+        title: "Delete failed",
+        message: `Delete failed: ${err.message || "Unknown error"}`,
+        intent: "danger",
+      });
       setDeleting(false);
     }
   };
@@ -444,18 +543,51 @@ export default function EditPage() {
         ]}
       />
 
-      {recipeImage && (
-        <button type="button" className={styles.imageDisplay} onClick={() => fileInputRef.current?.click()} disabled={imageUploading} aria-label={imageUploading ? "Saving cover image" : "Replace cover image"} title={imageUploading ? "Saving cover image" : "Replace cover image"}>
-            <img 
-              src={recipeImage} 
-              alt="Recipe cover" 
+      {recipeImage ? (
+        <div className={styles.coverImageSection}>
+          <button
+            type="button"
+            className={`${styles.imageDisplay} ${styles.imageDisplayButton}`}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={imageUploading}
+            aria-label={imageUploading ? "Saving cover image" : "Replace cover image"}
+            title={imageUploading ? "Saving cover image" : "Replace cover image"}
+          >
+            <img
+              src={recipeImage}
+              alt="Recipe cover"
               className={styles.recipeImage}
             />
             <span className={styles.replaceImageIconButton} aria-hidden="true">
               <span className="material-symbols-outlined">autorenew</span>
             </span>
             {imageUploading && <span className={styles.imageSavingBadge}>Saving...</span>}
-        </button>
+          </button>
+
+          <div className={styles.coverActionsRow}>
+            <p className={styles.uploadPromptText}>Cover image</p>
+            <button
+              type="button"
+              className={styles.uploadPromptBtn}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={imageUploading}
+            >
+              {imageUploading ? "Saving cover" : "Change cover"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.uploadPrompt}>
+          <p className={styles.uploadPromptText}>Cover image</p>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className={styles.uploadPromptBtn}
+            disabled={imageUploading}
+          >
+            {imageUploading ? "Saving cover" : "Add cover"}
+          </button>
+        </div>
       )}
 
       <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className={styles.form}>
@@ -463,9 +595,12 @@ export default function EditPage() {
           title={formData.title}
           description={formData.description}
           servings={formData.servings}
+          isPublic={formData.isPublic}
+          publishDisabled={submitting || imageUploading}
           onTitleChange={(title) => setFormData({ ...formData, title })}
           onDescriptionChange={(description) => setFormData({ ...formData, description })}
           onServingsChange={(servings) => setFormData({ ...formData, servings })}
+          onPublishChange={handlePublishChange}
         />
 
         <IngredientsSection
@@ -495,6 +630,20 @@ export default function EditPage() {
           onTagsInputChange={setTagsInput}
           onAddTag={addTag}
           onRemoveTag={removeTag}
+        />
+
+        <RecipeOriginSection
+          recipeOrigin={formData.recipeOrigin}
+          sharedSource={formData.sharedSource}
+          sharedSourceLink={formData.sharedSourceLink}
+          onRecipeOriginChange={(recipeOrigin: "original" | "shared") => setFormData({ ...formData, recipeOrigin })}
+          onSharedSourceChange={(sharedSource) => setFormData({ ...formData, sharedSource })}
+          onSharedSourceLinkChange={(sharedSourceLink) => setFormData({ ...formData, sharedSourceLink })}
+        />
+
+        <TipsSection
+          tips={formData.tips}
+          onTipsChange={(tips) => setFormData({ ...formData, tips })}
         />
 
         <div className={styles.submitContainer}>
