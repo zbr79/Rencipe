@@ -629,6 +629,53 @@
   font-weight: 850;
 }
 
+.cardFooter {
+  min-height: 38px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px 12px;
+}
+
+.browseSaveButton {
+  justify-self: end;
+  width: 32px;
+  height: 32px;
+  border: 1px solid color-mix(in srgb, var(--primary) 62%, white);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: var(--primary);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+
+.browseSaveButton span {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.browseSaveButton:hover {
+  transform: translateY(-1px);
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.12);
+}
+
+.browseSaveButtonActive {
+  border-color: color-mix(in srgb, #d84f67 34%, var(--border));
+  background: color-mix(in srgb, #d84f67 18%, var(--card-bg));
+  color: #d84f67;
+}
+
 .saveButton {
   position: absolute;
   top: 8px;
@@ -710,6 +757,10 @@
     padding: 0 12px 96px;
   }
 
+  .cardFooter {
+    padding-bottom: 10px;
+  }
+
   .searchHeader {
     top: 0;
     grid-template-columns: 40px minmax(0, 1fr);
@@ -787,11 +838,21 @@
     width: 32px;
     height: 36px;
   }
+
+  .browseSaveButton {
+    width: 30px;
+    height: 30px;
+  }
 }
 
 @media (max-width: 370px) {
   .recipeGrid {
     grid-template-columns: 1fr;
+  }
+
+  .browseSaveButton {
+    width: 30px;
+    height: 30px;
   }
 
   .resultCard .recipeImage {

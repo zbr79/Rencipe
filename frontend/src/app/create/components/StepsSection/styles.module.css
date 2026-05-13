@@ -36,6 +36,10 @@
   margin: 0;
 }
 
+.sectionTitleInvalid {
+  color: var(--error);
+}
+
 .input,
 .textarea,
 .fileInput {
@@ -68,6 +72,17 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
+.inputInvalid {
+  border-color: rgba(220, 38, 38, 0.55);
+  background-color: rgba(220, 38, 38, 0.04);
+}
+
+.inputInvalid:hover,
+.inputInvalid:focus {
+  border-color: rgba(220, 38, 38, 0.72);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
 .textarea {
   resize: vertical;
   min-height: 96px;
@@ -91,6 +106,15 @@
 .stepContainer:hover {
   border-color: color-mix(in srgb, var(--primary) 18%, var(--border));
   box-shadow: var(--shadow-sm);
+}
+
+.stepContainerInvalid {
+  border-color: rgba(220, 38, 38, 0.55);
+  background-color: rgba(220, 38, 38, 0.03);
+}
+
+.stepContainerInvalid:hover {
+  border-color: rgba(220, 38, 38, 0.72);
 }
 
 .stepHeader {

@@ -20,11 +20,19 @@ export default function BottomNav() {
 
   const navItems: NavItem[] = [
     { href: `/`, icon: "home", label: "Home" },
-    { href: `/categories`, icon: "category", label: "Browse" },
+    { href: `/browse`, icon: "category", label: "Browse" },
     { href: null, icon: "add_circle", label: "Create", action: openCreateForm },
-    { href: `/saved`, icon: "bookmark", label: "Saved" },
+    { href: `/saved`, icon: "favorite_border", label: "Saved" },
     { href: `/settings`, icon: "settings", label: "Settings" },
   ];
+
+  const getItemIcon = (item: NavItem, active: boolean) => {
+    if (item.href === "/saved") {
+      return active ? "favorite" : "favorite_border";
+    }
+
+    return item.icon;
+  };
 
   return (
     <nav className={styles.nav}>
@@ -39,13 +47,13 @@ export default function BottomNav() {
                 title={item.label}
               >
                 <span className={`material-symbols-outlined ${styles.icon}`}>
-                  {item.icon}
+                  {getItemIcon(item, false)}
                 </span>
               </button>
             );
           }
 
-          const active = pathname === item.href || (item.href === "/categories" && pathname.startsWith("/categories"));
+          const active = pathname === item.href || (item.href === "/browse" && pathname.startsWith("/browse"));
 
           return (
             <Link
@@ -55,7 +63,7 @@ export default function BottomNav() {
               title={item.label}
             >
               <span className={`material-symbols-outlined ${styles.icon}`}>
-                {item.icon}
+                {getItemIcon(item, active)}
               </span>
             </Link>
           );

@@ -18,8 +18,7 @@ export default function LoginPage() {
       user: data.user,
       signedInAt: new Date().toISOString(),
     });
-    const nextPath = new URLSearchParams(window.location.search).get("next");
-    router.replace(nextPath || "/");
+    router.replace("/");
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

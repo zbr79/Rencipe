@@ -250,11 +250,11 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       // Enrich with mock images
       const enrichedRecipes = enrichRecipesWithMockImages(recipes);
       setSavedRecipes(enrichedRecipes);
-      toastSuccess("Removed from saved");
+      toastSuccess("Unsaved recipe");
     } catch (err: any) {
       console.error("Error removing favorite:", err);
       setErrorSaved(err.message);
-      toastError(err.message || "Could not remove saved recipe");
+      toastError(err.message || "Could not unsave recipe");
     }
   };
 

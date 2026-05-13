@@ -10,6 +10,7 @@ interface Ingredient {
 interface IngredientsSectionProps {
   mainIngredients: Ingredient[];
   seasonings: Ingredient[];
+  invalidMainIngredients?: boolean;
   onMainIngredientsChange: (ingredients: Ingredient[]) => void;
   onSeasoningsChange: (ingredients: Ingredient[]) => void;
   onRemoveMainIngredient: (index: number) => void;
@@ -21,6 +22,7 @@ interface IngredientsSectionProps {
 export default function IngredientsSection({
   mainIngredients,
   seasonings,
+  invalidMainIngredients = false,
   onMainIngredientsChange,
   onSeasoningsChange,
   onRemoveMainIngredient,
@@ -47,8 +49,8 @@ export default function IngredientsSection({
       </div>
 
       {/* Main Ingredients Section */}
-      <div style={{ marginBottom: "24px" }}>
-        <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "#666" }}>
+      <div className={`${styles.subsection} ${invalidMainIngredients ? styles.subsectionInvalid : ""}`}>
+        <h3 className={`${styles.subheading} ${invalidMainIngredients ? styles.subheadingInvalid : ""}`}>
           Main Ingredients
         </h3>
         <div className={styles.ingredientsList}>
@@ -59,14 +61,16 @@ export default function IngredientsSection({
                 placeholder="Ingredient"
                 value={ing.name}
                 onChange={(e) => handleMainEditChange(idx, "name", e.target.value)}
-                className={styles.input}
+                aria-invalid={invalidMainIngredients}
+                className={`${styles.input} ${invalidMainIngredients ? styles.inputInvalid : ""}`}
               />
               <input
                 type="text"
                 placeholder="Amount"
                 value={ing.quantity}
                 onChange={(e) => handleMainEditChange(idx, "quantity", e.target.value)}
-                className={styles.input}
+                aria-invalid={invalidMainIngredients}
+                className={`${styles.input} ${invalidMainIngredients ? styles.inputInvalid : ""}`}
               />
               <button
                 type="button"
@@ -87,7 +91,7 @@ export default function IngredientsSection({
 
       {/* Seasonings Section */}
       <div>
-        <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "#666" }}>
+        <h3 className={styles.subheading}>
           Seasonings
         </h3>
         <div className={styles.ingredientsList}>

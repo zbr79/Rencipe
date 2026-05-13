@@ -1,75 +1,86 @@
 .floatingPanel {
   position: fixed;
-  top: 50%;
   right: 0;
+  bottom: 26px;
   z-index: 900;
-  display: flex;
-  align-items: center;
-  gap: 0;
-  transform: translateX(0) translateY(-50%);
-  transition: transform 260ms ease;
-}
-
-.floatingPanelCollapsed {
-  transform: translateX(calc(100% - 24px)) translateY(-50%);
-}
-
-.panelToggle {
-  width: 24px;
-  height: 42px;
-  flex: none;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--border);
-  border-right: 0;
-  border-radius: 8px 0 0 8px;
-  background: var(--card-bg);
-  color: var(--foreground);
-  box-shadow: var(--shadow-sm);
-}
-
-.panelToggle span {
-  display: block;
-  font-size: 19px;
-  line-height: 1;
+  pointer-events: none;
 }
 
 .panelActions {
-  display: grid;
-  gap: 6px;
-  min-width: 44px;
-  width: fit-content;
-  justify-items: end;
-  padding: 6px 0 6px 6px;
-  border: 1px solid var(--border);
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 14px;
+  pointer-events: auto;
+}
+
+.panelActions::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
   border-right: 0;
-  border-radius: 12px 0 0 12px;
-  background: color-mix(in srgb, var(--card-bg) 96%, transparent);
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(16px);
+  border-radius: 28px 0 0 28px;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--card-bg) 94%, white 6%) 0%,
+      color-mix(in srgb, var(--card-bg) 86%, var(--primary-soft) 14%) 100%
+    );
+  box-shadow: 0 20px 38px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(18px);
 }
 
 .panelButton {
-  width: 38px;
-  min-height: 38px;
-  display: flex;
+  position: relative;
+  z-index: 1;
+  width: 52px;
+  min-width: 52px;
+  min-height: 52px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border);
-  border-radius: 8px 0 0 8px;
-  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card-bg) 94%, transparent);
   color: var(--foreground);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
+  transition: transform 220ms ease, opacity 220ms ease, background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
 }
 
 .panelButton span {
-  color: var(--primary);
-  font-size: 22px;
+  font-size: 24px;
+  color: currentColor;
+}
+
+.panelButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.14);
+}
+
+.panelButtonAnchor {
+  flex: none;
+}
+
+.panelButtonSecondary {
+  flex: none;
 }
 
 .panelButtonPrimary {
-  background: var(--primary-soft);
+  background: color-mix(in srgb, var(--primary-soft) 82%, var(--card-bg));
   color: var(--primary);
-  border-color: color-mix(in srgb, var(--primary) 26%, var(--border));
+  border-color: color-mix(in srgb, var(--primary) 22%, var(--border));
+}
+
+.panelButtonSave {
+  color: #d84f67;
+}
+
+.panelButtonPrimary.panelButtonSave {
+  background: color-mix(in srgb, #d84f67 12%, var(--card-bg));
+  border-color: color-mix(in srgb, #d84f67 26%, var(--border));
 }
 
 .panelButtonDanger,
@@ -79,10 +90,10 @@
 
 .panelButton:disabled {
   cursor: not-allowed;
-  opacity: 1;
-  border-color: color-mix(in srgb, var(--border) 92%, var(--background));
-  background: color-mix(in srgb, var(--hover-bg) 82%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--border) 88%, transparent);
+  background: color-mix(in srgb, var(--hover-bg) 78%, var(--card-bg));
   box-shadow: none;
+  transform: none;
 }
 
 .panelButton:disabled,
@@ -90,47 +101,25 @@
   color: var(--text-muted);
 }
 
-.panelButtonPrimary:disabled {
-  background: color-mix(in srgb, var(--hover-bg) 88%, var(--card-bg));
-  border-color: color-mix(in srgb, var(--border) 92%, var(--background));
+.panelButtonPrimary:disabled,
+.panelButtonPrimary.panelButtonSave:disabled {
+  background: color-mix(in srgb, var(--hover-bg) 86%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--border) 88%, transparent);
 }
 
 @media (max-width: 600px) {
   .floatingPanel {
-    top: auto;
-    right: 0;
     bottom: calc(88px + env(safe-area-inset-bottom));
-    align-items: center;
-    transform: translateX(0);
-  }
-
-  .floatingPanelCollapsed {
-    transform: translateX(calc(100% - 24px));
-  }
-
-  .floatingPanelMobileMiddle {
-    top: 50%;
-    right: 0;
-    bottom: auto;
-    align-items: center;
-    transform: translateX(0) translateY(-50%);
-  }
-
-  .floatingPanelMobileMiddle.floatingPanelCollapsed {
-    transform: translateX(calc(100% - 24px)) translateY(-50%);
   }
 
   .panelActions {
-    min-width: 38px;
-    padding: 4px 0 4px 4px;
+    gap: 8px;
+    padding: 8px 8px 8px 12px;
   }
 
   .panelButton {
-    width: 34px;
-    min-height: 34px;
-  }
-
-  .panelToggle {
-    height: 36px;
+    width: 48px;
+    min-width: 48px;
+    min-height: 48px;
   }
 }

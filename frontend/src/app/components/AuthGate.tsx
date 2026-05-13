@@ -21,8 +21,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         setAuthenticated(false);
         setChecking(false);
         if (!isLoginPage) {
-          const nextPath = pathname ? `?next=${encodeURIComponent(pathname)}` : "";
-          router.replace(`/login${nextPath}`);
+          router.replace("/login");
         }
         return;
       }
@@ -41,8 +40,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         setAuthenticated(false);
         setChecking(false);
         if (!isLoginPage) {
-          const nextPath = pathname ? `?next=${encodeURIComponent(pathname)}` : "";
-          router.replace(`/login${nextPath}`);
+          router.replace("/login");
         }
       }
     }

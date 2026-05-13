@@ -11,6 +11,7 @@ interface Step {
 interface StepsSectionProps {
   steps: Step[];
   stepImages: { [key: number]: string };
+  invalidSteps?: boolean;
   onStepsChange: (steps: Step[]) => void;
   onStepImageChange: (e: React.ChangeEvent<HTMLInputElement>, stepNumber: number) => void;
   onRemoveStep: (index: number) => void;
@@ -21,6 +22,7 @@ interface StepsSectionProps {
 export default function StepsSection({
   steps,
   stepImages,
+  invalidSteps = false,
   onStepsChange,
   onStepImageChange,
   onRemoveStep,
@@ -38,9 +40,9 @@ export default function StepsSection({
   };
 
   return (
-    <section className={styles.section}>
+    <section className={`${styles.section} ${invalidSteps ? styles.sectionInvalid : ""}`}>
       <div className={styles.sectionHeader}>
-        <h2>Cooking Steps</h2>
+        <h2 className={invalidSteps ? styles.sectionTitleInvalid : ""}>Cooking Steps</h2>
       </div>
 
       <div className={styles.stepsList}>
@@ -49,7 +51,7 @@ export default function StepsSection({
           const stepImage = stepImages[step.stepNumber];
 
           return (
-            <div key={idx} className={styles.stepContainer}>
+            <div key={idx} className={`${styles.stepContainer} ${invalidSteps ? styles.stepContainerInvalid : ""}`}>
               <div className={styles.stepHeader}>
                 <h3 className={styles.stepTitle}>Step {step.stepNumber}</h3>
                 <button
@@ -67,7 +69,8 @@ export default function StepsSection({
                   placeholder="Add step instructions"
                   value={step.instruction}
                   onChange={(e) => handleInstructionChange(idx, e.target.value)}
-                  className={styles.textarea}
+                  aria-invalid={invalidSteps}
+                  className={`${styles.textarea} ${invalidSteps ? styles.inputInvalid : ""}`}
                   rows={3}
                 />
 

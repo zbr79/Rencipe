@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import { useSaved } from "./contexts/SavedContext";
 import AccountAvatar from "./components/AccountAvatar";
@@ -71,6 +72,7 @@ function getRecommendationScore(recipe: Recipe) {
 }
 
 export default function HomePage() {
+  const router = useRouter();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -154,19 +156,11 @@ export default function HomePage() {
   const tabs = [
     { id: "recommended", label: "Recommended" },
     { id: "newest", label: "Newest" },
-    { id: "quick", label: "Quick" },
-    { id: "dinner", label: "Dinner" },
   ];
 
   const baseRecipes = activeTab === "recommended" ? recommendedPublicRecipes : newestPublicRecipes;
 
-  const visibleRecipes = baseRecipes.filter((recipe) => {
-    const tags = recipe.tags || [];
-    if (activeTab === "quick") return tags.some((tag) => ["Quick", "Easy", "Meal prep"].includes(tag));
-    if (activeTab === "dinner") return tags.some((tag) => ["Dinner", "Family dinner", "Protein", "Chicken", "Seafood"].includes(tag));
-    if (activeTab === "recommended") return true;
-    return true;
-  });
+  const visibleRecipes = baseRecipes;
 
   function pauseAutoplay() {
     setAutoplayResumeAt(Date.now() + MANUAL_SLIDE_PAUSE_MS);
@@ -213,6 +207,7 @@ export default function HomePage() {
 
     const deltaX = swipeDeltaXRef.current;
     const peakDeltaX = swipePeakDeltaXRef.current;
+    const releaseTarget = document.elementFromPoint(event.clientX, event.clientY)?.closest("a[href]");
     swipeStartXRef.current = null;
     swipeDeltaXRef.current = 0;
     swipePeakDeltaXRef.current = 0;
@@ -226,6 +221,14 @@ export default function HomePage() {
 
     const swipeThreshold = Math.max(SWIPE_THRESHOLD_PX, swipeWidthRef.current * SWIPE_THRESHOLD_RATIO);
     if (Math.abs(deltaX) < swipeThreshold) {
+      if (releaseTarget instanceof HTMLAnchorElement) {
+        const href = releaseTarget.getAttribute("href");
+        if (href) {
+          pauseAutoplay();
+          suppressSlideClickUntilRef.current = Date.now() + 400;
+          router.push(href);
+        }
+      }
       return;
     }
 
@@ -369,25 +372,25 @@ export default function HomePage() {
                     <AccountAvatar account={author} size={24} />
                     <span>{getAccountDisplayName(author)}</span>
                   </div>
+
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (saved) {
+                        removeFavorite(undefined, recipeId);
+                      } else {
+                        addFavorite(undefined, recipeId);
+                      }
+                    }}
+                    className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}
+                    title={saved ? "Remove from saved" : "Save recipe"}
+                    aria-label={saved ? "Remove from saved" : "Save recipe"}
+                  >
+                    <span className="material-symbols-outlined">{saved ? "favorite" : "favorite_border"}</span>
+                  </button>
                 </div>
               </article>
-
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (saved) {
-                    removeFavorite(undefined, recipeId);
-                  } else {
-                    addFavorite(undefined, recipeId);
-                  }
-                }}
-                className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}
-                title={saved ? "Remove from saved" : "Save recipe"}
-                aria-label={saved ? "Remove from saved" : "Save recipe"}
-              >
-                <span className="material-symbols-outlined">{saved ? "bookmark" : "bookmark_border"}</span>
-              </button>
             </div>
           );
           })}

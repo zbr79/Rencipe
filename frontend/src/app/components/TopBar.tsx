@@ -17,7 +17,7 @@ export default function TopBar() {
   }, [pathname]);
 
   const navLinks = [
-    { href: "/recipes", label: "Recipes" },
+    { href: "/browse", label: "Browse" },
     { href: "/saved", label: "Saved" },
     { href: "/meal-plans", label: "Meal Plans" },
   ];

@@ -131,7 +131,6 @@
   min-width: 0;
 }
 
-.saveButton,
 .primaryLink {
   min-height: 42px;
   display: inline-flex;

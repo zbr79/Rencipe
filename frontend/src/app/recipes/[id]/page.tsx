@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useConfirmDialog } from "../../components/ConfirmDialogProvider";
+import FloatingActionPanel from "../../components/FloatingActionPanel";
+import { toastError } from "../../components/toast/toast";
 import { useSaved } from "../../contexts/SavedContext";
 import { getRecipeImageUrl } from "../../utils/recipeImageUtils";
 import { getVisibleTags } from "../../utils/recipeTags";
@@ -59,11 +60,9 @@ export default function RecipeDetailPage() {
   const [error, setError] = useState("");
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isSavingRecipe, setIsSavingRecipe] = useState(false);
-  const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [selectedRating, setSelectedRating] = useState(0);
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
   const [ratingMessage, setRatingMessage] = useState("");
-  const { notify } = useConfirmDialog();
 
   useEffect(() => {
     fetchRecipe();
@@ -112,11 +111,7 @@ export default function RecipeDetailPage() {
         await addFavorite(undefined, recipeId);
       }
     } catch (err: any) {
-      await notify({
-        title: "Save failed",
-        message: `Save failed: ${err.message}`,
-        intent: "danger",
-      });
+      toastError(err.message || "Could not update saved recipe");
     } finally {
       setIsSavingRecipe(false);
     }
@@ -174,34 +169,29 @@ export default function RecipeDetailPage() {
         </Link>
       </div>
 
-      <aside className={`${styles.floatingPanel} ${panelCollapsed ? styles.floatingPanelCollapsed : ""}`} aria-label="Recipe actions">
-        <button
-          type="button"
-          className={styles.panelToggle}
-          onClick={() => setPanelCollapsed((value) => !value)}
-          aria-label={panelCollapsed ? "Open recipe actions" : "Minimize recipe actions"}
-          aria-expanded={!panelCollapsed}
-        >
-          <span className="material-symbols-outlined">{panelCollapsed ? "chevron_left" : "chevron_right"}</span>
-        </button>
-        <div className={styles.panelActions}>
-          <button
-            type="button"
-            className={`${styles.panelButton} ${saved ? styles.panelButtonActive : ""}`}
-            onClick={handleSaveRecipe}
-            disabled={isSavingRecipe}
-            aria-label={saved ? "Remove from saved" : "Save recipe"}
-            title={saved ? "Saved" : "Save"}
-          >
-            <span className="material-symbols-outlined">{saved ? "bookmark" : "bookmark_border"}</span>
-          </button>
-          {canEditRecipe && (
-            <button type="button" className={styles.panelButton} onClick={handleEdit} aria-label="Edit recipe" title="Edit">
-              <span className="material-symbols-outlined">edit</span>
-            </button>
-          )}
-        </div>
-      </aside>
+      <FloatingActionPanel
+        ariaLabel="Recipe actions"
+        actions={[
+          {
+            id: "save",
+            icon: saved ? "favorite" : "favorite_border",
+            label: saved ? "Remove from saved" : "Save recipe",
+            onClick: handleSaveRecipe,
+            disabled: isSavingRecipe,
+            tone: "primary",
+          },
+          ...(canEditRecipe
+            ? [
+                {
+                  id: "edit",
+                  icon: "edit",
+                  label: "Edit recipe",
+                  onClick: handleEdit,
+                },
+              ]
+            : []),
+        ]}
+      />
 
       {/* Recipe Image */}
       {recipe.image && (

@@ -103,7 +103,6 @@
 
 .item.active .icon {
   color: var(--primary);
-  font-size: 29px;
 }
 
 @media (min-width: 900px) {
@@ -125,9 +124,5 @@
 
   .icon {
     font-size: 26px;
-  }
-
-  .item.active .icon {
-    font-size: 29px;
   }
 }

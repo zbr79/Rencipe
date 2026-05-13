@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import styles from "./floating-action-panel.module.css";
 
 export type FloatingActionPanelTone = "default" | "primary" | "danger";
@@ -17,51 +16,46 @@ export interface FloatingActionPanelAction {
 interface FloatingActionPanelProps {
   ariaLabel: string;
   actions: FloatingActionPanelAction[];
-  toggleOpenLabel?: string;
-  toggleCloseLabel?: string;
-  initiallyCollapsed?: boolean;
-  mobilePlacement?: "bottom-right" | "middle-right";
 }
 
-export default function FloatingActionPanel({
-  ariaLabel,
-  actions,
-  toggleOpenLabel = "Open actions",
-  toggleCloseLabel = "Minimize actions",
-  initiallyCollapsed = false,
-  mobilePlacement = "bottom-right",
-}: FloatingActionPanelProps) {
-  const [collapsed, setCollapsed] = useState(initiallyCollapsed);
+export default function FloatingActionPanel({ ariaLabel, actions }: FloatingActionPanelProps) {
+  const primaryAction = actions.find((action) => action.tone === "primary") ?? actions[0];
+  const orderedActions = primaryAction
+    ? [...actions.filter((action) => action.id !== primaryAction.id), primaryAction]
+    : actions;
+
+  if (actions.length === 0 || !primaryAction) {
+    return null;
+  }
+
+  const getActionIcon = (action: FloatingActionPanelAction) => {
+    if (action.id === "save" && action.icon === "save") {
+      return "favorite";
+    }
+
+    return action.icon;
+  };
 
   return (
-    <aside
-      className={`${styles.floatingPanel} ${mobilePlacement === "middle-right" ? styles.floatingPanelMobileMiddle : ""} ${collapsed ? styles.floatingPanelCollapsed : ""}`}
-      aria-label={ariaLabel}
-    >
-      <button
-        type="button"
-        className={styles.panelToggle}
-        onClick={() => setCollapsed((value) => !value)}
-        aria-label={collapsed ? toggleOpenLabel : toggleCloseLabel}
-        aria-expanded={!collapsed}
-      >
-        <span className="material-symbols-outlined">{collapsed ? "chevron_left" : "chevron_right"}</span>
-      </button>
-
+    <aside className={styles.floatingPanel} aria-label={ariaLabel}>
       <div className={styles.panelActions}>
-        {actions.map((action) => (
-          <button
-            key={action.id}
-            type="button"
-            className={`${styles.panelButton} ${action.tone === "primary" ? styles.panelButtonPrimary : ""} ${action.tone === "danger" ? styles.panelButtonDanger : ""}`}
-            onClick={action.onClick}
-            disabled={action.disabled}
-            aria-label={action.label}
-            title={action.label}
-          >
-            <span className="material-symbols-outlined">{action.icon}</span>
-          </button>
-        ))}
+        {orderedActions.map((action) => {
+          const isPrimaryAction = action.id === primaryAction.id;
+
+          return (
+            <button
+              key={action.id}
+              type="button"
+              className={`${styles.panelButton} ${isPrimaryAction ? styles.panelButtonAnchor : styles.panelButtonSecondary} ${action.id === "save" ? styles.panelButtonSave : ""} ${action.tone === "primary" ? styles.panelButtonPrimary : ""} ${action.tone === "danger" ? styles.panelButtonDanger : ""}`}
+              onClick={action.onClick}
+              disabled={action.disabled}
+              aria-label={action.label}
+              title={action.label}
+            >
+              <span className="material-symbols-outlined">{getActionIcon(action)}</span>
+            </button>
+          );
+        })}
       </div>
     </aside>
   );

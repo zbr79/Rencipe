@@ -7,7 +7,7 @@ import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import { useSaved } from "../contexts/SavedContext";
 import { useQuickCreateMealPlan } from "../hooks/useQuickCreateMealPlan";
 import { getScheduledPlanDisplayName } from "../utils/planDisplay";
-import styles from "../recipes/page.module.css";
+import styles from "./page.module.css";
 
 export default function MealPlansPage() {
   const {

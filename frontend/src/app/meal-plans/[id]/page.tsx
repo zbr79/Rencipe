@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import NumberOnlyInput from "../../components/NumberOnlyInput";
 import FloatingActionPanel from "../../components/FloatingActionPanel";
@@ -15,6 +15,7 @@ type MealType = "breakfast" | "lunch" | "dinner";
 type MealEntryKind = "mealPlan" | "meal";
 type RecipeSource = "plan" | "website" | "saved";
 type IngredientViewMode = "combined" | "byRecipe";
+type SettingsSaveState = "idle" | "saving" | "saved" | "error" | "blocked";
 
 interface Ingredient {
   name: string;
@@ -187,6 +188,39 @@ function getInitialSlot(plan: MealPlan): ActiveSlot | null {
   };
 }
 
+function getSettingsSignature(
+  settings: { name: string; peopleCount: number; numberOfDays: number; mealTypes: MealType[] },
+  entryKind: MealEntryKind
+) {
+  return JSON.stringify({
+    name: settings.name.trim(),
+    peopleCount: settings.peopleCount,
+    ...(entryKind === "meal"
+      ? {}
+      : {
+          numberOfDays: settings.numberOfDays,
+          mealTypes: normalizeMealTypes(settings.mealTypes),
+        }),
+  });
+}
+
+function getSettingsValidationMessage(
+  settings: { name: string; peopleCount: number; numberOfDays: number; mealTypes: MealType[] },
+  entryKind: MealEntryKind
+) {
+  if (!settings.name.trim()) {
+    return entryKind === "meal"
+      ? "Autosave paused until the meal has a name."
+      : "Autosave paused until the meal plan has a name.";
+  }
+
+  if (entryKind === "mealPlan" && settings.mealTypes.length === 0) {
+    return "Autosave paused until at least one meal type is selected.";
+  }
+
+  return null;
+}
+
 export default function MealPlanDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { savedRecipes, fetchSaved } = useSaved();
   const [planId, setPlanId] = useState("");
@@ -207,6 +241,11 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     numberOfDays: 1,
     mealTypes: ["dinner"] as MealType[],
   });
+  const [revertSettingsSnapshot, setRevertSettingsSnapshot] = useState<ReturnType<typeof getSettingsFromPlan> | null>(null);
+  const [settingsSaveState, setSettingsSaveState] = useState<SettingsSaveState>("idle");
+  const [settingsSaveMessage, setSettingsSaveMessage] = useState("");
+  const settingsAutosaveTimerRef = useRef<number | null>(null);
+  const lastSavedSettingsSignatureRef = useRef("");
 
   useEffect(() => {
     params.then((value) => setPlanId(value.id));
@@ -228,8 +267,13 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
         if (!response.ok) throw new Error("Failed to fetch meal plan");
         const data = await response.json();
         const normalizedPlan = normalizePlan(data.plan);
+        const initialSettings = getSettingsFromPlan(normalizedPlan);
         setPlan(normalizedPlan);
-        setSettings(getSettingsFromPlan(normalizedPlan));
+        setSettings(initialSettings);
+        setRevertSettingsSnapshot(initialSettings);
+        lastSavedSettingsSignatureRef.current = getSettingsSignature(initialSettings, getMealEntryKind(normalizedPlan));
+        setSettingsSaveState("saved");
+        setSettingsSaveMessage("All changes saved.");
         setActiveSlot(getInitialSlot(normalizedPlan));
       } catch (err: any) {
         setError(err.message || "Failed to load meal plan");
@@ -340,79 +384,95 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     }
   }
 
-  async function saveSettings() {
-    if (!plan) return;
-    const entryKind = getMealEntryKind(plan);
-    if (!settings.name.trim()) {
-      toastError(entryKind === "meal" ? "Name the meal before saving" : "Name the meal plan before saving");
-      return;
+  async function persistSettings(
+    nextSettings: typeof settings,
+    options?: {
+      successMessage?: string;
+      statusMessage?: string;
+      errorMessage?: string;
     }
-    if (entryKind === "mealPlan" && settings.mealTypes.length === 0) {
-      toastError("Choose at least one meal type");
-      return;
-    }
+  ) {
+    if (!plan) return false;
 
-    const people = Array.from({ length: settings.peopleCount }, (_, index) => ({
+    const entryKind = getMealEntryKind(plan);
+    const people = Array.from({ length: nextSettings.peopleCount }, (_, index) => ({
       name: plan.people[index]?.name || `Person ${index + 1}`,
       modifier: 1,
     }));
-
-    if (entryKind === "meal") {
-      setSaving(true);
-      try {
-        const response = await authFetch(`/api/meal-plans/${plan._id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: settings.name.trim(),
-            people,
-          }),
-        });
-        if (!response.ok) throw new Error("Failed to save meal settings");
-        const data = await response.json();
-        const normalizedPlan = normalizePlan(data.plan);
-        setPlan(normalizedPlan);
-        setSettings(getSettingsFromPlan(normalizedPlan));
-        setActiveSlot(null);
-        toastSuccess("Meal updated");
-      } catch (err: any) {
-        toastError(err.message || "Could not save meal settings");
-      } finally {
-        setSaving(false);
-      }
-      return;
-    }
-
-    const nextDays = normalizePlan({
-      ...plan,
-      name: settings.name.trim(),
-      people,
-      numberOfDays: settings.numberOfDays,
-      mealTypes: settings.mealTypes,
-    }).days || [];
 
     setSaving(true);
     try {
       const response = await authFetch(`/api/meal-plans/${plan._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: settings.name.trim(),
-          people,
-          numberOfDays: settings.numberOfDays,
-          mealTypes: settings.mealTypes,
-          days: serializeDays(nextDays),
-        }),
+        body: JSON.stringify(
+          entryKind === "meal"
+            ? {
+                name: nextSettings.name.trim(),
+                people,
+              }
+            : {
+                name: nextSettings.name.trim(),
+                people,
+                numberOfDays: nextSettings.numberOfDays,
+                mealTypes: nextSettings.mealTypes,
+                days:
+                  normalizePlan({
+                    ...plan,
+                    name: nextSettings.name.trim(),
+                    people,
+                    numberOfDays: nextSettings.numberOfDays,
+                    mealTypes: nextSettings.mealTypes,
+                  }).days?.map((day) => ({
+                    dayNumber: day.dayNumber,
+                    meals: day.meals.map((meal) => ({
+                      mealType: meal.mealType,
+                      recipes: meal.recipes.map(getRecipeId).filter(Boolean),
+                    })),
+                  })) || [],
+              }
+        ),
       });
-      if (!response.ok) throw new Error("Failed to save plan settings");
+
+      if (!response.ok) {
+        throw new Error(entryKind === "meal" ? "Failed to save meal settings" : "Failed to save plan settings");
+      }
+
       const data = await response.json();
       const normalizedPlan = normalizePlan(data.plan);
+      const normalizedSettings = getSettingsFromPlan(normalizedPlan);
       setPlan(normalizedPlan);
-      setSettings(getSettingsFromPlan(normalizedPlan));
-      setActiveSlot(getInitialSlot(normalizedPlan));
-      toastSuccess("Meal plan updated");
+      setSettings(normalizedSettings);
+      lastSavedSettingsSignatureRef.current = getSettingsSignature(normalizedSettings, getMealEntryKind(normalizedPlan));
+      setSettingsSaveState("saved");
+      setSettingsSaveMessage(options?.statusMessage || "All changes saved.");
+      setActiveSlot((current) => {
+        if (getMealEntryKind(normalizedPlan) === "meal") {
+          return null;
+        }
+
+        if (
+          current
+          && normalizedPlan.days?.some((day) => day.dayNumber === current.dayNumber)
+          && normalizedPlan.mealTypes?.includes(current.mealType)
+        ) {
+          return current;
+        }
+
+        return getInitialSlot(normalizedPlan);
+      });
+
+      if (options?.successMessage) {
+        toastSuccess(options.successMessage);
+      }
+
+      return true;
     } catch (err: any) {
-      toastError(err.message || "Could not save plan settings");
+      const nextMessage = err.message || options?.errorMessage || "Could not save settings";
+      setSettingsSaveState("error");
+      setSettingsSaveMessage(nextMessage);
+      toastError(nextMessage);
+      return false;
     } finally {
       setSaving(false);
     }
@@ -437,11 +497,69 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     setPickerOpen(true);
   }
 
-  function revertSettings() {
-    if (!plan) return;
-    setSettings(getSettingsFromPlan(plan));
-    if (!activeSlot) {
-      setActiveSlot(getInitialSlot(plan));
+  useEffect(() => {
+    return () => {
+      if (settingsAutosaveTimerRef.current) {
+        window.clearTimeout(settingsAutosaveTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!plan || loading || saving) {
+      return;
+    }
+
+    const entryKind = getMealEntryKind(plan);
+    const nextSignature = getSettingsSignature(settings, entryKind);
+    if (nextSignature === lastSavedSettingsSignatureRef.current) {
+      if (settingsSaveState === "saving") {
+        setSettingsSaveState("saved");
+        setSettingsSaveMessage("All changes saved.");
+      }
+      return;
+    }
+
+    const validationMessage = getSettingsValidationMessage(settings, entryKind);
+    if (validationMessage) {
+      setSettingsSaveState("blocked");
+      setSettingsSaveMessage(validationMessage);
+      return;
+    }
+
+    setSettingsSaveState("saving");
+    setSettingsSaveMessage("Saving changes...");
+
+    const timeoutId = window.setTimeout(() => {
+      void persistSettings(settings);
+    }, 800);
+
+    settingsAutosaveTimerRef.current = timeoutId;
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      if (settingsAutosaveTimerRef.current === timeoutId) {
+        settingsAutosaveTimerRef.current = null;
+      }
+    };
+  }, [loading, plan, saving, settings, settingsSaveState]);
+
+  async function revertSettings() {
+    if (!revertSettingsSnapshot) return;
+
+    if (saving) {
+      toastError("Wait for the current changes to finish saving.");
+      return;
+    }
+
+    const reverted = await persistSettings(revertSettingsSnapshot, {
+      successMessage: getMealEntryKind(plan || { kind: "mealPlan" } as MealPlan) === "meal" ? "Reverted meal settings" : "Reverted meal plan settings",
+      statusMessage: "Original version restored.",
+      errorMessage: "Could not revert settings.",
+    });
+
+    if (reverted) {
+      setSettings(revertSettingsSnapshot);
     }
   }
 
@@ -528,16 +646,30 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
   }
 
   const isMeal = getMealEntryKind(plan) === "meal";
-  const currentSettings = getSettingsFromPlan(plan);
-  const hasPendingSettingsChanges = isMeal
-    ? settings.name.trim() !== currentSettings.name || settings.peopleCount !== currentSettings.peopleCount
-    : settings.name.trim() !== currentSettings.name
-      || settings.peopleCount !== currentSettings.peopleCount
-      || settings.numberOfDays !== currentSettings.numberOfDays
-      || normalizeMealTypes(settings.mealTypes).join("|") !== currentSettings.mealTypes.join("|");
+  const hasRevertableSettingsChanges = revertSettingsSnapshot
+    ? getSettingsSignature(settings, isMeal ? "meal" : "mealPlan") !== getSettingsSignature(revertSettingsSnapshot, isMeal ? "meal" : "mealPlan")
+    : false;
 
   return (
     <main className={styles.page}>
+      {settingsSaveMessage && (
+        <div style={{ position: "fixed", bottom: "20px", left: "20px", zIndex: 1000 }}>
+          <div
+            style={{
+              backgroundColor: "var(--card-bg)",
+              color: settingsSaveState === "error" ? "var(--error)" : "var(--text-secondary)",
+              padding: "8px 12px",
+              borderRadius: "8px",
+              border: `1px solid ${settingsSaveState === "error" ? "color-mix(in srgb, var(--error) 40%, var(--border))" : "var(--border)"}`,
+              fontSize: "12px",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            {settingsSaveMessage}
+          </div>
+        </div>
+      )}
+
       <header className={styles.header}>
         <Link href={isMeal ? "/meal-plans?kind=meal" : "/meal-plans"} className={styles.backLink}>
           <span className="material-symbols-outlined">arrow_back</span>
@@ -551,24 +683,13 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
 
       <FloatingActionPanel
         ariaLabel={isMeal ? "Meal actions" : "Meal plan actions"}
-        toggleOpenLabel={isMeal ? "Open meal actions" : "Open meal plan actions"}
-        toggleCloseLabel={isMeal ? "Minimize meal actions" : "Minimize meal plan actions"}
-        mobilePlacement={isMeal ? "middle-right" : "bottom-right"}
         actions={[
-          {
-            id: "save",
-            icon: "save",
-            label: saving ? (isMeal ? "Saving meal" : "Saving meal plan") : (isMeal ? "Save meal" : "Save meal plan"),
-            onClick: saveSettings,
-            disabled: saving || !hasPendingSettingsChanges,
-            tone: "primary",
-          },
           {
             id: "revert",
             icon: "history",
             label: "Revert settings",
-            onClick: revertSettings,
-            disabled: saving || !hasPendingSettingsChanges,
+            onClick: () => void revertSettings(),
+            disabled: saving || !hasRevertableSettingsChanges,
           },
         ]}
       />
@@ -611,11 +732,6 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
           </div>
         )}
 
-        {!isMeal && (
-          <button type="button" className={styles.saveButton} onClick={saveSettings} disabled={saving}>
-            {saving ? "Saving..." : "Save Plan"}
-          </button>
-        )}
       </section>
 
       <section className={styles.plannerShell}>

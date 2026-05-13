@@ -52,7 +52,7 @@ function iconForTag(tag: string) {
   return "local_offer";
 }
 
-export default function CategoriesPage() {
+export default function BrowsePage() {
   const { isSaved, addFavorite, removeFavorite, fetchSaved } = useSaved();
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,24 +178,25 @@ export default function CategoriesPage() {
                     <AccountAvatar account={author} size={24} />
                     <span>{getAccountDisplayName(author)}</span>
                   </div>
+
+                  <button
+                    type="button"
+                    className={`${styles.browseSaveButton} ${saved ? styles.browseSaveButtonActive : ""}`}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      if (saved) {
+                        removeFavorite(undefined, recipeId);
+                      } else {
+                        addFavorite(undefined, recipeId);
+                      }
+                    }}
+                    aria-label={saved ? "Remove from saved" : "Save recipe"}
+                  >
+                    <span className="material-symbols-outlined">{saved ? "favorite" : "favorite_border"}</span>
+                  </button>
                 </div>
               </article>
-              <button
-                type="button"
-                className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  if (saved) {
-                    removeFavorite(undefined, recipeId);
-                  } else {
-                    addFavorite(undefined, recipeId);
-                  }
-                }}
-                aria-label={saved ? "Remove from saved" : "Save recipe"}
-              >
-                <span className="material-symbols-rounded">{saved ? "bookmark" : "bookmark_border"}</span>
-              </button>
             </div>
           );
         })}

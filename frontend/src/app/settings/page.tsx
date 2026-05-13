@@ -13,7 +13,6 @@ const languageOptions = [{ value: "en", label: "English" }];
 
 const shortcutItems = [
   { label: "Drafts", icon: "description", href: "/drafts" },
-  { label: "My Recipes", icon: "library_books", href: "/profile" },
   { label: "Scheduled Plans", icon: "calendar_month", href: "/weekly-plans" },
   { label: "Notifications", icon: "notifications", message: "Notifications ready" },
 ];

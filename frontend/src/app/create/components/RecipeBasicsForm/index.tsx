@@ -6,6 +6,8 @@ interface RecipeBasicsFormProps {
   servings: number;
   isPublic: boolean;
   publishDisabled?: boolean;
+  invalidTitle?: boolean;
+  invalidDescription?: boolean;
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onServingsChange: (value: number) => void;
@@ -18,6 +20,8 @@ export default function RecipeBasicsForm({
   servings,
   isPublic,
   publishDisabled = false,
+  invalidTitle = false,
+  invalidDescription = false,
   onTitleChange,
   onDescriptionChange,
   onServingsChange,
@@ -29,7 +33,7 @@ export default function RecipeBasicsForm({
       <section className={styles.section}>
         <div className={styles.titleRow}>
           <div className={`${styles.formGroup} ${styles.titleGroup}`}>
-            <label htmlFor="title" className={styles.label}>
+              <label htmlFor="title" className={`${styles.label} ${invalidTitle ? styles.labelInvalid : ""}`}>
               Recipe Name
             </label>
             <input
@@ -39,7 +43,8 @@ export default function RecipeBasicsForm({
               value={title}
               onChange={(e) => onTitleChange(e.target.value)}
               required
-              className={styles.input}
+                aria-invalid={invalidTitle}
+                className={`${styles.input} ${invalidTitle ? styles.inputInvalid : ""}`}
             />
           </div>
 
@@ -65,7 +70,7 @@ export default function RecipeBasicsForm({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="description" className={styles.label}>
+          <label htmlFor="description" className={`${styles.label} ${invalidDescription ? styles.labelInvalid : ""}`}>
             Description
           </label>
           <textarea
@@ -74,7 +79,8 @@ export default function RecipeBasicsForm({
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
             required
-            className={styles.textarea}
+            aria-invalid={invalidDescription}
+            className={`${styles.textarea} ${invalidDescription ? styles.inputInvalid : ""}`}
             rows={4}
           />
         </div>
