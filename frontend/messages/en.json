@@ -18,7 +18,7 @@
     "creator": "Creator",
     "discoverRecipes": "Discover Recipes",
     "exploreRecipes": "Explore delicious recipes and share your culinary creations",
-    "createRecipe": "Create Recipe",
+    "createRecipe": "New Recipe",
     "recentRecipes": "Recent Recipes",
     "viewAll": "View All",
     "viewAllRecipes": "View All Recipes",
@@ -92,7 +92,7 @@
     },
     "empty": {
       "noRecipes": "No recipes found. Try adjusting your filters.",
-      "createFirst": "Create Your First Recipe",
+      "createFirst": "New Recipe",
       "noDescription": "No description provided"
     },
     "meta": {

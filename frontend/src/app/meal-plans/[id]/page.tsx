@@ -2,8 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import NumberOnlyInput from "../../components/NumberOnlyInput";
+import BackButton from "../../components/BackButton";
 import FloatingActionPanel from "../../components/FloatingActionPanel";
+import { useConfirmDialog } from "../../components/ConfirmDialogProvider";
 import { useSaved } from "../../contexts/SavedContext";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { authFetch } from "../../utils/authSession";
@@ -211,7 +214,7 @@ function getSettingsValidationMessage(
   if (!settings.name.trim()) {
     return entryKind === "meal"
       ? "Autosave paused until the meal has a name."
-      : "Autosave paused until the meal plan has a name.";
+      : "Autosave paused until the plan has a name.";
   }
 
   if (entryKind === "mealPlan" && settings.mealTypes.length === 0) {
@@ -222,7 +225,9 @@ function getSettingsValidationMessage(
 }
 
 export default function MealPlanDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { savedRecipes, fetchSaved } = useSaved();
+  const router = useRouter();
+  const { savedRecipes, fetchSaved, deleteMealPlan } = useSaved();
+  const { confirm, notify } = useConfirmDialog();
   const [planId, setPlanId] = useState("");
   const [plan, setPlan] = useState<MealPlan | null>(null);
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
@@ -264,7 +269,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       setError("");
       try {
         const response = await authFetch(`/api/meal-plans/${planId}`);
-        if (!response.ok) throw new Error("Failed to fetch meal plan");
+        if (!response.ok) throw new Error("Failed to fetch plan");
         const data = await response.json();
         const normalizedPlan = normalizePlan(data.plan);
         const initialSettings = getSettingsFromPlan(normalizedPlan);
@@ -276,7 +281,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
         setSettingsSaveMessage("All changes saved.");
         setActiveSlot(getInitialSlot(normalizedPlan));
       } catch (err: any) {
-        setError(err.message || "Failed to load meal plan");
+        setError(err.message || "Failed to load plan");
       } finally {
         setLoading(false);
       }
@@ -367,7 +372,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (!response.ok) throw new Error("Failed to update meal plan");
+      if (!response.ok) throw new Error("Failed to update plan");
       const data = await response.json();
       const normalizedPlan = normalizePlan(data.plan);
       setPlan(normalizedPlan);
@@ -377,10 +382,37 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       toastSuccess(successMessage);
       return true;
     } catch (err: any) {
-      toastError(err.message || "Could not update meal plan");
+      toastError(err.message || "Could not update plan");
       return false;
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDeleteCurrentPlan() {
+    if (!plan) return;
+
+    const entryKind = getMealEntryKind(plan);
+    const itemName = entryKind === "meal" ? "meal" : "plan";
+    const approved = await confirm({
+      title: entryKind === "meal" ? "Delete meal" : "Delete plan",
+      message: `Move this ${itemName} to Trash for 7 days?`,
+      intent: "danger",
+      confirmText: "Delete",
+    });
+
+    if (!approved) return;
+
+    try {
+      await deleteMealPlan(plan._id);
+      router.push("/my-work?kind=trash");
+    } catch (error) {
+      console.error(`Failed to move ${itemName} to trash:`, error);
+      await notify({
+        title: "Delete failed",
+        message: `Failed to move this ${itemName} to Trash.`,
+        intent: "danger",
+      });
     }
   }
 
@@ -553,7 +585,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     }
 
     const reverted = await persistSettings(revertSettingsSnapshot, {
-      successMessage: getMealEntryKind(plan || { kind: "mealPlan" } as MealPlan) === "meal" ? "Reverted meal settings" : "Reverted meal plan settings",
+      successMessage: getMealEntryKind(plan || { kind: "mealPlan" } as MealPlan) === "meal" ? "Reverted meal settings" : "Reverted plan settings",
       statusMessage: "Original version restored.",
       errorMessage: "Could not revert settings.",
     });
@@ -638,8 +670,8 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     return (
       <main className={styles.page}>
         <div className={styles.emptyState}>
-          <p>{error || "Meal plan not found"}</p>
-          <Link href="/meal-plans" className={styles.primaryLink}>Back to Meal Plans</Link>
+          <p>{error || "Plan not found"}</p>
+          <BackButton fallbackHref="/meal-plans" className={styles.primaryLink} label="Back to Plans" />
         </div>
       </main>
     );
@@ -671,10 +703,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       )}
 
       <header className={styles.header}>
-        <Link href={isMeal ? "/meal-plans?kind=meal" : "/meal-plans"} className={styles.backLink}>
-          <span className="material-symbols-outlined">arrow_back</span>
-          {isMeal ? "Meals" : "Meal Plans"}
-        </Link>
+        <BackButton fallbackHref={isMeal ? "/meal-plans?kind=meal" : "/meal-plans"} className={styles.backLink} label={isMeal ? "Meals" : "Plans"} />
         <div>
           {!isMeal && <p className={styles.kicker}>Planning</p>}
           <h1>{plan.name}</h1>
@@ -682,8 +711,16 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       </header>
 
       <FloatingActionPanel
-        ariaLabel={isMeal ? "Meal actions" : "Meal plan actions"}
+        ariaLabel={isMeal ? "Meal actions" : "Plan actions"}
         actions={[
+          {
+            id: "delete",
+            icon: "delete",
+            label: isMeal ? "Delete meal" : "Delete plan",
+            onClick: () => void handleDeleteCurrentPlan(),
+            disabled: saving,
+            tone: "danger",
+          },
           {
             id: "revert",
             icon: "history",

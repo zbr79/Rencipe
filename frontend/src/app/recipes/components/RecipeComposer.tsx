@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./RecipeComposer.module.css";
 import { useCreateForm } from "../../contexts/CreateFormContext";
+import BackButton from "../../components/BackButton";
 import FloatingActionPanel from "../../components/FloatingActionPanel";
 import RecipeBasicsForm from "../../create/components/RecipeBasicsForm";
 import IngredientsSection from "../../create/components/IngredientsSection";
@@ -857,7 +857,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
 
     const approved = await confirm({
       title: "Delete recipe",
-      message: "Delete this recipe? This cannot be undone.",
+      message: "Move this recipe to Trash for 7 days?",
       intent: "danger",
       confirmText: "Delete",
     });
@@ -874,9 +874,10 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
     try {
       const response = await authFetch(`/api/recipes/${recipeId}`, { method: "DELETE" });
       if (!response.ok) {
-        throw new Error("Failed to delete recipe");
+        throw new Error("Failed to move recipe to trash");
       }
-      router.push("/");
+      toastSuccess("Moved to Trash");
+      router.push("/my-work?kind=trash");
     } catch (deleteError: any) {
       await notify({
         title: "Delete failed",
@@ -996,10 +997,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
       <div className={styles.container}>
         <div className={styles.error}>
           <p>Error: {error}</p>
-          <Link href="/" className={styles.backLink}>
-            <span className="material-symbols-outlined">arrow_back</span>
-            Back
-          </Link>
+          <BackButton fallbackHref="/" className={styles.backLink} />
         </div>
       </div>
     );
@@ -1020,13 +1018,13 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
     !stepImageUploading
   );
   const editStatusLabel = deleting
-    ? "正在删除"
+    ? "Moving to Trash"
     : persistingEdit || imageUploading || stepImageUploading
-      ? "正在保存"
+      ? "Saving"
       : editSaveState === "error"
-        ? "保存失败"
+        ? "Save failed"
         : editSaveState === "blocked"
-          ? "继续编辑"
+          ? "Keep editing"
           : "";
   const showEditStatusButton = Boolean(editStatusLabel);
   const hasRevertableRecipeChanges = originalRecipe
@@ -1055,12 +1053,19 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
       )}
 
       <div className={styles.container}>
+        {isCreateMode && (
+          <div className={styles.editorHeader}>
+            <BackButton fallbackHref="/" className={styles.backLink} />
+            <div className={styles.headerText}>
+              <p className={styles.kicker}>Recipe</p>
+              <h1 className={styles.title}>New Recipe</h1>
+            </div>
+          </div>
+        )}
+
         {isEditMode && (
           <div className={styles.editorHeader}>
-            <Link href={`/recipes/${recipeId}`} className={styles.backLink}>
-              <span className="material-symbols-outlined">arrow_back</span>
-              Recipe
-            </Link>
+            <BackButton fallbackHref={`/recipes/${recipeId}`} className={styles.backLink} label="Recipe" />
             <div className={styles.headerText}>
               <p className={styles.kicker}>Editing</p>
               <h1 className={styles.title}>{formData.title || "Untitled recipe"}</h1>
@@ -1273,7 +1278,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
               {showEditStatusButton && (
                 <button type="button" className={`${styles.editFooterButton} ${styles.editFooterButtonMuted}`} disabled>
                   <span className="material-symbols-outlined" aria-hidden="true">
-                    {editStatusLabel === "正在保存" ? "sync" : editStatusLabel === "保存失败" ? "error" : "edit_note"}
+                    {deleting ? "delete" : editStatusLabel === "Saving" ? "sync" : editStatusLabel === "Save failed" ? "error" : "edit_note"}
                   </span>
                   <span>{editStatusLabel}</span>
                 </button>

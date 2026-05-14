@@ -13,7 +13,7 @@ import './globals.css';
 
 export const metadata = {
   title: 'Rencipe',
-  description: 'Recipe sharing and meal planning platform',
+  description: 'Recipe sharing and planning platform',
 };
 
 export const viewport: Viewport = {

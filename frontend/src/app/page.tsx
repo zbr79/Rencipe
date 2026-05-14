@@ -37,6 +37,7 @@ const MANUAL_SLIDE_PAUSE_MS = 9000;
 const SWIPE_THRESHOLD_PX = 42;
 const SWIPE_THRESHOLD_RATIO = 0.18;
 const SWIPE_REVERSAL_CANCEL_RATIO = 0.55;
+const DESKTOP_DRAG_MULTIPLIER = 1.7;
 
 function safeJson(text: string) {
   try {
@@ -85,6 +86,7 @@ export default function HomePage() {
   const swipeDeltaXRef = useRef(0);
   const swipePeakDeltaXRef = useRef(0);
   const swipeWidthRef = useRef(1);
+  const swipePointerTypeRef = useRef<string>("");
   const suppressSlideClickUntilRef = useRef(0);
   const { isSaved, addFavorite, removeFavorite, fetchSaved } = useSaved();
   const publicRecipes = recipes.filter((recipe) => recipe.isPublic !== false);
@@ -184,6 +186,7 @@ export default function HomePage() {
     swipeDeltaXRef.current = 0;
     swipePeakDeltaXRef.current = 0;
     swipeWidthRef.current = event.currentTarget.clientWidth || 1;
+    swipePointerTypeRef.current = event.pointerType;
     setDragOffsetX(0);
     setIsDraggingSlide(true);
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -191,9 +194,11 @@ export default function HomePage() {
 
   function handleSlidePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
     if (swipeStartXRef.current === null) return;
+    const dragMultiplier = swipePointerTypeRef.current === "mouse" ? DESKTOP_DRAG_MULTIPLIER : 1;
+    const rawOffset = (event.clientX - swipeStartXRef.current) * dragMultiplier;
     const nextOffset = Math.max(
       -swipeWidthRef.current,
-      Math.min(swipeWidthRef.current, event.clientX - swipeStartXRef.current)
+      Math.min(swipeWidthRef.current, rawOffset)
     );
     swipeDeltaXRef.current = nextOffset;
     if (Math.abs(nextOffset) > Math.abs(swipePeakDeltaXRef.current)) {
@@ -339,7 +344,7 @@ export default function HomePage() {
             Be the first to share a recipe.
           </p>
           <Link href="/create" className={styles.emptyButton}>
-            + Create Recipe
+            + New Recipe
           </Link>
         </div>
       ) : (

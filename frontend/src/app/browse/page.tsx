@@ -30,6 +30,32 @@ interface Recipe {
 }
 
 type VisibilityTab = "public" | "private";
+type SortMode = "popular" | "newest";
+
+function getRecipeTimestamp(recipe: Recipe) {
+  const timestamp = Date.parse(recipe.createdAt || "");
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function getRecipeStableId(recipe: Recipe) {
+  return String(recipe._id || recipe.id || "");
+}
+
+function getPopularityScore(recipe: Recipe) {
+  return recipe.ratingAverage * 100 + recipe.ratingCount * 12 + recipe.likes * 5 + recipe.views * 0.1;
+}
+
+function compareNewestRecipes(left: Recipe, right: Recipe) {
+  const dateDiff = getRecipeTimestamp(right) - getRecipeTimestamp(left);
+  if (dateDiff !== 0) return dateDiff;
+  return getRecipeStableId(right).localeCompare(getRecipeStableId(left));
+}
+
+function comparePopularRecipes(left: Recipe, right: Recipe) {
+  const scoreDiff = getPopularityScore(right) - getPopularityScore(left);
+  if (scoreDiff !== 0) return scoreDiff;
+  return compareNewestRecipes(left, right);
+}
 
 function matchesCategory(recipe: Recipe, category: string) {
   const tags = getVisibleTags(recipe.tags || []);
@@ -59,6 +85,7 @@ export default function BrowsePage() {
   const [error, setError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [visibilityTab, setVisibilityTab] = useState<VisibilityTab>("public");
+  const [sortMode, setSortMode] = useState<SortMode>("popular");
 
   useEffect(() => {
     fetchAllRecipes();
@@ -91,6 +118,7 @@ export default function BrowsePage() {
 
   const visibleRecipes = useMemo(() => allRecipes.filter((recipe) => matchesVisibility(recipe, visibilityTab)), [allRecipes, visibilityTab]);
   const filteredRecipes = visibleRecipes.filter((recipe) => matchesCategory(recipe, selectedCategory));
+  const sortedRecipes = [...filteredRecipes].sort(sortMode === "popular" ? comparePopularRecipes : compareNewestRecipes);
   const tagCategories = useMemo(() => {
     const counts = new Map<string, number>();
     visibleRecipes.forEach((recipe) => {
@@ -142,7 +170,18 @@ export default function BrowsePage() {
 
       <div className={styles.resultsHeader}>
         <h2>Browse</h2>
-        <span>{filteredRecipes.length} recipes</span>
+        <div className={styles.sortToggle} aria-label="Recipe sort">
+          <button
+            type="button"
+            className={`${styles.sortButton} ${styles.sortButtonActive}`}
+            onClick={() => setSortMode((current) => current === "popular" ? "newest" : "popular")}
+          >
+            <span className="material-symbols-rounded" aria-hidden="true">
+              {sortMode === "popular" ? "keyboard_arrow_down" : "keyboard_arrow_up"}
+            </span>
+            {sortMode === "popular" ? "Most Popular" : "Most Recent"}
+          </button>
+        </div>
       </div>
 
       {loading && <p className={styles.loading}>Loading...</p>}
@@ -157,7 +196,7 @@ export default function BrowsePage() {
       )}
 
       <div className={styles.recipeGrid}>
-        {filteredRecipes.map((recipe) => {
+        {sortedRecipes.map((recipe) => {
           const recipeId = recipe._id || recipe.id;
           const saved = isSaved(recipeId);
           const author = getRecipeAuthor(recipe);

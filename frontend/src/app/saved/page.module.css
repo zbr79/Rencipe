@@ -90,7 +90,7 @@
 
 .savedList {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .swipeRow {
@@ -100,6 +100,11 @@
   scrollbar-width: none;
   border-radius: 8px;
   touch-action: pan-x;
+  cursor: grab;
+}
+
+.swipeRow:active {
+  cursor: grabbing;
 }
 
 .swipeRow::-webkit-scrollbar {
@@ -109,11 +114,11 @@
 .savedRecipeRow {
   flex: 0 0 100%;
   min-width: 0;
-  min-height: 92px;
+  min-height: 74px;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  padding: 10px 12px 10px 10px;
+  padding: 8px 10px 8px 8px;
   scroll-snap-align: start;
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -122,14 +127,15 @@
   text-decoration: none;
   box-shadow: var(--shadow-sm);
   box-sizing: border-box;
+  user-select: none;
 }
 
 .savedRecipeLink {
   min-width: 0;
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
+  grid-template-columns: 66px minmax(0, 1fr);
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   color: inherit;
   text-decoration: none;
 }
@@ -138,17 +144,17 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 5px;
 }
 
 .savedPlanRow {
   flex: 0 0 100%;
-  min-height: 82px;
+  min-height: 66px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 5px;
-  padding: 14px 16px;
+  padding: 10px 13px;
   scroll-snap-align: start;
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -160,8 +166,8 @@
 }
 
 .savedRecipeImage {
-  width: 72px;
-  height: 72px;
+  width: 56px;
+  height: 56px;
   overflow: hidden;
   border-radius: 8px;
   background: var(--hover-bg);
@@ -172,7 +178,7 @@
 }
 
 .savedRecipeImage span {
-  font-size: 26px;
+  font-size: 22px;
 }
 
 .savedRecipeImage img {
@@ -186,7 +192,7 @@
 .savedPlanRow h3 {
   margin: 0;
   color: var(--foreground);
-  font-size: 17px;
+  font-size: 15px;
   line-height: 1.25;
   font-weight: 900;
 }
@@ -195,10 +201,10 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 5px;
   color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 850;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .uploaderLine span:last-child {
@@ -210,13 +216,13 @@
 
 .savedPlanRow span {
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
 }
 
 .swipeDeleteButton {
-  flex: 0 0 86px;
-  margin-left: 8px;
+  flex: 0 0 78px;
+  margin-left: 6px;
   scroll-snap-align: end;
   border: none;
   border-radius: 8px;
@@ -246,6 +252,7 @@
   color: white;
   font-weight: 800;
   text-decoration: none;
+  user-select: none;
 }
 
 @media (max-width: 640px) {
@@ -254,19 +261,19 @@
   }
 
   .savedRecipeRow {
-    min-height: 86px;
+    min-height: 72px;
   }
 
   .savedRecipeLink {
-    grid-template-columns: 82px minmax(0, 1fr);
+    grid-template-columns: 62px minmax(0, 1fr);
   }
 
   .savedRecipeImage {
-    width: 66px;
-    height: 66px;
+    width: 54px;
+    height: 54px;
   }
 
   .savedRecipeRow h3 {
-    font-size: 16px;
+    font-size: 15px;
   }
 }

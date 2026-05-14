@@ -3,6 +3,19 @@ import mongoose from "mongoose";
 import Favorite from "../models/Favorite";
 import Recipe from "../models/Recipe";
 
+function activeRecipeQuery() {
+  return {
+    $or: [
+      { deletedAt: { $exists: false } },
+      { deletedAt: null },
+    ],
+  };
+}
+
+function removeTrashedFavoriteRecipes(favorites: any) {
+  favorites.recipes = (favorites.recipes || []).filter((recipe: any) => recipe && !recipe.deletedAt);
+}
+
 /**
  * Get user's favorites with full recipe details
  * query: { userId }
@@ -33,6 +46,8 @@ export const getFavorites = async (req: Request, res: Response) => {
       });
       await favorites.save();
     }
+
+    removeTrashedFavoriteRecipes(favorites);
 
     res.json({
       favorites: {
@@ -65,7 +80,7 @@ export const addFavorite = async (req: Request, res: Response) => {
     }
 
     // Check if recipe exists
-    const recipe = await Recipe.findById(recipeId);
+    const recipe = await Recipe.findOne({ _id: recipeId, ...activeRecipeQuery() });
     if (!recipe) {
       return res.status(404).json({ error: "Recipe not found" });
     }
@@ -91,6 +106,7 @@ export const addFavorite = async (req: Request, res: Response) => {
       path: "recipes",
       populate: { path: "authorId", select: "username displayName role" },
     });
+    removeTrashedFavoriteRecipes(favorites);
 
     res.json({
       message: "Recipe added to favorites",
@@ -139,6 +155,7 @@ export const removeFavorite = async (req: Request, res: Response) => {
       path: "recipes",
       populate: { path: "authorId", select: "username displayName role" },
     });
+    removeTrashedFavoriteRecipes(favorites);
 
     res.json({
       message: "Recipe removed from favorites",

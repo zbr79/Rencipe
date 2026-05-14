@@ -74,7 +74,11 @@
   align-items: center;
   gap: 6px;
   margin-bottom: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--text-secondary);
+  cursor: pointer;
   font-size: 13px;
   font-weight: 850;
   text-decoration: none;
@@ -182,7 +186,11 @@
 }
 
 .accountDetailGroup {
-  padding: 0 16px;
+  display: grid;
+  margin-bottom: 10px;
+  padding: 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .accountListButton {
@@ -278,12 +286,23 @@
 }
 
 .accountRowButton {
+  min-height: 46px;
+  padding: 10px 0;
   text-decoration: none;
 }
 
 .accountRowButton:disabled {
   cursor: wait;
   opacity: 0.72;
+}
+
+.accountRowButtonSelected {
+  color: var(--primary);
+}
+
+.accountRowButtonSelected .accountSwitchText span:first-child,
+.accountRowButtonSelected .accountRowValueWrap > span:last-child {
+  color: var(--primary);
 }
 
 .accountRowLabel {
@@ -316,9 +335,200 @@
   box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06), var(--shadow-sm);
 }
 
+.accountSwitchIdentity {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.accountSwitchText {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.accountSwitchText span:first-child {
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.accountSwitchText span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountCurrentMarker {
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+}
+
 .accountCompactRow {
   min-height: 42px;
   padding: 10px 0;
+}
+
+.accountDangerGroup {
+  margin-top: 14px;
+  padding: 0;
+}
+
+.accountSignOutButton,
+.redOutlineButton {
+  min-height: 40px;
+  border: 1px solid color-mix(in srgb, var(--error) 48%, var(--border));
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--error);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.accountSignOutButton {
+  width: 100%;
+  min-height: 48px;
+  border-color: var(--error);
+  background: var(--error);
+  color: white;
+}
+
+.redOutlineButton {
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+.redOutlineButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.switchAccountBox {
+  margin-bottom: 16px;
+  overflow: visible;
+  padding: 0;
+}
+
+.switchAccountList {
+  display: grid;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.switchAccountRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.switchAccountRow:last-child {
+  border-bottom: 0;
+}
+
+.switchAccountRowCurrent {
+  background: transparent;
+}
+
+.switchAccountChoice {
+  min-width: 0;
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  text-align: left;
+}
+
+.switchAccountChoice:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.switchAccountEmpty {
+  padding: 18px 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.switchAccountActions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  padding: 0;
+}
+
+.switchAccountForm {
+  display: grid;
+  gap: 14px;
+}
+
+.switchAccountSelected {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 2px;
+}
+
+.switchAccountSelected div,
+.switchAccountField {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.switchAccountSelected span:first-child,
+.switchAccountField span {
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.switchAccountSelected span:last-child {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.switchAccountField input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 800;
+  box-sizing: border-box;
+}
+
+.switchAccountError {
+  padding: 10px 12px;
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .accountRowButtonDanger .accountRowLabel,
@@ -344,6 +554,17 @@
 
 .profileEditorCompact {
   padding-top: 0;
+  gap: 14px;
+}
+
+.profileEditorCompact .profileActions {
+  display: block;
+  margin-top: 0;
+}
+
+.profileEditorCompact .primaryButton {
+  width: 100%;
+  min-height: 48px;
 }
 
 .profileEditor label {
@@ -418,7 +639,7 @@
 
 .shortcutButton {
   min-width: 0;
-  min-height: 78px;
+  min-height: 70px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -453,13 +674,13 @@
 }
 
 .customSelectButton {
-  min-width: 134px;
+  min-width: 104px;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 6px;
   border: 1px solid var(--border);
-  padding: 0 11px 0 13px;
+  padding: 0 9px 0 11px;
   background: var(--input-bg);
   color: var(--foreground);
 }
@@ -474,7 +695,7 @@
   right: 0;
   top: calc(100% + 6px);
   z-index: 50;
-  width: 180px;
+  width: 136px;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -502,11 +723,12 @@
 }
 
 .toggle {
-  min-width: 64px;
+  min-width: 46px;
+  min-height: 34px;
   border: 1px solid var(--border);
   background: var(--hover-bg);
   color: var(--foreground);
-  padding: 0 13px;
+  padding: 0 10px;
 }
 
 .toggle.active {
@@ -595,9 +817,12 @@
     font-size: 24px;
   }
 
-  .profileActionGrid,
-  .shortcutGrid {
+  .profileActionGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .shortcutGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .signOutActionButton {
@@ -612,16 +837,46 @@
     flex-direction: row;
   }
 
+  .shortcutButton {
+    min-height: 62px;
+    gap: 6px;
+    font-size: 11px;
+  }
+
   .shortcutButton:nth-child(2) {
-    border-right: 0;
+    border-right: 1px solid var(--border);
   }
 
   .shortcutButton:nth-child(-n + 2) {
-    border-bottom: 1px solid var(--border);
+    border-bottom: 0;
+  }
+
+  .shortcutButton span:first-child {
+    font-size: 21px;
+  }
+
+  .shortcutButton span:last-child {
+    padding: 0 3px;
+    line-height: 1.05;
+    white-space: normal;
   }
 
   .settingItem,
   .settingItemButton {
     padding: 12px 0;
+  }
+
+  .switchAccountRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 12px 0;
+  }
+
+  .switchAccountChoice {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .switchAccountActions {
+    grid-template-columns: 1fr 1fr;
   }
 }

@@ -32,15 +32,15 @@ Existing features to include in the demo:
 - Saved recipes as the recipe collection surface; shopping cart and checkout flows are removed from Phase 1.
 - Live recipe search with history and recommendations, separated from the category browsing page.
 - Category browsing with category shortcuts, filter chips, and recipe grid browsing.
-- Meal plans with people, number of days, breakfast/lunch/dinner meal types, day-by-day meal slots, multiple recipes per meal, direct recipe selection, and generated ingredient lists.
-- Meal Plans as the combined planning surface for deciding what to eat across a week or custom date range.
+- Plans with people, number of days, breakfast/lunch/dinner meal types, day-by-day meal slots, multiple recipes per meal, direct recipe selection, and generated ingredient lists.
+- Plans as the combined planning surface for deciding what to eat across a week or custom date range.
 
 Features that need work before the Phase 1 demo:
 - Full English UI pass across visible pages and flows is complete for the current source scan, excluding intentional pinyin maps and the unused Chinese locale file.
 - Verify scaled meal-plan ingredient totals in the UI after checklist-style checkbox controls were removed from meal-plan ingredient views.
 - Minimal backend auth/JWT flow is implemented for Phase 1 with `admin/admin` and `testuser1/testuser1` demo accounts.
 - Add or explicitly defer keto-focused dietary features; current report says this is still in progress.
-- Responsive design pass now covers the app shell, home feed, recipe library, recipe detail, search, saved, create, drafts, meal plans, scheduled meal plans, settings, and profile list surfaces.
+- Responsive design pass now covers the app shell, home feed, recipe library, recipe detail, search, saved, create, drafts, plans, scheduled plans, settings, and profile list surfaces.
 - English demo recipe data is seeded: 37 recipes, including normal recipes and meal-plan component recipes with stable image URLs. Existing meal-plan and weekly-plan names were also translated to English.
 - Prepare a tight 20-minute walkthrough script.
 
@@ -49,7 +49,7 @@ Features that need work before the Phase 1 demo:
 1. Continue polishing deep detail flows: meal-plan detail, scheduled meal-plan detail, recipe edit, and any live demo edge states found during rehearsal.
 2. Keep the English UI scan clean as new UI is added.
 3. Verify meal-plan ingredient lists and direct recipe-add plans during rehearsal.
-4. Extend demo seed data beyond recipes if needed: saved recipes, meal plans, and weekly plans.
+4. Extend demo seed data beyond recipes if needed: saved recipes, plans, and weekly plans.
 5. Rehearse the backend auth/JWT demo path: admin can see private recipes; testuser1 cannot find admin-private recipes in search.
 6. Decide and document the keto scope: add a small visible feature or mark it as future work.
 7. Test desktop and mobile responsive layouts for the demo paths.

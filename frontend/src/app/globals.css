@@ -96,6 +96,10 @@ body {
   padding-bottom: 72px;
 }
 
+body.loginScreen {
+  padding-bottom: 0;
+}
+
 .material-symbols-outlined,
 .material-symbols-rounded {
   font-family: "Material Symbols Rounded";

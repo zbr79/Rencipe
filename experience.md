@@ -2,6 +2,11 @@
 
 Record mistakes, findings, deployment notes, and lessons learned during development.
 
+## 2026-05-14
+
+- Saved recipe rows that support swipe actions should make the main row itself the link. Nesting the link inside a swipe row can make normal taps feel unreliable on mobile and desktop QA.
+- Recipe detail views should increment through the backend with `timestamps: false`; otherwise every read can move `updatedAt` and accidentally affect newest-style ordering.
+
 ## 2026-05-11
 
 - Phase 1 is complete. Current work is Phase 2 improvement work on top of the Phase 1 baseline.
@@ -46,6 +51,9 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 - Keep only one recipe-browsing surface in the product. The canonical browsing route is `/browse`; remove the old `/recipes` list page and the old `/categories` page instead of maintaining parallel browse surfaces or aliases.
 - Treat the bottom-bar Saved tab like every other nav item for color. Keep the heart icon language if needed, but use the standard gray inactive state and the standard blue active state instead of a dedicated pink saved-tab style.
 - In the mobile bottom bar, active state should not enlarge the icon. Keep the same icon size between inactive and active states, and use color/background changes alone so selection feels steady instead of jumpy.
+- Product copy should distinguish Meals from Plans. Visible UI should use `Plans`, `Plan`, `New Plan`, and `Creating Plan...` rather than `Meal Plans` or repeated `Create...` labels, while internal route/API names can remain stable.
+- Keep route-tree cleanup separate from compatibility redirects. Empty folders like old `/categories` or cart API shells should be removed, while legacy pages that only `redirect()` can stay briefly when they protect stale links.
+- For desktop carousel dragging, apply a mouse-specific drag multiplier while keeping touch movement direct; this preserves phone-like swipe feel without making mobile overshoot.
 
 ## 2026-05-08
 
@@ -120,3 +128,16 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 - Demo login credentials for later testing: username/password `admin`/`admin` and username/password `testuser1`/`testuser1`.
 - In this VS Code browser, `page.screenshot({ path })` can report success without updating workspace files. For deck refreshes, return base64 screenshots from Playwright and decode them into `frontend/demo-screenshots/` before replacing PPTX media.
 - The final presentation deck should be actual slides to present from, not a demo plan. Avoid visible time boxes, presenter scripts, and "Demo Flow" wording; use short topic slides plus current screenshots.
+- Non-home detail/work pages should use a visible title section plus the shared history-aware `BackButton`; verify at least one detail route by navigating from a source page and confirming Back returns to that exact previous route.
+- Recipes, reusable meals, and reusable plans now use a seven-day Trash pattern: set `deletedAt`/`trashExpiresAt`, exclude trashed records from normal lists, expose `trash=1` owner lists and restore routes, and rely on Mongo TTL indexes for automatic removal.
+- If public UI still shows old route code after source changes, clear stale `.next` output before rebuilding. A failed frontend build can leave PM2 serving the previous bundle even after reload.
+- Swipe-to-delete rows need explicit mouse pointer scrolling for desktop QA, not just touch/native horizontal overflow. Verify the row `scrollLeft` changes with a Playwright mouse drag at a phone-width viewport.
+- When the desired interaction is a single toggle, implement one button whose label changes state instead of two segmented options. Browse sort should be one `Most Popular`/`Newest` button.
+- Demo account switching can reuse the existing login API with hardcoded demo account credentials; seed every selectable account in `setup-auth-demo` before testing the selector page.
+- Never put React hooks after a route-based early return. TopBar returning `null` on `/login` before its `useEffect` caused React hook-count crashes during sign-out navigation.
+- Account switching should reuse the login API with a typed password, not hidden demo credentials. The selector can choose a username, but authentication must still fail on an incorrect password.
+- AuthGate should clear a session only when `/api/auth/me` returns a real non-OK response. Aborted or failed verification fetches during route changes should keep the current local session and let the next route settle.
+- A GitHub-style account switcher should list only sessions already signed in on the current browser. Add Account goes through login, individual Sign Out removes one stored session, and signing out the active account routes to the switcher when other local sessions remain.
+- Do not add explanatory descriptions or helper copy to UI unless explicitly requested. Prefer simple self-evident controls and labels.
+- Standard back controls should be plain arrow-plus-text buttons, not bordered/pill buttons, except when a true call-to-action is needed in an empty or error state.
+- Settings/account pages should use simple unboxed lists and direct action buttons; avoid card-inside-card layouts and extra vertical padding around rows.

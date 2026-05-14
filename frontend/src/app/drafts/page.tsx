@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import BackButton from "../components/BackButton";
 import styles from "./drafts.module.css";
 import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import { getCurrentUserId } from "../utils/authSession";
+import { matchesPinyinSearch } from "../utils/pinyinSearch";
+import { useSwipeRowDrag } from "../hooks/useSwipeRowDrag";
 
 interface Draft {
   _id: string;
@@ -21,10 +24,10 @@ export default function DraftsPage() {
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
   const { confirm, notify } = useConfirmDialog();
+  const swipeRowDrag = useSwipeRowDrag();
 
   useEffect(() => {
     fetchDrafts();
@@ -76,125 +79,71 @@ export default function DraftsPage() {
     }
   };
 
-  const handleRenameDraft = async (draftId: string) => {
-    if (!editingName.trim()) return;
-    try {
-      const userId = getCurrentUserId();
-      if (!userId) throw new Error("Sign in before renaming drafts");
-      const response = await fetch(`/api/drafts`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: draftId,
-          authorId: userId,
-          name: editingName,
-        }),
-      });
-      if (!response.ok) throw new Error("Failed to rename draft");
-      const data = await response.json();
-      setDrafts(drafts.map((d) => (d._id === draftId ? { ...d, name: editingName } : d)));
-      setEditingId(null);
-    } catch (err: any) {
-      await notify({
-        title: "Rename failed",
-        message: `Rename failed: ${err.message}`,
-        intent: "danger",
-      });
-    }
-  };
-
-  const startEditName = (draft: Draft) => {
-    setEditingId(draft._id);
-    setEditingName(draft.name);
-  };
+  const filteredDrafts = drafts.filter((draft) => {
+    if (!searchTerm.trim()) return true;
+    return (
+      matchesPinyinSearch(searchTerm, draft.name || "") ||
+      matchesPinyinSearch(searchTerm, draft.title || "") ||
+      matchesPinyinSearch(searchTerm, draft.description || "")
+    );
+  });
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
+      <header className={styles.pageHeader}>
+        <BackButton fallbackHref="/settings" className={styles.backLink} />
         <div>
-          <p className={styles.kicker}>Recipe Drafts</p>
-          <h1>My Drafts</h1>
-          <p>Resume unfinished recipes without losing work.</p>
+          <p className={styles.kicker}>Recipes</p>
+          <h1>Drafts</h1>
         </div>
-        <Link href="/create">
-          <button className={`${styles.button} ${styles.buttonPrimary}`}>
-            + New Recipe
-          </button>
+      </header>
+
+      <div className={styles.filtersSection}>
+        <input
+          type="text"
+          placeholder="Search drafts"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          className={styles.searchInput}
+        />
+      </div>
+
+      <div className={styles.toolbar}>
+        <div className={styles.count}>Drafts {filteredDrafts.length}</div>
+        <Link href="/create" className={styles.newRecipeButton}>
+          New Recipe
         </Link>
       </div>
 
       {loading && <p className={styles.statusText}>Loading...</p>}
       {error && <p className={styles.errorText}>Error: {error}</p>}
 
-      {!loading && drafts.length === 0 ? (
+      {!loading && filteredDrafts.length === 0 ? (
         <div className={styles.emptyState}>
-          <p className={styles.emptyMessage}>No drafts yet</p>
-          <Link href="/create">
-            <button className={`${styles.button} ${styles.buttonPrimary}`}>
-              Start a Recipe
-            </button>
-          </Link>
+          <p className={styles.emptyMessage}>{drafts.length === 0 ? "No drafts yet" : "No matching drafts found"}</p>
+          <Link href="/create" className={styles.newRecipeButton}>New Recipe</Link>
         </div>
       ) : (
         <div className={styles.draftsList}>
-          {drafts.map((draft) => (
-            <div key={draft._id} className={styles.draftItem}>
-              <div className={styles.draftInfo}>
-                {editingId === draft._id ? (
-                  <div className={styles.editRow}>
-                    <input
-                      type="text"
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      autoFocus
-                    />
-                    <button
-                      onClick={() => handleRenameDraft(draft._id)}
-                      className={`${styles.button} ${styles.buttonSuccess}`}
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className={`${styles.button} ${styles.buttonSecondary}`}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <h3 className={styles.draftName} onClick={() => handleOpenDraft(draft._id)}>
-                      {draft.name}
-                    </h3>
-                    <p className={styles.draftTitle}>
-                      {draft.title || "Untitled"}
-                    </p>
-                    <p className={styles.draftDate}>
-                      Updated {new Date(draft.updatedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
-              </div>
-              <div className={styles.draftActions}>
-                <button
-                  onClick={() => handleOpenDraft(draft._id)}
-                  className={`${styles.button} ${styles.buttonPrimary}`}
-                >
-                  Open
-                </button>
-                <button
-                  onClick={() => startEditName(draft)}
-                  className={`${styles.button} ${styles.buttonSecondary}`}
-                >
-                  Rename
-                </button>
-                <button
-                  onClick={() => handleDeleteDraft(draft._id)}
-                  className={`${styles.button} ${styles.buttonDanger}`}
-                >
-                  Delete
-                </button>
-              </div>
+          {filteredDrafts.map((draft) => (
+            <div key={draft._id} className={styles.swipeRow} {...swipeRowDrag}>
+              <button type="button" className={styles.draftRow} onClick={() => handleOpenDraft(draft._id)}>
+                <div className={styles.draftImage}>
+                  {draft.image ? <img src={draft.image} alt={draft.title || draft.name || "Draft"} /> : <span className="material-symbols-outlined">edit_note</span>}
+                </div>
+                <div className={styles.draftText}>
+                  <h3>{draft.name || draft.title || "Untitled Draft"}</h3>
+                  <p>{draft.title || "Untitled recipe"}</p>
+                  <span>Updated {new Date(draft.updatedAt).toLocaleDateString()}</span>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteDraft(draft._id)}
+                className={styles.swipeDeleteButton}
+              >
+                Delete
+              </button>
             </div>
           ))}
         </div>

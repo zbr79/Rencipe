@@ -10,7 +10,8 @@ interface AccountAvatarProps {
 
 export default function AccountAvatar({ account, size = 32, className = "" }: AccountAvatarProps) {
   const label = getAccountDisplayName(account);
-  const avatarUrl = account?.avatarUrl?.trim() || "";
+  const isAdmin = account?.username?.trim().toLowerCase() === "admin" || account?.displayName?.trim().toLowerCase() === "admin";
+  const avatarUrl = isAdmin ? "" : account?.avatarUrl?.trim() || "";
   const style = {
     "--avatar-size": `${size}px`,
     "--avatar-bg": getAccountAvatarColor(account),

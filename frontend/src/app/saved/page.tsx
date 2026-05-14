@@ -9,6 +9,7 @@ import styles from "./page.module.css";
 import { matchesPinyinSearch } from "../utils/pinyinSearch";
 import { getAccountDisplayName } from "../utils/accountAvatar";
 import { getRecipeAuthor } from "../utils/recipeAuthor";
+import { useSwipeRowDrag } from "../hooks/useSwipeRowDrag";
 
 export default function SavedPage() {
   const {
@@ -22,6 +23,7 @@ export default function SavedPage() {
     deleteMealPlan,
   } = useSaved();
   const { creatingMealPlan, createAndOpenMealPlan } = useQuickCreateMealPlan();
+  const swipeRowDrag = useSwipeRowDrag();
 
   const [activeTab, setActiveTab] = useState<"recipes" | "plans">("recipes");
   const [filters, setFilters] = useState({
@@ -61,7 +63,7 @@ export default function SavedPage() {
       await deleteMealPlan(planId);
       await fetchMealPlans();
     } catch (error) {
-      console.error("Failed to delete plan:", error);
+      console.error("Failed to move plan to trash:", error);
     }
   };
 
@@ -76,7 +78,7 @@ export default function SavedPage() {
         <input
           type="text"
           placeholder={
-            activeTab === "recipes" ? "Search saved recipes" : "Search meal plans"
+            activeTab === "recipes" ? "Search saved recipes" : "Search plans"
           }
           value={filters.searchTerm}
           onChange={(e) =>
@@ -98,7 +100,7 @@ export default function SavedPage() {
           onClick={() => setActiveTab("plans")}
           className={`${styles.segmentedTab} ${activeTab === "plans" ? styles.segmentedTabActive : ""}`}
         >
-          Meal Plans ({mealPlans.length})
+          Plans ({mealPlans.length})
         </button>
       </div>
 
@@ -130,21 +132,21 @@ export default function SavedPage() {
               const author = getRecipeAuthor(recipe);
 
               return (
-                <div key={recipeId} className={styles.swipeRow}>
-                  <div className={styles.savedRecipeRow}>
-                    <Link href={`/recipes/${recipeId}`} className={styles.savedRecipeLink}>
+                <div key={recipeId} className={styles.swipeRow} {...swipeRowDrag}>
+                  <Link href={`/recipes/${recipeId}`} className={styles.savedRecipeRow}>
+                    <div className={styles.savedRecipeLink}>
                       <div className={styles.savedRecipeImage}>
                         {recipe.image ? <img src={recipe.image} alt={recipe.title} /> : <span className="material-symbols-outlined">restaurant</span>}
                       </div>
                       <div className={styles.savedRecipeText}>
                         <h3>{recipe.title}</h3>
                         <div className={styles.uploaderLine}>
-                          <AccountAvatar account={author} size={24} />
+                          <AccountAvatar account={author} size={18} />
                           <span>{getAccountDisplayName(author)}</span>
                         </div>
                       </div>
-                    </Link>
-                  </div>
+                    </div>
+                  </Link>
                   <button
                     type="button"
                     className={styles.swipeDeleteButton}
@@ -181,7 +183,7 @@ export default function SavedPage() {
             <div className={styles.empty}>
               <p>
                 {mealPlans.length === 0
-                  ? "You have not created any meal plans yet"
+                  ? "You have not created any plans yet"
                   : "No matching plans found"}
               </p>
               <button
@@ -189,14 +191,14 @@ export default function SavedPage() {
                 className={styles.newPlanButton}
                 disabled={creatingMealPlan}
               >
-                {creatingMealPlan ? "Creating Plan..." : "Create your first plan"}
+                {creatingMealPlan ? "Creating Plan..." : "New Plan"}
               </button>
             </div>
           )}
 
           <div className={styles.savedList}>
             {filteredPlans.map((plan) => (
-              <div key={plan._id} className={styles.swipeRow}>
+              <div key={plan._id} className={styles.swipeRow} {...swipeRowDrag}>
                 <Link href={`/meal-plans/${plan._id}`} className={styles.savedPlanRow}>
                   <h3>{plan.name}</h3>
                   <span>{getPlanRecipeCount(plan)} recipes</span>

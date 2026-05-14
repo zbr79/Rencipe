@@ -168,10 +168,46 @@
   font-weight: 900;
 }
 
-.resultsHeader span {
+.resultsHeader > span {
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 800;
+}
+
+.sortToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+}
+
+.sortButton {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  opacity: 0.68;
+  white-space: nowrap;
+}
+
+.sortButton span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.sortButtonActive {
+  color: var(--primary);
+  opacity: 1;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
 }
 
 .iconButton {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import BackButton from "../../components/BackButton";
 import FloatingActionPanel from "../../components/FloatingActionPanel";
 import { toastError } from "../../components/toast/toast";
 import { useSaved } from "../../contexts/SavedContext";
@@ -89,7 +89,8 @@ export default function RecipeDetailPage() {
       }
       
       setRecipe(recipeData);
-      setSelectedRating(Math.round(recipeData.ratingAverage || 0));
+      setSelectedRating(0);
+      setRatingMessage("");
     } catch (err: any) {
       setError(err.message);
       console.error(err);
@@ -151,10 +152,7 @@ export default function RecipeDetailPage() {
       <div className={styles.container}>
         <div className={styles.error}>
           <p>Error: {error || ""}</p>
-          <Link href="/" className={styles.backLink}>
-            <span className="material-symbols-outlined">arrow_back</span>
-            Back
-          </Link>
+          <BackButton fallbackHref="/" className={styles.backLink} />
         </div>
       </div>
     );
@@ -163,10 +161,7 @@ export default function RecipeDetailPage() {
   return (
     <div className={styles.container}>
       <div className={styles.backButtonContainer}>
-        <Link href="/" className={styles.backButtonNormal}>
-          <span className="material-symbols-outlined">arrow_back</span>
-          Back
-        </Link>
+        <BackButton fallbackHref="/" className={styles.backButtonNormal} />
       </div>
 
       <FloatingActionPanel
@@ -316,7 +311,6 @@ export default function RecipeDetailPage() {
       <section className={styles.submitRatingSection} aria-label="Rate this recipe">
         <div>
           <h3 className={styles.sectionTitle}>Rate this recipe</h3>
-          <p>Tap a star to submit your rating.</p>
         </div>
         <div className={styles.ratingButtons}>
           {Array.from({ length: 5 }, (_, index) => {
@@ -325,7 +319,7 @@ export default function RecipeDetailPage() {
               <button
                 key={rating}
                 type="button"
-                className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""}`}
+                className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""} ${ratingMessage === "Rating submitted" ? styles.starButtonDone : ""}`}
                 onClick={() => handleRatingSubmit(rating)}
                 disabled={ratingSubmitting}
                 aria-label={`Rate ${rating} star${rating === 1 ? "" : "s"}`}
@@ -335,7 +329,7 @@ export default function RecipeDetailPage() {
             );
           })}
         </div>
-        {ratingMessage && <span className={styles.ratingMessage}>{ratingMessage}</span>}
+        {ratingSubmitting ? <span className={styles.ratingMessage}>Submitting...</span> : ratingMessage && <span className={styles.ratingMessage}>{ratingMessage === "Rating submitted" ? "Done" : ratingMessage}</span>}
       </section>
     </div>
   );

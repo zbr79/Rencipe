@@ -20,8 +20,8 @@ export default function WeeklyPlansPage() {
 
   const handleDelete = async (id: string) => {
     if (!(await confirm({
-      title: "Delete scheduled meal plan",
-      message: "Delete this scheduled meal plan?",
+      title: "Delete scheduled plan",
+      message: "Delete this scheduled plan?",
       intent: "danger",
       confirmText: "Delete",
     }))) return;
@@ -31,7 +31,7 @@ export default function WeeklyPlansPage() {
       console.error("Failed to delete:", err);
       await notify({
         title: "Delete failed",
-        message: "Failed to delete this scheduled meal plan.",
+        message: "Failed to delete this scheduled plan.",
         intent: "danger",
       });
     }
@@ -57,7 +57,7 @@ export default function WeeklyPlansPage() {
       <header className={styles.header}>
         <div>
           <p className={styles.kicker}>Meal Schedule</p>
-          <h1>Meal Plans</h1>
+          <h1>Plans</h1>
           <p>Arrange breakfast, lunch, and dinner slots across the week.</p>
         </div>
         <Link href="/weekly-plans/create" className={styles.primaryButton}>
@@ -70,7 +70,7 @@ export default function WeeklyPlansPage() {
       {errorWeeklyPlans && <p className={styles.errorText}>Error: {errorWeeklyPlans}</p>}
 
       {weeklyPlans.length === 0 && !loadingWeeklyPlans ? (
-        <div className={styles.emptyState}>No scheduled meal plans yet</div>
+        <div className={styles.emptyState}>No scheduled plans yet</div>
       ) : (
         <div className={styles.planList}>
           {weeklyPlans.map((plan) => (

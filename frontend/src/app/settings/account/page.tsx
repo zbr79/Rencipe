@@ -4,8 +4,9 @@ import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AccountAvatar from "../../components/AccountAvatar";
+import BackButton from "../../components/BackButton";
 import { toastError, toastSuccess } from "../../components/toast/toast";
-import { authFetch, clearAuthSession, readAuthSession, writeAuthSession, type AuthSession } from "../../utils/authSession";
+import { authFetch, removeSignedInAccount, readAuthSession, writeAuthSession, type AuthSession } from "../../utils/authSession";
 import styles from "../page.module.css";
 
 const profileItems = [
@@ -71,8 +72,14 @@ export default function AccountSettingsPage() {
   };
 
   const handleSignOut = () => {
-    clearAuthSession();
-    router.replace("/login");
+    if (!session) {
+      router.replace("/login");
+      return;
+    }
+
+    const remainingAccounts = removeSignedInAccount(session.user.id || session.user.username);
+    setSession(null);
+    router.replace(remainingAccounts.length > 0 ? "/settings/account/switch" : "/login");
   };
 
   const handleAvatarUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -167,7 +174,12 @@ export default function AccountSettingsPage() {
 
   return (
     <div className={styles.container}>
-      <div className={`${styles.group} ${styles.accountDetailGroup}`}>
+      <div className={styles.accountPageHeader}>
+        <BackButton fallbackHref="/settings" className={styles.backLink} label="Settings" />
+        <h1>Account</h1>
+      </div>
+
+      <div className={styles.accountDetailGroup}>
         <input
           ref={avatarInputRef}
           className={styles.accountHiddenInput}
@@ -202,7 +214,15 @@ export default function AccountSettingsPage() {
         ))}
       </div>
 
-      <div className={`${styles.group} ${styles.accountDetailGroup}`}>
+      <div className={styles.accountDetailGroup}>
+        <Link href="/settings/account/switch" className={`${styles.settingItemButton} ${styles.accountRowButton} ${styles.accountCompactRow}`}>
+          <span className={styles.accountRowLabel}>Switch Account</span>
+          <span className={styles.accountRowValueWrap}>
+            <span className={styles.accountRowValue}>{session?.user.username || "Choose"}</span>
+            <span className={`material-symbols-outlined ${styles.accountListChevron}`}>chevron_right</span>
+          </span>
+        </Link>
+
         <button
           type="button"
           className={`${styles.settingItemButton} ${styles.accountRowButton} ${styles.accountCompactRow}`}
@@ -215,13 +235,13 @@ export default function AccountSettingsPage() {
         </button>
       </div>
 
-      <div className={`${styles.group} ${styles.accountDetailGroup}`}>
+      <div className={styles.accountDangerGroup}>
         <button
           type="button"
-          className={`${styles.settingItemButton} ${styles.accountRowButton} ${styles.accountCompactRow} ${styles.accountCenteredDangerRow}`}
+          className={styles.accountSignOutButton}
           onClick={handleSignOut}
         >
-          <span className={styles.accountCenteredDangerText}>Sign Out</span>
+          Sign Out
         </button>
       </div>
 
@@ -229,10 +249,7 @@ export default function AccountSettingsPage() {
         <div className={styles.passwordModalOverlay} onClick={closePasswordModal} role="presentation">
           <div className={styles.passwordModalCard} onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
             <div className={styles.passwordModalHeader}>
-              <div>
-                <h2 id="password-modal-title">Change Password</h2>
-                <p>Update the password for this account.</p>
-              </div>
+              <h2 id="password-modal-title">Change Password</h2>
               <button type="button" className={styles.passwordModalClose} onClick={closePasswordModal} aria-label="Close password dialog">
                 <span className="material-symbols-outlined">close</span>
               </button>

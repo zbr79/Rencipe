@@ -1,18 +1,44 @@
 .page {
-  min-height: 100svh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
-  background: var(--background);
+  padding: 0;
+  background: color-mix(in srgb, var(--background) 94%, var(--primary-soft));
   color: var(--foreground);
+}
+
+.authShell {
+  width: 100%;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 480px);
+}
+
+.brandPanel {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(28px, 5vw, 64px);
+  background: var(--card-bg);
+  border-right: 1px solid var(--border);
+}
+
+.brandPanel h1 {
+  max-width: 620px;
+  margin: 0;
+  color: var(--foreground);
+  font-size: clamp(42px, 7vw, 86px);
+  line-height: 0.96;
+  font-weight: 950;
+  letter-spacing: 0;
 }
 
 .brandLockup {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 24px;
   font-size: 20px;
   font-weight: 900;
 }
@@ -41,14 +67,14 @@
 }
 
 .formPanel {
-  width: min(100%, 430px);
+  width: 100%;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: 30px;
+  justify-content: center;
+  padding: clamp(28px, 5vw, 58px);
   background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: var(--shadow-md);
+  box-sizing: border-box;
 }
 
 .formHeader {
@@ -62,7 +88,7 @@
 .formHeader h2 {
   margin: 0;
   color: var(--foreground);
-  font-size: clamp(36px, 5vw, 56px);
+  font-size: 44px;
   line-height: 1;
   font-weight: 900;
 }
@@ -92,7 +118,7 @@
   border-radius: 8px;
   background: var(--input-bg);
   color: var(--foreground);
-  font-size: 15px;
+  font-size: 16px;
   box-sizing: border-box;
 }
 
@@ -145,9 +171,99 @@
   opacity: 0.65;
 }
 
+.inlineLink {
+  width: fit-content;
+  min-height: 28px;
+  justify-self: end;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.formFooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.formFooter button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.placeholderPanel {
+  display: grid;
+  gap: 18px;
+}
+
+.placeholderPanel p {
+  margin: -6px 0 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 800;
+}
+
 @media (max-width: 860px) {
+  .authShell {
+    grid-template-columns: 1fr;
+  }
+
+  .brandPanel {
+    min-height: auto;
+    padding: 24px 18px 0;
+    border-right: 0;
+    background: var(--card-bg);
+  }
+
+  .brandPanel h1 {
+    display: none;
+  }
+
   .formPanel {
+    min-height: calc(100dvh - 72px);
     padding: 24px 18px;
   }
 
+}
+
+@media (max-width: 640px) {
+  .page {
+    min-height: 100dvh;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+    background: var(--card-bg);
+  }
+
+  .formPanel {
+    min-height: calc(100dvh - 72px);
+    justify-content: center;
+    padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .brandLockup {
+    margin-bottom: 28px;
+  }
+
+  .formHeader h2 {
+    font-size: 40px;
+  }
 }

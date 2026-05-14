@@ -7,6 +7,8 @@ import { getAuthUser } from "../middleware/auth";
 
 dotenv.config();
 
+const TRASH_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -54,9 +56,36 @@ function pickRecipe(doc: any) {
     views: doc.views ?? 0,
     ratingAverage: doc.ratingAverage ?? 0,
     ratingCount: doc.ratingCount ?? 0,
+    deletedAt: doc.deletedAt ?? null,
+    trashExpiresAt: doc.trashExpiresAt ?? null,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };
+}
+
+function activeRecipeQuery() {
+  return {
+    $or: [
+      { deletedAt: { $exists: false } },
+      { deletedAt: null },
+    ],
+  };
+}
+
+function trashedRecipeQuery() {
+  return {
+    deletedAt: { $exists: true, $ne: null },
+    trashExpiresAt: { $exists: true, $ne: null },
+  };
+}
+
+function combineRecipeQueries(...queries: Record<string, unknown>[]) {
+  const meaningfulQueries = queries.filter((query) => Object.keys(query).length > 0);
+  return meaningfulQueries.length > 0 ? { $and: meaningfulQueries } : {};
+}
+
+function isRecipeTrashed(doc: any) {
+  return Boolean(doc?.deletedAt);
 }
 
 function visibleRecipeQuery(req: Request) {
@@ -103,9 +132,23 @@ function normalizeOptionalText(value: unknown) {
 export async function listRecipes(req: Request, res: Response) {
   try {
     const limit = Math.min(parseInt(String(req.query.limit || "200"), 10) || 200, 1000);
-    const docs = await Recipe.find(visibleRecipeQuery(req))
+    const trashOnly = String(req.query.trash || "") === "1";
+    const authUser = getAuthUser(req);
+
+    if (trashOnly && !authUser) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const query = trashOnly
+      ? combineRecipeQueries(
+          { authorId: new mongoose.Types.ObjectId(authUser!.id) },
+          trashedRecipeQuery()
+        )
+      : combineRecipeQueries(visibleRecipeQuery(req), activeRecipeQuery());
+
+    const docs = await Recipe.find(query)
       .populate("authorId", "username displayName role")
-      .sort({ updatedAt: -1, createdAt: -1 })
+      .sort(trashOnly ? { deletedAt: -1, updatedAt: -1 } : { updatedAt: -1, createdAt: -1 })
       .limit(limit);
 
     res.json({
@@ -192,7 +235,11 @@ export async function getRecipeById(req: Request, res: Response) {
 
     const doc = await Recipe.findById(id);
     if (!doc) return res.status(404).json({ error: "recipe not found" });
+    if (isRecipeTrashed(doc)) return res.status(404).json({ error: "recipe not found" });
     if (!canAccessRecipe(req, doc)) return res.status(404).json({ error: "recipe not found" });
+
+    await Recipe.updateOne({ _id: doc._id }, { $inc: { views: 1 } }, { timestamps: false });
+    doc.views = (doc.views ?? 0) + 1;
 
     await doc.populate("authorId", "username displayName role");
 
@@ -230,9 +277,9 @@ export async function updateRecipe(req: Request, res: Response) {
 
     const existing = await Recipe.findById(id);
     if (!existing) return res.status(404).json({ error: "recipe not found" });
+    if (isRecipeTrashed(existing)) return res.status(404).json({ error: "recipe not found" });
     if (!canMutateRecipe(req, existing)) return res.status(403).json({ error: "Not allowed to update this recipe" });
 
-    const authUser = getAuthUser(req);
     const recipeOrigin = normalizeRecipeOrigin(rawRecipeOrigin);
     const tips = normalizeOptionalText(rawTips);
     const sharedSource = normalizeOptionalText(rawSharedSource);
@@ -287,6 +334,7 @@ export async function rateRecipe(req: Request, res: Response) {
 
     const existing = await Recipe.findById(id);
     if (!existing) return res.status(404).json({ error: "recipe not found" });
+    if (isRecipeTrashed(existing)) return res.status(404).json({ error: "recipe not found" });
     if (!canAccessRecipe(req, existing)) return res.status(404).json({ error: "recipe not found" });
 
     const nextCount = (existing.ratingCount ?? 0) + 1;
@@ -314,14 +362,41 @@ export async function deleteRecipe(req: Request, res: Response) {
 
     const existing = await Recipe.findById(id);
     if (!existing) return res.status(404).json({ error: "recipe not found" });
+    if (isRecipeTrashed(existing)) return res.status(404).json({ error: "recipe not found" });
     if (!canMutateRecipe(req, existing)) return res.status(403).json({ error: "Not allowed to delete this recipe" });
 
-    const doc = await Recipe.findByIdAndDelete(id);
-    if (!doc) return res.status(404).json({ error: "recipe not found" });
+    const deletedAt = existing.deletedAt || new Date();
+    existing.deletedAt = deletedAt;
+    existing.trashExpiresAt = new Date(deletedAt.getTime() + TRASH_RETENTION_MS);
+    await existing.save();
 
-    res.json({ success: true, message: "recipe deleted" });
+    res.json({ success: true, message: "recipe moved to trash", trashExpiresAt: existing.trashExpiresAt });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Failed to delete recipe" });
+  }
+}
+
+/**
+ * PATCH /recipes/:id/restore
+ * Restore a trashed recipe
+ */
+export async function restoreRecipe(req: Request, res: Response) {
+  try {
+    const id = String(req.params.id || "").trim();
+    if (!id) return res.status(400).json({ error: "id is required" });
+
+    const existing = await Recipe.findById(id);
+    if (!existing) return res.status(404).json({ error: "recipe not found" });
+    if (!canMutateRecipe(req, existing)) return res.status(403).json({ error: "Not allowed to restore this recipe" });
+
+    existing.deletedAt = undefined;
+    existing.trashExpiresAt = undefined;
+    await existing.save();
+    await existing.populate("authorId", "username displayName role");
+
+    res.json({ recipe: pickRecipe(existing), message: "recipe restored" });
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || "Failed to restore recipe" });
   }
 }
 
@@ -336,6 +411,7 @@ export async function uploadRecipeImage(req: Request, res: Response) {
 
     const existing = await Recipe.findById(id);
     if (!existing) return res.status(404).json({ error: "recipe not found" });
+    if (isRecipeTrashed(existing)) return res.status(404).json({ error: "recipe not found" });
     if (!canMutateRecipe(req, existing)) return res.status(403).json({ error: "Not allowed to update this recipe" });
 
     const file = (req as any).file;
@@ -394,6 +470,7 @@ export async function uploadStepImage(req: Request, res: Response) {
 
     const existing = await Recipe.findById(id);
     if (!existing) return res.status(404).json({ error: "recipe not found" });
+    if (isRecipeTrashed(existing)) return res.status(404).json({ error: "recipe not found" });
     if (!canMutateRecipe(req, existing)) return res.status(403).json({ error: "Not allowed to update this recipe" });
 
     const file = (req as any).file;

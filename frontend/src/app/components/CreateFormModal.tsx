@@ -22,7 +22,7 @@ export default function CreateFormModal() {
           <h1 className={styles.menuTitle}>Create</h1>
           <button className={styles.menuOption} onClick={() => { closeCreateForm(); router.push("/create"); }}>
             <span className={`material-symbols-outlined ${styles.menuIcon}`}>edit_note</span>
-            <span className={styles.menuLabel}>Create Recipe</span>
+            <span className={styles.menuLabel}>New Recipe</span>
           </button>
           <button
             className={styles.menuOption}
@@ -30,7 +30,7 @@ export default function CreateFormModal() {
             disabled={isCreatingAny}
           >
             <span className={`material-symbols-outlined ${styles.menuIcon}`}>restaurant</span>
-            <span className={styles.menuLabel}>{creatingMeal ? "Creating Meal..." : "Create Meal"}</span>
+            <span className={styles.menuLabel}>{creatingMeal ? "Creating Meal..." : "New Meal"}</span>
           </button>
           <button
             className={styles.menuOption}
@@ -38,7 +38,7 @@ export default function CreateFormModal() {
             disabled={isCreatingAny}
           >
             <span className={`material-symbols-outlined ${styles.menuIcon}`}>event_note</span>
-            <span className={styles.menuLabel}>{creatingMealPlan ? "Creating Meal Plan..." : "Create Meal Plan"}</span>
+            <span className={styles.menuLabel}>{creatingMealPlan ? "Creating Plan..." : "New Plan"}</span>
           </button>
         </div>
       </div>

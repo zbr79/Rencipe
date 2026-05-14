@@ -10,16 +10,16 @@ export default function TopBar() {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
 
-  if (pathname === "/login") return null;
-
   useEffect(() => {
     setSearchOpen(false);
   }, [pathname]);
 
+  if (pathname === "/login") return null;
+
   const navLinks = [
     { href: "/browse", label: "Browse" },
     { href: "/saved", label: "Saved" },
-    { href: "/meal-plans", label: "Meal Plans" },
+    { href: "/meal-plans", label: "Plans" },
   ];
 
   return (

@@ -10,7 +10,7 @@ export default function CreateWeeklyPlanPage() {
   const router = useRouter();
   const modalShownRef = useRef(false);
 
-  const [name, setName] = useState("Untitled Meal Plan");
+  const [name, setName] = useState("Untitled Plan");
   const [mealTypes, setMealTypes] = useState({
     breakfast: false,
     lunch: false,
@@ -39,7 +39,7 @@ export default function CreateWeeklyPlanPage() {
       const plan = await createWeeklyPlan(undefined, name, selectedMeals);
       router.push(`/weekly-plans/${plan._id}`);
     } catch (err: any) {
-      console.error("Failed to create scheduled meal plan:", err);
+      console.error("Failed to create scheduled plan:", err);
       setIsLoading(false);
     }
   };
@@ -51,7 +51,7 @@ export default function CreateWeeklyPlanPage() {
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
-        <h2 style={{ marginBottom: "20px" }}>Create Scheduled Meal Plan</h2>
+        <h2 style={{ marginBottom: "20px" }}>New Scheduled Plan</h2>
 
         <div style={{ marginBottom: "20px" }}>
           <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
@@ -136,7 +136,7 @@ export default function CreateWeeklyPlanPage() {
               opacity: isLoading ? 0.6 : 1,
             }}
           >
-            {isLoading ? "Creating..." : "Create"}
+            {isLoading ? "Creating..." : "New Plan"}
           </button>
         </div>
       </div>

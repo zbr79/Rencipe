@@ -27,7 +27,7 @@ const DEFAULT_MEAL_TEMPLATE: QuickCreateTemplate = {
 };
 
 const CREATE_FAILURE_MESSAGE: Record<QuickCreateKind, string> = {
-  mealPlan: "Could not create meal plan",
+  mealPlan: "Could not create plan",
   meal: "Could not create meal",
 };
 

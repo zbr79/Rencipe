@@ -12,14 +12,14 @@ function forwardHeaders(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const limit = searchParams.get("limit");
-    
-    let url = `${BACKEND_URL}/recipes`;
-    if (limit) {
-      url += `?limit=${limit}`;
+    const backendUrl = new URL(`${BACKEND_URL}/recipes`);
+
+    for (const key of ["limit", "trash"]) {
+      const value = searchParams.get(key);
+      if (value) backendUrl.searchParams.set(key, value);
     }
 
-    const response = await fetch(url, {
+    const response = await fetch(backendUrl.toString(), {
       headers: forwardHeaders(request),
     });
 

@@ -14,6 +14,8 @@ export interface IRecipe extends Document {
   image?: string; // Cloudinary image URL
   component: boolean; // Can be used as a component in meal prep
   isPublic: boolean;
+  deletedAt?: Date | null;
+  trashExpiresAt?: Date | null;
 
   mainIngredients: {
     name: string;
@@ -71,6 +73,8 @@ const RecipeSchema = new Schema<IRecipe>(
     image: String,
     component: { type: Boolean, default: false }, // Can be used as a component in meal prep
     isPublic: { type: Boolean, default: false },
+    deletedAt: { type: Date, default: undefined, index: true },
+    trashExpiresAt: { type: Date, default: undefined },
 
     mainIngredients: [
       {
@@ -113,5 +117,10 @@ RecipeSchema.pre<IRecipe>("save", async function() {
     this.titleFirstLetters = textToFirstLetters(this.title);
   }
 });
+
+RecipeSchema.index(
+  { trashExpiresAt: 1 },
+  { expireAfterSeconds: 0, partialFilterExpression: { trashExpiresAt: { $type: "date" } } }
+);
 
 export default mongoose.models.Recipe || mongoose.model<IRecipe>("Recipe", RecipeSchema);

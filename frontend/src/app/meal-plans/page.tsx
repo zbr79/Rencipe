@@ -35,7 +35,7 @@ export default function MealPlansPage() {
   const handleDeletePlan = async (planId: string) => {
     if (!(await confirm({
       title: "Delete plan",
-      message: "Delete this plan?",
+      message: "Move this plan to Trash for 7 days?",
       intent: "danger",
       confirmText: "Delete",
     }))) return;
@@ -43,10 +43,10 @@ export default function MealPlansPage() {
     try {
       await deleteMealPlan(planId);
     } catch (error) {
-      console.error("Failed to delete plan:", error);
+      console.error("Failed to move plan to trash:", error);
       await notify({
         title: "Delete failed",
-        message: "Failed to delete this plan.",
+        message: "Failed to move this plan to Trash.",
         intent: "danger",
       });
     }
@@ -54,18 +54,18 @@ export default function MealPlansPage() {
 
   const handleDeleteScheduledPlan = async (planId: string) => {
     if (!(await confirm({
-      title: "Delete scheduled meal plan",
-      message: "Delete this scheduled meal plan?",
+      title: "Delete scheduled plan",
+      message: "Delete this scheduled plan?",
       intent: "danger",
       confirmText: "Delete",
     }))) return;
     try {
       await deleteWeeklyPlan(planId);
     } catch (error) {
-      console.error("Failed to delete scheduled meal plan:", error);
+      console.error("Failed to delete scheduled plan:", error);
       await notify({
         title: "Delete failed",
-        message: "Failed to delete this scheduled meal plan.",
+        message: "Failed to delete this scheduled plan.",
         intent: "danger",
       });
     }
@@ -85,8 +85,8 @@ export default function MealPlansPage() {
     <div className={styles.container}>
       <header className={styles.header}>
         <div>
-          <p className={styles.kicker}>{showMealsOnly ? "Meals" : "Meal Planning"}</p>
-          <h1>{showMealsOnly ? "Meals" : "Meal Plans"}</h1>
+          <p className={styles.kicker}>{showMealsOnly ? "Meals" : "Planning"}</p>
+          <h1>{showMealsOnly ? "Meals" : "Plans"}</h1>
           <p className={styles.headerMeta}>{showMealsOnly ? "Create and collect recipe combinations as reusable meals." : "Create reusable plans or schedule meals across the week."}</p>
         </div>
         <div className={styles.headerActions}>
@@ -98,7 +98,7 @@ export default function MealPlansPage() {
           )}
           <button type="button" className={styles.createButton} onClick={() => showMealsOnly ? createAndOpenMeal() : createAndOpenMealPlan()} disabled={showMealsOnly ? creatingMeal : creatingMealPlan}>
             <span className="material-symbols-outlined">add</span>
-            {showMealsOnly ? (creatingMeal ? "Creating Meal..." : "New Meal") : (creatingMealPlan ? "Creating Meal Plan..." : "New Meal Plan")}
+            {showMealsOnly ? (creatingMeal ? "Creating Meal..." : "New Meal") : (creatingMealPlan ? "Creating Plan..." : "New Plan")}
           </button>
         </div>
       </header>
@@ -107,7 +107,7 @@ export default function MealPlansPage() {
         <p className={styles.loading}>Loading...</p>
       ) : !hasPlans ? (
         <div className={styles.empty}>
-          <p>{showMealsOnly ? "No meals yet" : "No meal plans yet"}</p>
+          <p>{showMealsOnly ? "No meals yet" : "No plans yet"}</p>
         </div>
       ) : (
         <>

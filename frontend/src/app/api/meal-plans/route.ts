@@ -6,15 +6,20 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const userId = searchParams.get("userId");
+    const trash = searchParams.get("trash");
 
     if (!userId) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/meal-plans?userId=${userId}`);
+    const backendUrl = new URL(`${BACKEND_URL}/meal-plans`);
+    backendUrl.searchParams.set("userId", userId);
+    if (trash) backendUrl.searchParams.set("trash", trash);
+
+    const response = await fetch(backendUrl.toString());
 
     if (!response.ok) {
-      throw new Error("Failed to fetch meal plans from backend");
+      throw new Error("Failed to fetch plans from backend");
     }
 
     const data = await response.json();
@@ -39,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     if (kind === "mealPlan" && (numberOfDays === undefined || !mealTypes)) {
       return NextResponse.json(
-        { error: "numberOfDays and mealTypes are required for meal plans" },
+        { error: "numberOfDays and mealTypes are required for plans" },
         { status: 400 }
       );
     }
@@ -52,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to create meal plan");
+      throw new Error(errorData.error || "Failed to create plan");
     }
 
     const data = await response.json();

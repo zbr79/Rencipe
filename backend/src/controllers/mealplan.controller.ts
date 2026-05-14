@@ -4,6 +4,27 @@ import MealPlan, { IMealCombination, MealEntryKind, MealType } from "../models/M
 import Recipe from "../models/Recipe";
 
 const VALID_MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner"];
+const TRASH_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+
+function activePlanQuery() {
+  return {
+    $or: [
+      { deletedAt: { $exists: false } },
+      { deletedAt: null },
+    ],
+  };
+}
+
+function trashedPlanQuery() {
+  return {
+    deletedAt: { $exists: true, $ne: null },
+    trashExpiresAt: { $exists: true, $ne: null },
+  };
+}
+
+function isPlanTrashed(plan: any) {
+  return Boolean(plan?.deletedAt);
+}
 
 function normalizeKind(kind: any): MealEntryKind {
   return kind === "meal" ? "meal" : "mealPlan";
@@ -73,12 +94,13 @@ async function populateMealPlan(plan: any) {
 }
 
 /**
- * Get all meal plans for a user
+ * Get all plans for a user
  * query: { userId }
  */
 export const getMealPlans = async (req: Request, res: Response) => {
   try {
     const { userId } = req.query;
+    const trashOnly = String(req.query.trash || "") === "1";
 
     if (!userId) {
       return res.status(400).json({ error: "userId is required" });
@@ -90,6 +112,7 @@ export const getMealPlans = async (req: Request, res: Response) => {
 
     const plans = await MealPlan.find({
       userId: new mongoose.Types.ObjectId(userId as string),
+      ...(trashOnly ? trashedPlanQuery() : activePlanQuery()),
     })
       .populate([
         { path: "recipes", model: "Recipe" },
@@ -98,17 +121,17 @@ export const getMealPlans = async (req: Request, res: Response) => {
         { path: "combinations.vegeRecipeId", model: "Recipe" },
         { path: "combinations.sideRecipeId", model: "Recipe" },
       ])
-      .sort({ createdAt: -1 });
+      .sort(trashOnly ? { deletedAt: -1, updatedAt: -1 } : { createdAt: -1 });
 
     res.json({ plans });
   } catch (err: any) {
-    console.error("Error getting meal plans:", err);
+    console.error("Error getting plans:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
 /**
- * Get a single meal plan with full recipe details
+ * Get a single plan with full recipe details
  * params: { id }
  */
 export const getMealPlanById = async (req: Request, res: Response) => {
@@ -117,7 +140,7 @@ export const getMealPlanById = async (req: Request, res: Response) => {
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
 
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
-      return res.status(400).json({ error: "Invalid meal plan ID" });
+      return res.status(400).json({ error: "Invalid plan ID" });
     }
 
     const plan = await MealPlan.findById(idStr).populate([
@@ -129,18 +152,22 @@ export const getMealPlanById = async (req: Request, res: Response) => {
     ]);
 
     if (!plan) {
-      return res.status(404).json({ error: "Meal plan not found" });
+      return res.status(404).json({ error: "Plan not found" });
+    }
+
+    if (isPlanTrashed(plan)) {
+      return res.status(404).json({ error: "Plan not found" });
     }
 
     res.json({ plan });
   } catch (err: any) {
-    console.error("Error getting meal plan:", err);
+    console.error("Error getting plan:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
 /**
- * Create a new meal plan
+ * Create a new plan
  * body: { userId, numberOfPeople, numberOfDays, mealTypes: ['lunch', 'dinner'], name?, people?: [{name, modifier}, ...] }
  */
 export const createMealPlan = async (req: Request, res: Response) => {
@@ -195,7 +222,7 @@ export const createMealPlan = async (req: Request, res: Response) => {
     } else {
       if (numberOfDays === undefined || !mealTypes) {
         return res.status(400).json({
-          error: "numberOfDays and mealTypes are required for meal plans",
+          error: "numberOfDays and mealTypes are required for plans",
         });
       }
 
@@ -210,7 +237,7 @@ export const createMealPlan = async (req: Request, res: Response) => {
       plan = new MealPlan({
         kind: normalizedKind,
         userId: new mongoose.Types.ObjectId(userId),
-        name: name || `${numberOfPeople}-person ${numberOfDays}-day meal plan`,
+        name: name || `${numberOfPeople}-person ${numberOfDays}-day plan`,
         people: peopleArray,
         numberOfDays,
         mealTypes: normalizedMealTypes,
@@ -227,13 +254,13 @@ export const createMealPlan = async (req: Request, res: Response) => {
 
     res.status(201).json({ plan });
   } catch (err: any) {
-    console.error("Error creating meal plan:", err);
+    console.error("Error creating plan:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
 /**
- * Update a meal plan (name, people, numberOfDays, mealTypes)
+ * Update a plan (name, people, numberOfDays, mealTypes)
  * params: { id }
  * body: { name?, people?: [{name, modifier}, ...], numberOfDays?, mealTypes? }
  */
@@ -244,12 +271,15 @@ export const renameMealPlan = async (req: Request, res: Response) => {
 
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
-      return res.status(400).json({ error: "Invalid meal plan ID" });
+      return res.status(400).json({ error: "Invalid plan ID" });
     }
 
     const plan = await MealPlan.findById(idStr);
     if (!plan) {
-      return res.status(404).json({ error: "Meal plan not found" });
+      return res.status(404).json({ error: "Plan not found" });
+    }
+    if (isPlanTrashed(plan)) {
+      return res.status(404).json({ error: "Plan not found" });
     }
 
     const entryKind = normalizeKind(plan.kind);
@@ -307,13 +337,13 @@ export const renameMealPlan = async (req: Request, res: Response) => {
 
     res.json({ plan });
   } catch (err: any) {
-    console.error("Error updating meal plan:", err);
+    console.error("Error updating plan:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
 /**
- * Delete a meal plan
+ * Delete a plan
  * params: { id }
  */
 export const deleteMealPlan = async (req: Request, res: Response) => {
@@ -322,24 +352,59 @@ export const deleteMealPlan = async (req: Request, res: Response) => {
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
 
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
-      return res.status(400).json({ error: "Invalid meal plan ID" });
+      return res.status(400).json({ error: "Invalid plan ID" });
     }
 
-    const plan = await MealPlan.findByIdAndDelete(idStr);
+    const plan = await MealPlan.findById(idStr);
 
     if (!plan) {
-      return res.status(404).json({ error: "Meal plan not found" });
+      return res.status(404).json({ error: "Plan not found" });
     }
 
-    res.json({ message: "Meal plan deleted successfully" });
+    const deletedAt = plan.deletedAt || new Date();
+    plan.deletedAt = deletedAt;
+    plan.trashExpiresAt = new Date(deletedAt.getTime() + TRASH_RETENTION_MS);
+    await plan.save();
+
+    res.json({ message: "Plan moved to trash", trashExpiresAt: plan.trashExpiresAt });
   } catch (err: any) {
-    console.error("Error deleting meal plan:", err);
+    console.error("Error deleting plan:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
 /**
- * Add a recipe directly to a meal plan
+ * Restore a plan from trash
+ * params: { id }
+ */
+export const restoreMealPlan = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const idStr = (Array.isArray(id) ? id[0] : id) as string;
+
+    if (!mongoose.Types.ObjectId.isValid(idStr)) {
+      return res.status(400).json({ error: "Invalid plan ID" });
+    }
+
+    const plan = await MealPlan.findById(idStr);
+    if (!plan) {
+      return res.status(404).json({ error: "Plan not found" });
+    }
+
+    plan.deletedAt = undefined;
+    plan.trashExpiresAt = undefined;
+    await plan.save();
+    await populateMealPlan(plan);
+
+    res.json({ plan, message: "Plan restored" });
+  } catch (err: any) {
+    console.error("Error restoring plan:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * Add a recipe directly to a plan
  * params: { id }
  * body: { recipeId }
  */
@@ -354,7 +419,7 @@ export const addRecipeToMealPlan = async (req: Request, res: Response) => {
     }
 
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
-      return res.status(400).json({ error: "Invalid meal plan ID" });
+      return res.status(400).json({ error: "Invalid plan ID" });
     }
 
     if (!mongoose.Types.ObjectId.isValid(recipeId)) {
@@ -367,7 +432,10 @@ export const addRecipeToMealPlan = async (req: Request, res: Response) => {
     ]);
 
     if (!plan) {
-      return res.status(404).json({ error: "Meal plan not found" });
+      return res.status(404).json({ error: "Plan not found" });
+    }
+    if (isPlanTrashed(plan)) {
+      return res.status(404).json({ error: "Plan not found" });
     }
 
     if (!recipe) {
@@ -409,13 +477,13 @@ export const addRecipeToMealPlan = async (req: Request, res: Response) => {
 
     res.status(201).json({ plan });
   } catch (err: any) {
-    console.error("Error adding recipe to meal plan:", err);
+    console.error("Error adding recipe to plan:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
 /**
- * Add meal combination to meal plan
+ * Add meal combination to plan
  * params: { id }
  * body: { meatRecipeId, vegeRecipeId, sideRecipeId, portions }
  */
@@ -432,7 +500,7 @@ export const addMealCombination = async (req: Request, res: Response) => {
     }
 
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
-      return res.status(400).json({ error: "Invalid meal plan ID" });
+      return res.status(400).json({ error: "Invalid plan ID" });
     }
 
     if (
@@ -460,7 +528,10 @@ export const addMealCombination = async (req: Request, res: Response) => {
 
     const plan = await MealPlan.findById(idStr);
     if (!plan) {
-      return res.status(404).json({ error: "Meal plan not found" });
+      return res.status(404).json({ error: "Plan not found" });
+    }
+    if (isPlanTrashed(plan)) {
+      return res.status(404).json({ error: "Plan not found" });
     }
 
     const newCombination: IMealCombination = {
@@ -485,7 +556,7 @@ export const addMealCombination = async (req: Request, res: Response) => {
 };
 
 /**
- * Remove meal combination from meal plan
+ * Remove meal combination from plan
  * params: { id, combinationIndex }
  */
 export const removeMealCombination = async (req: Request, res: Response) => {
@@ -495,7 +566,7 @@ export const removeMealCombination = async (req: Request, res: Response) => {
     const combinationIndexStr = (Array.isArray(combinationIndex) ? combinationIndex[0] : combinationIndex) as string;
 
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
-      return res.status(400).json({ error: "Invalid meal plan ID" });
+      return res.status(400).json({ error: "Invalid plan ID" });
     }
 
     const index = parseInt(combinationIndexStr, 10);
@@ -505,7 +576,10 @@ export const removeMealCombination = async (req: Request, res: Response) => {
 
     const plan = await MealPlan.findById(idStr);
     if (!plan) {
-      return res.status(404).json({ error: "Meal plan not found" });
+      return res.status(404).json({ error: "Plan not found" });
+    }
+    if (isPlanTrashed(plan)) {
+      return res.status(404).json({ error: "Plan not found" });
     }
 
     if (index >= plan.combinations.length) {
@@ -546,12 +620,15 @@ export const toggleIngredientCheckStatus = async (req: Request, res: Response) =
 
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
-      return res.status(400).json({ error: "Invalid meal plan ID" });
+      return res.status(400).json({ error: "Invalid plan ID" });
     }
 
     const plan = await MealPlan.findById(idStr);
     if (!plan) {
-      return res.status(404).json({ error: "Meal plan not found" });
+      return res.status(404).json({ error: "Plan not found" });
+    }
+    if (isPlanTrashed(plan)) {
+      return res.status(404).json({ error: "Plan not found" });
     }
 
     // Update checked ingredients array

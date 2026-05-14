@@ -14,7 +14,7 @@ export async function DELETE(
     });
 
     if (!response.ok) {
-      throw new Error("Failed to remove recipe from meal plan");
+      throw new Error("Failed to remove recipe from plan");
     }
 
     const data = await response.json();

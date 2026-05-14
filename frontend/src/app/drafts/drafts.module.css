@@ -1,162 +1,241 @@
 .container {
-  padding: 24px 18px 96px;
-  max-width: 980px;
+  max-width: 820px;
   margin: 0 auto;
+  padding: 24px 18px 104px;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px;
-  margin-bottom: 18px;
-  padding: 24px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: var(--shadow-sm);
+.pageHeader {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.backLink {
+  width: fit-content;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.backLink span {
+  font-size: 18px;
 }
 
 .kicker {
-  margin: 0 0 8px;
-  color: var(--secondary);
+  margin: 0 0 6px;
+  color: var(--primary);
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
 }
 
-.header h1 {
+.pageHeader h1 {
   margin: 0;
   color: var(--foreground);
-  font-size: clamp(32px, 5vw, 50px);
+  font-size: 30px;
   line-height: 1;
-  font-weight: 900;
+  font-weight: 950;
 }
 
-.header p:last-child {
-  margin: 10px 0 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-  font-weight: 700;
+.filtersSection {
+  margin-bottom: 16px;
 }
 
-.draftsList {
-  display: grid;
-  gap: 12px;
-}
-
-.draftItem {
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 14px;
-  background: var(--card-bg);
+.searchInput {
+  width: 100%;
+  min-height: 46px !important;
+  padding: 0 16px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 999px !important;
+  background: var(--input-bg);
+  color: var(--foreground);
+  font-size: 16px;
+  box-sizing: border-box;
   box-shadow: var(--shadow-sm);
 }
 
-.draftInfo {
-  flex: 1;
-}
-
-.draftName {
-  margin: 0 0 8px;
-  cursor: pointer;
-  color: var(--foreground);
-  font-size: 17px;
-  font-weight: 900;
-}
-
-.draftTitle {
-  margin: 0 0 4px;
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-
-.draftDate {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-.draftActions {
+.toolbar {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.button {
-  min-height: 36px;
-  padding: 0 13px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  cursor: pointer;
+.count {
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 800;
 }
 
-.buttonPrimary {
-  background-color: var(--primary);
+.newRecipeButton {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 13px;
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  background: var(--primary);
   color: white;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
 }
 
-.buttonSecondary {
-  background-color: var(--hover-bg);
+.draftsList {
+  display: grid;
+  gap: 8px;
+}
+
+.swipeRow {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  border-radius: 8px;
+  touch-action: pan-x;
+  cursor: grab;
+}
+
+.swipeRow:active {
+  cursor: grabbing;
+}
+
+.swipeRow::-webkit-scrollbar {
+  display: none;
+}
+
+.draftRow {
+  flex: 0 0 100%;
+  min-width: 0;
+  min-height: 74px;
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 8px;
+  scroll-snap-align: start;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: inherit;
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.draftImage {
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--hover-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.draftImage span {
+  font-size: 22px;
+}
+
+.draftImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.draftText {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.draftText h3,
+.draftText p,
+.draftText span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.draftText h3 {
+  margin: 0;
   color: var(--foreground);
-  border-color: var(--border);
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 900;
 }
 
-.buttonDanger {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: var(--error);
-  border-color: rgba(239, 68, 68, 0.22);
-}
-
-.buttonSuccess {
-  background-color: #10b981;
-  color: white;
-}
-
-.emptyState {
-  text-align: center;
-  padding: 40px 20px;
-}
-
-.emptyMessage {
+.draftText p {
+  margin: 0;
   color: var(--text-secondary);
-  margin-bottom: 16px;
+  font-size: 12px;
+  font-weight: 800;
 }
 
+.draftText span {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.swipeDeleteButton {
+  flex: 0 0 78px;
+  margin-left: 6px;
+  scroll-snap-align: end;
+  border: none;
+  border-radius: 8px;
+  background: var(--error);
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.emptyState,
 .statusText,
 .errorText {
-  text-align: center;
   padding: 24px;
+  text-align: center;
   color: var(--text-secondary);
   font-weight: 800;
 }
 
+.emptyMessage {
+  margin: 0 0 12px;
+}
+
 .errorText {
   color: var(--error);
 }
 
-.editRow {
-  display: flex;
-  gap: 8px;
-}
-
-.editRow input {
-  flex: 1;
-}
-
-@media (max-width: 720px) {
-  .header,
-  .draftItem {
-    align-items: flex-start;
-    flex-direction: column;
+@media (max-width: 640px) {
+  .container {
+    padding: 16px 12px 96px;
   }
 
-  .draftActions {
-    width: 100%;
+  .draftRow {
+    min-height: 72px;
+    grid-template-columns: 62px minmax(0, 1fr);
+  }
+
+  .draftImage {
+    width: 54px;
+    height: 54px;
   }
 }

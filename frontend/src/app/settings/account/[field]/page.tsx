@@ -1,8 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import BackButton from "../../../components/BackButton";
 import { toastError, toastSuccess } from "../../../components/toast/toast";
 import { authFetch, readAuthSession, writeAuthSession, type AuthSession, type AuthUser } from "../../../utils/authSession";
 import styles from "../../page.module.css";
@@ -138,29 +138,25 @@ export default function EditAccountFieldPage() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.group}>
-        <Link href="/settings/account" className={styles.backLink}>
-          <span className="material-symbols-outlined">arrow_back</span>
-          Account
-        </Link>
-
-        <form className={`${styles.profileEditor} ${styles.profileEditorCompact}`} onSubmit={handleSave}>
-          <label>
-            <span>{config.label}</span>
-            <input
-              type={config.inputType}
-              autoComplete={config.autoComplete}
-              value={fieldValue}
-              onChange={(event) => setFieldValue(event.target.value)}
-            />
-          </label>
-          <div className={styles.profileActions}>
-            <button type="submit" className={styles.primaryButton} disabled={saving}>
-              {saving ? "Saving" : "Save"}
-            </button>
-          </div>
-        </form>
+      <div className={styles.accountPageHeader}>
+        <BackButton fallbackHref="/settings/account" className={styles.backLink} label="Account" />
+        <h1>{config.label}</h1>
       </div>
+
+      <form className={`${styles.profileEditor} ${styles.profileEditorCompact}`} onSubmit={handleSave}>
+        <input
+          aria-label={config.label}
+          type={config.inputType}
+          autoComplete={config.autoComplete}
+          value={fieldValue}
+          onChange={(event) => setFieldValue(event.target.value)}
+        />
+        <div className={styles.profileActions}>
+          <button type="submit" className={styles.primaryButton} disabled={saving}>
+            {saving ? "Saving" : "Save"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

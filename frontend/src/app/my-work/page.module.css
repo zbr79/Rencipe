@@ -1,0 +1,260 @@
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 18px 104px;
+}
+
+.pageHeader {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.backLink {
+  width: fit-content;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.backLink span {
+  font-size: 18px;
+}
+
+.kicker {
+  margin: 0 0 6px;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.pageHeader h1 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.visibilityTabs,
+.kindTabs {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.visibilityTabs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.kindTabs {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.visibilityTab,
+.kindTab {
+  min-height: 38px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.kindTab {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0 4px;
+  overflow: hidden;
+}
+
+.kindTabLabel,
+.kindTabCount {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.visibilityTab {
+  min-width: 0;
+}
+
+.visibilityTab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.visibilityTab span {
+  font-size: 18px;
+}
+
+.visibilityTabActive,
+.kindTabActive {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.workList {
+  display: grid;
+  gap: 8px;
+}
+
+.workRow {
+  min-width: 0;
+  min-height: 76px;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px 9px 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: inherit;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.workRowWithAction {
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+}
+
+.workRow > span:last-child {
+  color: var(--text-muted);
+  font-size: 20px;
+}
+
+.workImage {
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--primary) 10%, var(--hover-bg));
+  color: var(--primary);
+}
+
+.workImage span {
+  font-size: 23px;
+}
+
+.workImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.workText {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.workText h3,
+.workText p,
+.workText span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.restoreButton {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
+  border-radius: 8px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.restoreButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.workText h3 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 900;
+}
+
+.workText p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.workText span {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.statusText,
+.errorText,
+.emptyState {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-weight: 800;
+}
+
+.errorText {
+  color: var(--error);
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 16px 12px 96px;
+  }
+
+  .kindTab {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 430px) {
+  .kindTabs {
+    gap: 6px;
+    padding: 5px;
+  }
+
+  .kindTab {
+    font-size: 11px;
+  }
+
+  .kindTabCount {
+    display: none;
+  }
+}

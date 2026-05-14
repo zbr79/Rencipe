@@ -5,6 +5,7 @@ import {
   createMealPlan,
   renameMealPlan,
   deleteMealPlan,
+  restoreMealPlan,
   addRecipeToMealPlan,
   addMealCombination,
   removeMealCombination,
@@ -18,6 +19,7 @@ router.post("/meal-plans", createMealPlan);
 router.get("/meal-plans/:id", getMealPlanById);
 router.put("/meal-plans/:id", renameMealPlan);
 router.delete("/meal-plans/:id", deleteMealPlan);
+router.patch("/meal-plans/:id/restore", restoreMealPlan);
 router.post("/meal-plans/:id/recipes", addRecipeToMealPlan);
 router.post("/meal-plans/:id/combinations", addMealCombination);
 router.delete("/meal-plans/:id/combinations/:combinationIndex", removeMealCombination);

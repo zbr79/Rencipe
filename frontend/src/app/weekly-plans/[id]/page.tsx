@@ -8,6 +8,7 @@ import { getScheduledPlanDisplayName } from "../../utils/planDisplay";
 import { authFetch } from "../../utils/authSession";
 import type { WeeklyPlan, DayPlan, SavedRecipe } from "../../contexts/SavedContext";
 import Link from "next/link";
+import BackButton from "../../components/BackButton";
 
 export default function WeeklyPlanEditorPage() {
   const { id } = useParams();
@@ -214,22 +215,23 @@ export default function WeeklyPlanEditorPage() {
     return (
       <div style={{ padding: "20px", textAlign: "center" }}>
         <p style={{ color: "#ef4444", marginBottom: "16px" }}>
-          {loadError || "Unable to load meal plan"}
+          {loadError || "Unable to load plan"}
         </p>
-        <Link href="/meal-plans">
-          <button
-            style={{
-              padding: "8px 16px",
-              backgroundColor: "#3b82f6",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
-          >
-            Back
-          </button>
-        </Link>
+        <BackButton
+          fallbackHref="/meal-plans"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: 0,
+            backgroundColor: "transparent",
+            color: "#64748b",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "13px",
+            fontWeight: 850,
+          }}
+        />
       </div>
     );
   }
@@ -307,19 +309,21 @@ export default function WeeklyPlanEditorPage() {
             </button>
           </div>
         )}
-        <Link href="/meal-plans">
-          <button
-            style={{
-              padding: "8px 16px",
-              backgroundColor: "#e5e7eb",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
-          >
-            Back
-          </button>
-        </Link>
+        <BackButton
+          fallbackHref="/meal-plans"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: 0,
+            backgroundColor: "transparent",
+            color: "#64748b",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "13px",
+            fontWeight: 850,
+          }}
+        />
       </div>
 
       {/* Settings Modal */}

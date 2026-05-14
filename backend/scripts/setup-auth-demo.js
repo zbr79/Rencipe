@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema(
     displayName: { type: String, required: true, trim: true },
     email: { type: String, trim: true, default: "" },
     phone: { type: String, trim: true, default: "" },
+    avatarUrl: { type: String, trim: true, default: "" },
     role: { type: String, enum: ["admin", "user"], default: "user", required: true },
     passwordHash: { type: String, required: true },
     passwordSalt: { type: String, required: true },
@@ -58,11 +59,11 @@ function searchText(title) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
-async function upsertUser({ username, password, displayName, email, phone, role }) {
+async function upsertUser({ username, password, displayName, email, phone, role, avatarUrl = "" }) {
   const { salt, hash } = hashPassword(password);
   return User.findOneAndUpdate(
     { username },
-    { username, displayName, email, phone, role, passwordSalt: salt, passwordHash: hash },
+    { username, displayName, email, phone, avatarUrl, role, passwordSalt: salt, passwordHash: hash },
     { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
   );
 }
@@ -101,6 +102,7 @@ async function run() {
     displayName: "Admin",
     email: "admin@rencipe.demo",
     phone: "(555) 010-0001",
+    avatarUrl: "",
     role: "admin",
   });
   const testUser = await upsertUser({
@@ -109,6 +111,14 @@ async function run() {
     displayName: "Test User",
     email: "testuser1@rencipe.demo",
     phone: "(555) 010-0002",
+    role: "user",
+  });
+  const catcakeUser = await upsertUser({
+    username: "catcake",
+    password: "binkp010709",
+    displayName: "Catcake",
+    email: "catcake@rencipe.demo",
+    phone: "(555) 010-0003",
     role: "user",
   });
 
@@ -166,6 +176,7 @@ async function run() {
 
   console.log(`Admin ready: ${admin.username}/admin (${admin._id})`);
   console.log(`Test user ready: ${testUser.username}/testuser1 (${testUser._id})`);
+  console.log(`Catcake ready: ${catcakeUser.username}/binkp010709 (${catcakeUser._id})`);
   console.log(`Published existing recipes: ${publishResult.modifiedCount}`);
   console.log(`Total recipes: ${totalRecipes}`);
   console.log(`Public recipes: ${publicRecipes}`);
