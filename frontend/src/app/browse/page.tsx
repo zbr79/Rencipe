@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useSaved } from "../contexts/SavedContext";
 import AccountAvatar from "../components/AccountAvatar";
 import styles from "../search/page.module.css";
-import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
 import { getVisibleTags } from "../utils/recipeTags";
 import { authFetch, getCurrentUserId } from "../utils/authSession";
 import { getAccountDisplayName, type AccountIdentity } from "../utils/accountAvatar";
@@ -194,7 +193,7 @@ export default function BrowsePage() {
         if (mealId && meal.kind === "meal") mealsById.set(mealId, meal);
       });
 
-      setAllRecipes(enrichRecipesWithMockImages<Recipe>((recipeData.recipes || []) as Recipe[]));
+      setAllRecipes((recipeData.recipes || []) as Recipe[]);
       setAllMeals(Array.from(mealsById.values()));
     } catch (err: any) {
       setError(err.message);

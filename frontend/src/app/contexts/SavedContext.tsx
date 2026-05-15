@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 import { toastError, toastSuccess } from "../components/toast/toast";
-import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
 import { authFetch, getCurrentUser, getCurrentUserId } from "../utils/authSession";
 import { filterRecipesForUserLanguage, type RecipeLanguage } from "../utils/recipeLanguage";
 import type { AccountIdentity } from "../utils/accountAvatar";
@@ -206,9 +205,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       }
       const data = await response.json();
       const recipes = filterRecipesForUserLanguage((data.favorites.recipes || []) as SavedRecipe[], getCurrentUser());
-      // Enrich with mock images
-      const enrichedRecipes = enrichRecipesWithMockImages(recipes);
-      setSavedRecipes(enrichedRecipes);
+      setSavedRecipes(recipes);
       setSavedMeals((data.favorites.meals || []) as MealPlan[]);
     } catch (err: any) {
       console.error("Error fetching favorites:", err);
@@ -240,9 +237,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json();
       const recipes = filterRecipesForUserLanguage((data.favorites.recipes || []) as SavedRecipe[], getCurrentUser());
-      // Enrich with mock images
-      const enrichedRecipes = enrichRecipesWithMockImages(recipes);
-      setSavedRecipes(enrichedRecipes);
+      setSavedRecipes(recipes);
       setSavedMeals((data.favorites.meals || []) as MealPlan[]);
       toastSuccess("Saved recipe");
     } catch (err: any) {
@@ -269,9 +264,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json();
       const recipes = filterRecipesForUserLanguage((data.favorites.recipes || []) as SavedRecipe[], getCurrentUser());
-      // Enrich with mock images
-      const enrichedRecipes = enrichRecipesWithMockImages(recipes);
-      setSavedRecipes(enrichedRecipes);
+      setSavedRecipes(recipes);
       setSavedMeals((data.favorites.meals || []) as MealPlan[]);
       toastSuccess("Unsaved recipe");
     } catch (err: any) {

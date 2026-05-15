@@ -47,7 +47,6 @@ const recipeSchema = new mongoose.Schema(
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 const Recipe = mongoose.models.Recipe || mongoose.model("Recipe", recipeSchema);
-const Cart = mongoose.models.CartSeed || mongoose.model("CartSeed", new mongoose.Schema({}, { strict: false, collection: "carts" }));
 const Favorite = mongoose.models.FavoriteSeed || mongoose.model("FavoriteSeed", new mongoose.Schema({}, { strict: false, collection: "favorites" }));
 const MealPlan = mongoose.models.MealPlanSeed || mongoose.model("MealPlanSeed", new mongoose.Schema({}, { strict: false, collection: "mealplans" }));
 
@@ -445,7 +444,7 @@ const asianRecipes = [
 
 async function run() {
   if (!process.env.MONGO_URI) {
-    throw new Error("MONGO_URI is required. Set it in backend/.env before seeding demo data.");
+    throw new Error("MONGO_URI is required. Set it in backend/.env before seeding product data.");
   }
 
   await mongoose.connect(process.env.MONGO_URI);
@@ -454,7 +453,7 @@ async function run() {
     username: "admin",
     password: "admin",
     displayName: "Admin",
-    email: "admin@rencipe.demo",
+    email: "admin@rencipe.local",
     phone: "(555) 010-0001",
     role: "admin",
   });
@@ -462,14 +461,13 @@ async function run() {
     username: "testuser1",
     password: "testuser1",
     displayName: "Test User",
-    email: "testuser1@rencipe.demo",
+    email: "testuser1@rencipe.local",
     phone: "(555) 010-0002",
     role: "user",
   });
 
   const deleteResult = await Recipe.deleteMany({});
   await Promise.all([
-    Cart.updateMany({}, { $set: { recipes: [] } }),
     Favorite.updateMany({}, { $set: { recipes: [] } }),
     MealPlan.updateMany({}, { $set: { recipes: [], days: [] } }),
   ]);
@@ -483,7 +481,7 @@ async function run() {
 
   const totalRecipes = await Recipe.countDocuments();
   console.log(`Deleted old recipes: ${deleteResult.deletedCount}`);
-  console.log(`Inserted Asian demo recipes: ${documents.length}`);
+  console.log(`Inserted product recipes: ${documents.length}`);
   console.log(`Total recipes: ${totalRecipes}`);
   console.log("Primary cuisines: Cantonese, Sichuan, Korean");
 

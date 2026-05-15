@@ -7,7 +7,6 @@ import CommentSection from "../../components/CommentSection";
 import FloatingActionPanel from "../../components/FloatingActionPanel";
 import { toastError } from "../../components/toast/toast";
 import { useSaved } from "../../contexts/SavedContext";
-import { getRecipeImageUrl } from "../../utils/recipeImageUtils";
 import { getVisibleTags } from "../../utils/recipeTags";
 import { authFetch, getCurrentUser, type AuthUser } from "../../utils/authSession";
 import type { RecipeLanguage } from "../../utils/recipeLanguage";
@@ -86,13 +85,8 @@ export default function RecipeDetailPage() {
       }
 
       const data = await response.json();
-      
-      // Add mock image if recipe doesn't have one
       const recipeData = data.recipe;
-      if (!recipeData.image) {
-        recipeData.image = getRecipeImageUrl(recipeId);
-      }
-      
+
       setRecipe(recipeData);
       recordRecentlyViewedRecipe({
         id: recipeId,

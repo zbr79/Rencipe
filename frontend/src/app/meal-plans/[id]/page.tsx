@@ -10,7 +10,6 @@ import { useConfirmDialog } from "../../components/ConfirmDialogProvider";
 import { useSaved } from "../../contexts/SavedContext";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { authFetch, getCurrentUser, getCurrentUserId, type AuthUser } from "../../utils/authSession";
-import { enrichRecipesWithMockImages } from "../../utils/recipeImageUtils";
 import { filterRecipesForUserLanguage, type RecipeLanguage } from "../../utils/recipeLanguage";
 import { matchesPinyinSearch } from "../../utils/pinyinSearch";
 import { readRecentlyViewedRecipes, type RecentlyViewedRecipe } from "../../utils/recentlyViewedRecipes";
@@ -181,7 +180,7 @@ function normalizeMealTypes(types?: MealType[]): MealType[] {
 
 function normalizePlan(rawPlan: MealPlan, user?: AuthUser | null): MealPlan {
   const kind = getMealEntryKind(rawPlan);
-  const inboxRecipes = filterRecipesForUserLanguage(enrichRecipesWithMockImages<Recipe>((rawPlan.recipes || []) as Recipe[]), user);
+  const inboxRecipes = filterRecipesForUserLanguage((rawPlan.recipes || []) as Recipe[], user);
 
   if (kind === "meal") {
     return {
@@ -209,7 +208,7 @@ function normalizePlan(rawPlan: MealPlan, user?: AuthUser | null): MealPlan {
         const existingMeal = existingDay?.meals?.find((meal) => meal.mealType === mealType);
         return {
           mealType,
-          recipes: filterRecipesForUserLanguage(enrichRecipesWithMockImages<Recipe>((existingMeal?.recipes || []) as Recipe[]), user),
+          recipes: filterRecipesForUserLanguage((existingMeal?.recipes || []) as Recipe[], user),
         };
       }),
     };
@@ -615,7 +614,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
         const response = await authFetch("/api/recipes?limit=1000");
         if (!response.ok) throw new Error("Failed to fetch recipes");
         const data = await response.json();
-        setAllRecipes(enrichRecipesWithMockImages<Recipe>((data.recipes || []) as Recipe[]));
+        setAllRecipes((data.recipes || []) as Recipe[]);
       } catch (err) {
         console.error("Failed to load recipe library", err);
       } finally {

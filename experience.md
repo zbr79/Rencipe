@@ -5,6 +5,8 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 ## 2026-05-15
 
 - When rewriting DOCX report bodies with python-docx, preserve the final Word `sectPr` body element and avoid assuming the template has a `Table Grid` style. For Google Docs import, avoid Word automatic list numbering when it renders poorly; stable literal bullet paragraphs with hanging indents import more predictably. Add explicit table borders through `w:tblBorders`, and use blue mainly on changed section headings/placeholders instead of coloring the whole report body.
+- For product turn-in cleanup, remove runtime placeholder-image mutation paths instead of hiding them: delete public population routes, remove app-startup data mutation, and let recipe surfaces use real stored images or existing no-image icon states.
+- After adding ignore rules for delivery cleanup, remember that already tracked files still appear until they are deleted and committed. Backend `dist/` can also retain stale compiled files after source deletion unless the build output is cleaned, but ignored `dist/` files should not be treated as source-delivery findings.
 - New reusable meals should start as draft-backed editor state, not as saved `MealPlan` documents with placeholder names. Promote a meal only after required fields are complete, and keep incomplete meal work in Drafts with `draftType: "meal"`.
 - Meal edit screens should not include a separate saved/exit button that navigates to a fixed list URL. Use the shared history-aware BackButton for leaving detail/edit views.
 - Account language checks must use the backend-backed session, not only localStorage overrides, because AuthGate refresh can replace local-only language changes. Runtime UI translation also needs leaf-element text handling for React split text such as `Recipes (1)`.
@@ -55,7 +57,7 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 - When adding recipe metadata fields, wire them through draft autosave and draft reload in the same round. Otherwise users can fill the new fields, reload the create page, and silently lose that data.
 - Recipe publish visibility must be wired through create/edit UI, the recipe controller, and draft autosave together. If one layer is missed, the checkbox either saves nothing or resets after reload.
 - For save success that does not require a user choice, use a toast instead of a confirm modal. Reserve the confirm modal for real decisions such as delete or publish warnings.
-- Recipe updates must preserve the existing cover image when the client does not send an `image` field. Treating missing image input as `undefined` clears the stored cover and makes the UI fall back to generated mock images that look random after publish/save.
+- Recipe updates must preserve the existing cover image when the client does not send an `image` field. Treating missing image input as `undefined` clears the stored cover and can make the UI fall back to unrelated placeholder imagery after publish/save.
 - The create-page cover image entry should open the file picker directly instead of a separate staging modal, and its top cover section should reuse the same edge alignment and border rhythm as the rest of the form. Mixing a boxed upload prompt with border-bottom sections makes the page feel uneven on mobile.
 - For editable cover images, do not stack two controls for the same action. A clickable image plus a separate `Change cover` button feels redundant; one dark corner camera badge with a small helper line reads cleaner on recipe photos.
 - Cooking steps should default to instructions first with no step image shown. A compact Add image button works better than a large empty upload tile, and step-image inputs should reset their value after each selection so replacing with the same file still fires `change`.
@@ -112,7 +114,7 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 - Meal-plan ingredient totals are currently calculated in the frontend, but the backend ingredient-check PATCH handler should be verified because it updates state without visibly returning a response in the controller.
 - Visible source UI was translated to English and verified with `rg` excluding intentional pinyin maps and the unused Chinese locale file.
 - Existing Mongo recipe data was translated to English and verified with a direct Mongoose check: 37 recipes, zero Chinese characters in selected recipe fields.
-- Added `backend/scripts/seed-demo-data.js` and `npm run seed:demo`; the script is idempotent for demo recipes and translated existing records once.
+- Added the backend seed script; the current product seed command is `npm run seed:product`.
 - `source.unsplash.com` generated URLs produced broken images in Playwright. Stable `images.unsplash.com` URLs fixed the demo image issue; final database check showed zero `source.unsplash.com` recipe images.
 - Frontend UI polish now covers the app shell, home dashboard, recipe library, recipe detail, search, saved, cart, create, drafts, meal plans, weekly plans, settings, and profile list surfaces. Deep detail flows still need rehearsal-driven polish.
 - Existing meal-plan and weekly-plan names also needed translation because public route checks can surface Chinese from database records even when source UI scans are clean.
@@ -154,7 +156,7 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 - If public UI still shows old route code after source changes, clear stale `.next` output before rebuilding. A failed frontend build can leave PM2 serving the previous bundle even after reload.
 - Swipe-to-delete rows need explicit mouse pointer scrolling for desktop QA, not just touch/native horizontal overflow. Verify the row `scrollLeft` changes with a Playwright mouse drag at a phone-width viewport.
 - When the desired interaction is a single toggle, implement one button whose label changes state instead of two segmented options. Browse sort should be one `Most Popular`/`Newest` button.
-- Demo account switching can reuse the existing login API with hardcoded demo account credentials; seed every selectable account in `setup-auth-demo` before testing the selector page.
+- Account switching should reuse the existing login API with typed credentials; seed every selectable account through the product auth setup script before testing the selector page.
 - Never put React hooks after a route-based early return. TopBar returning `null` on `/login` before its `useEffect` caused React hook-count crashes during sign-out navigation.
 - Account switching should reuse the login API with a typed password, not hidden demo credentials. The selector can choose a username, but authentication must still fail on an incorrect password.
 - AuthGate should clear a session only when `/api/auth/me` returns a real non-OK response. Aborted or failed verification fetches during route changes should keep the current local session and let the next route settle.

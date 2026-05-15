@@ -7,7 +7,6 @@ import BackButton from "../components/BackButton";
 import { toastError, toastSuccess } from "../components/toast/toast";
 import { useSaved, type MealPlan } from "../contexts/SavedContext";
 import { authFetch, getCurrentUser, type AuthUser } from "../utils/authSession";
-import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
 import type { AccountIdentity } from "../utils/accountAvatar";
 import styles from "./page.module.css";
 
@@ -133,7 +132,7 @@ export default function MyWorkPage() {
       const response = await authFetch("/api/recipes?limit=1000");
       if (!response.ok) throw new Error("Failed to fetch recipes");
       const data = await response.json();
-      setRecipes(enrichRecipesWithMockImages<Recipe>((data.recipes || []) as Recipe[]));
+      setRecipes((data.recipes || []) as Recipe[]);
     } catch (err: any) {
       setError(err.message || "Failed to load work");
       setRecipes([]);
@@ -162,7 +161,7 @@ export default function MyWorkPage() {
 
       const recipeData = await recipeResponse.json();
       const planData = await planResponse.json();
-      setTrashRecipes(enrichRecipesWithMockImages<Recipe>((recipeData.recipes || []) as Recipe[]));
+      setTrashRecipes((recipeData.recipes || []) as Recipe[]);
       setTrashMealPlans((planData.plans || []) as MealPlan[]);
     } catch (err: any) {
       setError(err.message || "Failed to load trash");

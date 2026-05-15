@@ -100,7 +100,7 @@ async function run() {
     username: "admin",
     password: "admin",
     displayName: "Admin",
-    email: "admin@rencipe.demo",
+    email: "admin@rencipe.local",
     phone: "(555) 010-0001",
     avatarUrl: "",
     role: "admin",
@@ -109,19 +109,10 @@ async function run() {
     username: "testuser1",
     password: "testuser1",
     displayName: "Test User",
-    email: "testuser1@rencipe.demo",
+    email: "testuser1@rencipe.local",
     phone: "(555) 010-0002",
     role: "user",
   });
-  const catcakeUser = await upsertUser({
-    username: "catcake",
-    password: "binkp010709",
-    displayName: "Catcake",
-    email: "catcake@rencipe.demo",
-    phone: "(555) 010-0003",
-    role: "user",
-  });
-
   const publishResult = await Recipe.updateMany(
     { title: { $nin: PRIVATE_TITLES } },
     { $set: { isPublic: true, authorId: admin._id } }
@@ -176,12 +167,11 @@ async function run() {
 
   console.log(`Admin ready: ${admin.username}/admin (${admin._id})`);
   console.log(`Test user ready: ${testUser.username}/testuser1 (${testUser._id})`);
-  console.log(`Catcake ready: ${catcakeUser.username}/binkp010709 (${catcakeUser._id})`);
   console.log(`Published existing recipes: ${publishResult.modifiedCount}`);
   console.log(`Total recipes: ${totalRecipes}`);
   console.log(`Public recipes: ${publicRecipes}`);
   console.log(`Private recipes: ${privateRecipes}`);
-  console.log(`Private demo titles: ${PRIVATE_TITLES.join(", ")}`);
+  console.log(`Private recipe titles: ${PRIVATE_TITLES.join(", ")}`);
 
   await mongoose.disconnect();
 }

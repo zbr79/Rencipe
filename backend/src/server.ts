@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import multer from "multer";
 import recipeRoutes from "./routes/recipe.routes";
-import imageRoutes from "./routes/image.routes";
 import draftRoutes from "./routes/draft.routes";
 import favoriteRoutes from "./routes/favorite.routes";
 import mealPlanRoutes from "./routes/mealplan.routes";
@@ -30,7 +29,6 @@ const PORT = process.env.PORT || 6000;
 // ...
 app.use(authRoutes);
 app.use(recipeRoutes);
-app.use(imageRoutes);
 app.use("/drafts", draftRoutes);
 app.use(favoriteRoutes);
 app.use(mealPlanRoutes);

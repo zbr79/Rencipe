@@ -6,8 +6,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "seed:demo": "node scripts/reset-asian-demo-data.js",
-    "setup:auth-demo": "node scripts/setup-auth-demo.js"
+    "seed:product": "node scripts/seed-product-data.js",
+    "setup:auth": "node scripts/setup-product-auth.js"
   },
   "keywords": [],
   "author": "",

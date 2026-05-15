@@ -1,8 +1,41 @@
 node_modules
 .env
+.env*
+!.env.example
 .next
 dist
 build
 coverage
 *.log
 local-nginx/
+
+# AI assistant and local agent configuration
+.github/copilot-instructions.md
+.github/instructions/
+.github/prompts/
+.copilot/
+.cursor/
+.continue/
+.windsurf/
+.codex/
+.aider*
+*.instructions.md
+*.prompt.md
+*.agent.md
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+
+# Local verification artifacts
+temp/
+backend/temp/
+frontend/test-results/
+frontend/temp/
+frontend/build_output.txt
+frontend/demo-screenshots/
+frontend/*Demo*.pptx
+frontend/*Demo*.pdf
+
+# Local report drafts
+docs/*Draft*.docx
+frontend/*Draft*.docx

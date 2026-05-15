@@ -2,7 +2,11 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User, { UserLanguage, UserRole } from "../models/User";
 
-const JWT_SECRET = process.env.JWT_SECRET || "rencipe-phase-one-demo-secret";
+const JWT_SECRET = process.env.JWT_SECRET || "rencipe-local-development-secret";
+
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === "production") {
+  throw new Error("JWT_SECRET is required in production.");
+}
 
 export interface AuthUser {
   id: string;

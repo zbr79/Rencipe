@@ -136,7 +136,7 @@ const mealPlanSchema = new Schema<IMealPlan>(
     name: {
       type: String,
       required: true,
-      default: "New Plan",
+      trim: true,
     },
     people: {
       type: [personSchema],

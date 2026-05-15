@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useSaved } from "../../contexts/SavedContext";
-import { enrichRecipesWithMockImages } from "../../utils/recipeImageUtils";
 import { getScheduledPlanDisplayName } from "../../utils/planDisplay";
 import { authFetch } from "../../utils/authSession";
 import type { WeeklyPlan, DayPlan, SavedRecipe } from "../../contexts/SavedContext";
@@ -90,9 +89,8 @@ export default function WeeklyPlanEditorPage() {
         if (!response.ok) throw new Error("Failed to fetch recipes");
         const data = await response.json();
         const recipes = data.recipes || [];
-        const enriched = enrichRecipesWithMockImages(recipes) as SavedRecipe[];
-        setAllRecipes(enriched);
-        setFilteredRecipes(enriched);
+        setAllRecipes(recipes as SavedRecipe[]);
+        setFilteredRecipes(recipes as SavedRecipe[]);
       } catch (err) {
         console.error("Error fetching recipes:", err);
       } finally {

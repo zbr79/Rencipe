@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import searchStyles from "../search/page.module.css";
 import { useSaved } from "../contexts/SavedContext";
-import { enrichRecipesWithMockImages } from "../utils/recipeImageUtils";
 import { matchesPinyinSearch } from "../utils/pinyinSearch";
 import { getVisibleTags } from "../utils/recipeTags";
 import { authFetch } from "../utils/authSession";
@@ -96,7 +95,7 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
         const data = await response.json();
         if (ignore) return;
 
-        setAllRecipes(enrichRecipesWithMockImages<Recipe>((data.recipes || []) as Recipe[]));
+        setAllRecipes((data.recipes || []) as Recipe[]);
       } catch (fetchError: any) {
         if (!ignore) setError(fetchError.message || "Failed to fetch recipes");
       } finally {
