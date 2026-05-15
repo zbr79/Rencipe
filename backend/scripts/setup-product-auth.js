@@ -32,8 +32,6 @@ const userSchema = new mongoose.Schema(
 const recipeSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
-    titlePinyin: String,
-    titleFirstLetters: String,
     description: { type: String, required: true, trim: true },
     authorId: { type: mongoose.Schema.Types.ObjectId, required: true },
     image: String,
@@ -55,10 +53,6 @@ const recipeSchema = new mongoose.Schema(
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 const Recipe = mongoose.models.Recipe || mongoose.model("Recipe", recipeSchema);
 
-function searchText(title) {
-  return title.toLowerCase().replace(/[^a-z0-9]+/g, "");
-}
-
 async function upsertUser({ username, password, displayName, email, phone, role, avatarUrl = "" }) {
   const { salt, hash } = hashPassword(password);
   return User.findOneAndUpdate(
@@ -71,8 +65,6 @@ async function upsertUser({ username, password, displayName, email, phone, role,
 function privateRecipe({ title, description, image, mainIngredients, seasonings, steps, tags }) {
   return {
     title,
-    titlePinyin: searchText(title),
-    titleFirstLetters: title.split(/\s+/).map((word) => word[0].toLowerCase()).join(""),
     description,
     image,
     component: false,

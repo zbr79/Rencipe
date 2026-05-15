@@ -19,7 +19,7 @@ The product experience should remain fully English for submission-facing UI, doc
 ## Turn-In Cleanup Rules
 
 - Keep product source, environment templates, final report material, deployment scripts, and meaningful product documentation.
-- Remove local verification output, scratch scripts, temporary folders, presentation bundles, duplicated draft reports, default scaffold files, and AI-assistant configuration.
+- Remove local verification output, scratch scripts, temporary folders, presentation bundles, duplicated draft reports, default scaffold files, and workspace-only configuration.
 - Do not include real `.env` files, secrets, local logs, build output, or workspace-only agent instructions.
 - Keep seed scripts neutral and product-facing; avoid personal accounts, unrelated credentials, or runtime code that silently mutates data for placeholder content.
 - After code cleanup, build both backend and frontend before reporting the result.
@@ -28,5 +28,5 @@ The product experience should remain fully English for submission-facing UI, doc
 
 1. Backend build passes from `backend/`.
 2. Frontend build passes from `frontend/`.
-3. A source scan finds no AI-assistant configuration files, personal seed credentials, mock-image mutation routes, or local temp artifacts.
+3. A source scan finds no workspace-only configuration files, personal seed credentials, mock-image mutation routes, or local temp artifacts.
 4. Browser-visible cleanup is checked on the deployed site or local app when the changed code affects user-facing behavior.

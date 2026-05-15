@@ -25,8 +25,6 @@ const userSchema = new mongoose.Schema(
 const recipeSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
-    titlePinyin: String,
-    titleFirstLetters: String,
     description: { type: String, required: true, trim: true },
     authorId: { type: mongoose.Schema.Types.ObjectId, required: true },
     image: String,
@@ -64,18 +62,6 @@ async function upsertUser({ username, password, displayName, email, phone, role 
   );
 }
 
-function searchText(title) {
-  return title.toLowerCase().replace(/[^a-z0-9]+/g, "");
-}
-
-function firstLetters(title) {
-  return title
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((word) => word[0].toLowerCase())
-    .join("");
-}
-
 const imageByTheme = {
   dimSum: "https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=1200&q=80",
   chicken: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=1200&q=80",
@@ -96,8 +82,6 @@ function recipe(input) {
   const viewCount = typeof input.views === "number" ? 10 + (input.views % 16) : 0;
   return {
     title: input.title,
-    titlePinyin: searchText(input.title),
-    titleFirstLetters: firstLetters(input.title),
     description: input.description,
     image: input.image || imageByTheme[input.theme || "rice"],
     component: Boolean(input.component),

@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import searchStyles from "../search/page.module.css";
 import { useSaved } from "../contexts/SavedContext";
-import { matchesPinyinSearch } from "../utils/pinyinSearch";
 import { getVisibleTags } from "../utils/recipeTags";
+import { matchesTextSearch } from "../utils/textSearch";
 import { authFetch } from "../utils/authSession";
 import { type AccountIdentity } from "../utils/accountAvatar";
 
@@ -34,11 +34,7 @@ interface SearchOverlayProps {
 const HISTORY_KEY = "rencipe-search-history";
 
 function matchesRecipeSearch(recipe: Recipe, query: string) {
-  return (
-    matchesPinyinSearch(query, recipe.title) ||
-    matchesPinyinSearch(query, recipe.description) ||
-    getVisibleTags(recipe.tags).some((tag) => matchesPinyinSearch(query, tag))
-  );
+  return matchesTextSearch(query, recipe.title, recipe.description, ...getVisibleTags(recipe.tags));
 }
 
 export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {

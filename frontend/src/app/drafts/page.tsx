@@ -7,7 +7,7 @@ import BackButton from "../components/BackButton";
 import styles from "./drafts.module.css";
 import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import { getCurrentUserId } from "../utils/authSession";
-import { matchesPinyinSearch } from "../utils/pinyinSearch";
+import { matchesTextSearch } from "../utils/textSearch";
 import { useSwipeRowDrag } from "../hooks/useSwipeRowDrag";
 
 interface Draft {
@@ -82,11 +82,7 @@ export default function DraftsPage() {
 
   const filteredDrafts = drafts.filter((draft) => {
     if (!searchTerm.trim()) return true;
-    return (
-      matchesPinyinSearch(searchTerm, draft.name || "") ||
-      matchesPinyinSearch(searchTerm, draft.title || "") ||
-      matchesPinyinSearch(searchTerm, draft.description || "")
-    );
+    return matchesTextSearch(searchTerm, draft.name, draft.title, draft.description);
   });
 
   return (

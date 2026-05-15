@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useSaved } from "../contexts/SavedContext";
 import AccountAvatar from "../components/AccountAvatar";
 import styles from "./page.module.css";
-import { matchesPinyinSearch } from "../utils/pinyinSearch";
 import { getAccountDisplayName } from "../utils/accountAvatar";
 import { getRecipeAuthor } from "../utils/recipeAuthor";
 import { useSwipeRowDrag } from "../hooks/useSwipeRowDrag";
+import { matchesTextSearch } from "../utils/textSearch";
 
 export default function SavedPage() {
   const {
@@ -33,8 +33,7 @@ export default function SavedPage() {
   const filteredRecipes = savedRecipes.filter((recipe) => {
     const matchesSearch =
       !filters.searchTerm ||
-      matchesPinyinSearch(filters.searchTerm, recipe.title) ||
-      matchesPinyinSearch(filters.searchTerm, recipe.description);
+      matchesTextSearch(filters.searchTerm, recipe.title, recipe.description);
 
     return matchesSearch;
   });
@@ -42,7 +41,7 @@ export default function SavedPage() {
   const filteredMeals = savedMeals.filter((meal) => {
     const matchesSearch =
       !filters.searchTerm ||
-      matchesPinyinSearch(filters.searchTerm, meal.name);
+      matchesTextSearch(filters.searchTerm, meal.name);
 
     return matchesSearch;
   });

@@ -9,7 +9,6 @@ import CreateFormModal from './components/CreateFormModal';
 import AuthGate from './components/AuthGate';
 import ConfirmDialogProvider from './components/ConfirmDialogProvider';
 import ToastProvider from './components/toast/ToastProvider';
-import ChineseUiTranslator from './i18n/ChineseUiTranslator';
 import './globals.css';
 
 export const metadata = {
@@ -35,7 +34,6 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>
-          <ChineseUiTranslator />
           <ToastProvider />
           <SavedProvider>
             <ConfirmDialogProvider>

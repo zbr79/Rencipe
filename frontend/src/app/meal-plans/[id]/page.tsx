@@ -11,7 +11,7 @@ import { useSaved } from "../../contexts/SavedContext";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { authFetch, getCurrentUser, getCurrentUserId, type AuthUser } from "../../utils/authSession";
 import { filterRecipesForUserLanguage, type RecipeLanguage } from "../../utils/recipeLanguage";
-import { matchesPinyinSearch } from "../../utils/pinyinSearch";
+import { matchesTextSearch } from "../../utils/textSearch";
 import { readRecentlyViewedRecipes, type RecentlyViewedRecipe } from "../../utils/recentlyViewedRecipes";
 import styles from "./page.module.css";
 
@@ -679,7 +679,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
   const filteredSourceRecipes = useMemo(() => {
     const query = recipeSearch.trim();
     if (!query) return sourceRecipes;
-    return sourceRecipes.filter((recipe) => matchesPinyinSearch(query, recipe.title) || matchesPinyinSearch(query, recipe.description || ""));
+    return sourceRecipes.filter((recipe) => matchesTextSearch(query, recipe.title, recipe.description));
   }, [recipeSearch, sourceRecipes]);
 
   async function savePlan(nextPlan: MealPlan, successMessage?: string) {

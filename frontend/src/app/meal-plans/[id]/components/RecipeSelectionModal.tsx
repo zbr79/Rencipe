@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import styles from "./recipe-selection-modal.module.css";
-import { matchesPinyinSearch } from "../../../utils/pinyinSearch";
+import { matchesTextSearch } from "../../../utils/textSearch";
 
 interface Recipe {
   id: string;
@@ -42,18 +42,15 @@ export default function RecipeSelectionModal({
     }
   }, [isOpen, recipes.length, loading, title]);
 
-  // Filter recipes - only show components, with pinyin search
+  // Filter recipes - only show components that match the search text
   const filteredRecipes = recipes.filter((recipe) => {
-    // Must be a component recipe
     if (!recipe.component) {
       return false;
     }
-    // If no search term, show all component recipes
     if (!searchTerm.trim()) {
       return true;
     }
-    // Use pinyin search
-    return matchesPinyinSearch(searchTerm, recipe.title) || matchesPinyinSearch(searchTerm, recipe.description);
+    return matchesTextSearch(searchTerm, recipe.title, recipe.description);
   });
 
   const handleSelectRecipe = (recipeId: string) => {

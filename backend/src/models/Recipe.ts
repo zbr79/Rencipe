@@ -1,12 +1,9 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { textToPinyin, textToFirstLetters } from "../utils/pinyin";
 
 export type RecipeLanguage = "en" | "zh";
 
 export interface IRecipe extends Document {
   title: string;
-  titlePinyin?: string; // Full pinyin of title
-  titleFirstLetters?: string; // First-letter abbreviation of title
   description: string;
   tips?: string;
   recipeOrigin: "original" | "shared";
@@ -52,8 +49,6 @@ export interface IRecipe extends Document {
 const RecipeSchema = new Schema<IRecipe>(
   {
     title: { type: String, required: true, trim: true },
-    titlePinyin: String, // Auto-generated full pinyin
-    titleFirstLetters: String, // Auto-generated first-letter abbreviation
     description: { type: String, required: true, trim: true },
     tips: { type: String, trim: true },
     recipeOrigin: {
@@ -113,14 +108,6 @@ const RecipeSchema = new Schema<IRecipe>(
   },
   { timestamps: true }
 );
-
-// Pre-save hook to generate pinyin fields
-RecipeSchema.pre<IRecipe>("save", async function() {
-  if (this.title) {
-    this.titlePinyin = textToPinyin(this.title);
-    this.titleFirstLetters = textToFirstLetters(this.title);
-  }
-});
 
 RecipeSchema.index(
   { trashExpiresAt: 1 },

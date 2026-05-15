@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import BackButton from "../components/BackButton";
 import { useSwipeRowDrag } from "../hooks/useSwipeRowDrag";
 import { readRecentlyViewedRecipes, removeRecentlyViewedRecipe, type RecentlyViewedRecipe } from "../utils/recentlyViewedRecipes";
-import { matchesPinyinSearch } from "../utils/pinyinSearch";
+import { matchesTextSearch } from "../utils/textSearch";
 import styles from "./page.module.css";
 
 function getViewedAgoLabel(viewedAt: string, now: number) {
@@ -42,7 +42,7 @@ export default function RecentlyViewedPage() {
   const filteredItems = useMemo(() => {
     const query = searchQuery.trim();
     if (!query) return items;
-    return items.filter((item) => matchesPinyinSearch(query, item.title) || matchesPinyinSearch(query, item.description || ""));
+    return items.filter((item) => matchesTextSearch(query, item.title, item.description));
   }, [items, searchQuery]);
 
   function handleRemoveItem(recipeId: string) {
