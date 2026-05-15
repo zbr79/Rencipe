@@ -4,66 +4,26 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  background: color-mix(in srgb, var(--background) 94%, var(--primary-soft));
+  background: var(--background);
   color: var(--foreground);
 }
 
-.authShell {
-  width: 100%;
-  min-height: 100dvh;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 480px);
-}
-
-.brandPanel {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: clamp(28px, 5vw, 64px);
-  background: var(--card-bg);
-  border-right: 1px solid var(--border);
-}
-
-.brandPanel h1 {
-  max-width: 620px;
-  margin: 0;
-  color: var(--foreground);
-  font-size: clamp(42px, 7vw, 86px);
-  line-height: 0.96;
-  font-weight: 950;
-  letter-spacing: 0;
+.brandLockup,
+.formHeader,
+.form,
+.formFooter {
+  width: min(100%, 536px);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .brandLockup {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 20px;
-  font-weight: 900;
-}
-
-.brandIcon {
-  width: 38px;
-  height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: var(--primary-soft);
+  margin-bottom: 38px;
   color: var(--primary);
-  font-size: 24px;
-  font-weight: 950;
-  line-height: 1;
+  font-size: 25px;
+  font-weight: 750;
+  line-height: 1.1;
   letter-spacing: 0;
-}
-
-.formHeader p {
-  margin: 0 0 10px;
-  color: var(--secondary);
-  font-size: 12px;
-  font-weight: 900;
-  text-transform: uppercase;
 }
 
 .formPanel {
@@ -72,30 +32,29 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(28px, 5vw, 58px);
+  padding: clamp(36px, 7vw, 72px) clamp(24px, 6vw, 64px);
   background: var(--card-bg);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   box-sizing: border-box;
 }
 
 .formHeader {
-  margin-bottom: 24px;
-}
-
-.formHeader p {
-  color: var(--secondary);
+  margin-bottom: 34px;
 }
 
 .formHeader h2 {
   margin: 0;
   color: var(--foreground);
-  font-size: 44px;
+  font-size: 40px;
   line-height: 1;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .form {
   display: grid;
-  gap: 14px;
+  gap: 20px;
 }
 
 .field {
@@ -105,20 +64,36 @@
 
 .field span,
 .checkRow span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.checkRow span {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
   color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .field input {
   width: 100%;
-  min-height: 48px;
-  padding: 0 14px;
+  min-height: 68px;
+  padding: 0 20px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--input-bg);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--primary-soft) 55%, var(--card-bg));
   color: var(--foreground);
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 600;
   box-sizing: border-box;
 }
 
@@ -148,19 +123,19 @@
   background: rgba(239, 68, 68, 0.1);
   color: var(--error);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .primaryButton {
-  min-height: 46px;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 900;
+  min-height: 68px;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .primaryButton {
-  margin-top: 4px;
+  margin-top: 14px;
   border: 1px solid var(--primary);
   background: var(--primary);
   color: white;
@@ -171,28 +146,13 @@
   opacity: 0.65;
 }
 
-.inlineLink {
-  width: fit-content;
-  min-height: 28px;
-  justify-self: end;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--primary);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 900;
-}
-
 .formFooter {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 18px;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 800;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 28px;
+  font-weight: 600;
 }
 
 .formFooter button {
@@ -201,69 +161,34 @@
   background: transparent;
   color: var(--primary);
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.placeholderPanel {
-  display: grid;
-  gap: 18px;
-}
-
-.placeholderPanel p {
-  margin: -6px 0 0;
-  color: var(--text-secondary);
   font-size: 15px;
-  line-height: 1.5;
-  font-weight: 800;
-}
-
-@media (max-width: 860px) {
-  .authShell {
-    grid-template-columns: 1fr;
-  }
-
-  .brandPanel {
-    min-height: auto;
-    padding: 24px 18px 0;
-    border-right: 0;
-    background: var(--card-bg);
-  }
-
-  .brandPanel h1 {
-    display: none;
-  }
-
-  .formPanel {
-    min-height: calc(100dvh - 72px);
-    padding: 24px 18px;
-  }
-
+  font-weight: 700;
 }
 
 @media (max-width: 640px) {
   .page {
     min-height: 100dvh;
-    align-items: stretch;
-    justify-content: stretch;
-    padding: 0;
-    background: var(--card-bg);
   }
 
   .formPanel {
-    min-height: calc(100dvh - 72px);
-    justify-content: center;
-    padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
+    min-height: 100dvh;
+    padding: 34px 24px;
   }
 
   .brandLockup {
-    margin-bottom: 28px;
+    margin-bottom: 30px;
   }
 
   .formHeader h2 {
-    font-size: 40px;
+    font-size: 34px;
+  }
+
+  .field input,
+  .primaryButton {
+    min-height: 58px;
+  }
+
+  .formFooter button {
+    font-size: 14px;
   }
 }

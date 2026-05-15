@@ -21,7 +21,7 @@
   margin: 0 0 8px;
   color: var(--secondary);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -30,7 +30,7 @@
   color: var(--foreground);
   font-size: clamp(32px, 5vw, 50px);
   line-height: 1;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .header p:last-child {
@@ -52,7 +52,7 @@
   padding: 0 13px;
   border: 1px solid transparent;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -100,7 +100,7 @@
   margin: 0 0 6px;
   color: var(--foreground);
   font-size: 17px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .planCard p {
@@ -126,7 +126,7 @@
   text-align: center;
   padding: 32px;
   color: var(--text-secondary);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .errorText {

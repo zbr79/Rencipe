@@ -158,11 +158,18 @@ export default function HomePage() {
   const tabs = [
     { id: "recommended", label: "Recommended" },
     { id: "newest", label: "Newest" },
+    { id: "health", label: "Health" },
+    { id: "quick", label: "Quick" },
   ];
 
   const baseRecipes = activeTab === "recommended" ? recommendedPublicRecipes : newestPublicRecipes;
 
-  const visibleRecipes = baseRecipes;
+  const visibleRecipes = baseRecipes.filter((recipe) => {
+    const tags = (recipe.tags || []).map((tag) => tag.toLowerCase());
+    if (activeTab === "health") return tags.some((tag) => tag.includes("health"));
+    if (activeTab === "quick") return tags.some((tag) => tag.includes("quick"));
+    return true;
+  });
 
   function pauseAutoplay() {
     setAutoplayResumeAt(Date.now() + MANUAL_SLIDE_PAUSE_MS);

@@ -2,10 +2,31 @@
 
 Record mistakes, findings, deployment notes, and lessons learned during development.
 
+## 2026-05-15
+
+- When rewriting DOCX report bodies with python-docx, preserve the final Word `sectPr` body element and avoid assuming the template has a `Table Grid` style. This report template accepts default tables, and new/changed report content should be marked with explicit blue run color.
+- New reusable meals should start as draft-backed editor state, not as saved `MealPlan` documents with placeholder names. Promote a meal only after required fields are complete, and keep incomplete meal work in Drafts with `draftType: "meal"`.
+- Meal edit screens should not include a separate saved/exit button that navigates to a fixed list URL. Use the shared history-aware BackButton for leaving detail/edit views.
+- Account language checks must use the backend-backed session, not only localStorage overrides, because AuthGate refresh can replace local-only language changes. Runtime UI translation also needs leaf-element text handling for React split text such as `Recipes (1)`.
+
 ## 2026-05-14
 
 - Saved recipe rows that support swipe actions should make the main row itself the link. Nesting the link inside a swipe row can make normal taps feel unreliable on mobile and desktop QA.
 - Recipe detail views should increment through the backend with `timestamps: false`; otherwise every read can move `updatedAt` and accidentally affect newest-style ordering.
+- Reusable meals can stay in the `MealPlan` collection as `kind: "meal"`; add sharing fields there instead of creating a parallel Meal model.
+- Comments for recipes and meals should use one target-type/comment model with denormalized display names, while delete permissions are checked against the live authenticated user role.
+- The integrated browser can stay constrained to a phone-width viewport; use a headless Playwright run with an explicit desktop viewport when verifying PC-specific layout changes.
+- Live route audits should include data-quality checks, not just HTTP status. A route can load while still showing non-English records or placeholder names that hurt demo polish.
+- Keep local Next API proxy behavior aligned with backend behavior even when public nginx bypasses the proxy. Draft listing is a good example: backend supports author-level list fetches, so local proxy routes should too.
+- Recent-viewed recipe history should use both age and count limits. For the current phone-first demo, 90 days plus a 50-item cap keeps the list useful without storing stale browsing noise.
+- Desktop swipe rows need pointer-drag handling on the row itself, including link rows, so PC QA can reveal hidden actions without touch hardware.
+- Account language filters should run at the recipe API boundary and again on client-owned cached recipe surfaces such as saved and recently viewed lists, otherwise Project Mode can leak older local records.
+- Desktop swipe rows should avoid making the draggable surface a real anchor. Mouse dragging an anchor can trigger browser link dragging or URL previews before app swipe logic wins.
+- Recipe language display/filtering should let current CJK text override stored language fields. Otherwise older records saved as English can stay mislabeled after Chinese text is added.
+- Full-screen create/account modals must stack above the mobile bottom nav or close on route changes, so bottom-nav taps cannot leave an old modal open on the next page.
+- Native select/dropdown controls are not a good fit for Rencipe UI. Use custom app-styled menus so option sizing, color, and typography stay controlled.
+- Do not use blur effects for overlays, headers, or modal backdrops. Use plain dimmed gray/black backgrounds for open modal states.
+- When Plans are temporarily closed, preserve reusable Meals by deleting only `MealPlan` documents where `kind` is `mealPlan` or missing, plus scheduled `WeeklyPlan` documents; never delete `kind: "meal"` records during that cleanup.
 
 ## 2026-05-11
 

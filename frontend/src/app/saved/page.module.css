@@ -22,7 +22,7 @@
   background: transparent;
   color: var(--text-secondary);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .segmentedTabActive {
@@ -59,7 +59,7 @@
   background: var(--primary);
   color: white;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -85,7 +85,7 @@
   margin-bottom: 12px;
   color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .savedList {
@@ -194,7 +194,7 @@
   color: var(--foreground);
   font-size: 15px;
   line-height: 1.25;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .uploaderLine {
@@ -204,7 +204,7 @@
   gap: 5px;
   color: var(--text-secondary);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .uploaderLine span:last-child {
@@ -217,7 +217,7 @@
 .savedPlanRow span {
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .swipeDeleteButton {
@@ -229,7 +229,7 @@
   background: var(--error);
   color: white;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .loading,
@@ -237,7 +237,7 @@
   padding: 24px;
   text-align: center;
   color: var(--text-secondary);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .createLink {
@@ -250,7 +250,7 @@
   border-radius: 8px;
   background: var(--primary);
   color: white;
-  font-weight: 800;
+  font-weight: 600;
   text-decoration: none;
   user-select: none;
 }

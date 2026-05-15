@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./page.module.css";
+import { toastError } from "../components/toast/toast";
 import { writeAuthSession } from "../utils/authSession";
-
-type LoginView = "signin" | "signup" | "recover";
 
 function getSafeNextPath(value: string | null) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) return "/";
@@ -21,7 +20,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState(isAddAccount ? "" : "admin");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [activeView, setActiveView] = useState<LoginView>("signin");
 
   useEffect(() => {
     document.body.classList.add("loginScreen");
@@ -64,73 +62,51 @@ export default function LoginPage() {
 
   return (
     <main className={styles.page}>
-      <section className={styles.authShell}>
-        <div className={styles.brandPanel}>
-          <div className={styles.brandLockup}>
-            <span className={styles.brandIcon} aria-hidden="true">R</span>
-            <span>Rencipe</span>
-          </div>
-          <h1>Cook, save, and plan from one recipe workspace.</h1>
+      <section className={styles.formPanel}>
+        <div className={styles.brandLockup}>Rencipe</div>
+
+        <div className={styles.formHeader}>
+          <h2>{isAddAccount ? "Add account" : "Welcome back"}</h2>
         </div>
 
-        <div className={styles.formPanel}>
-          {activeView === "signin" ? (
-            <>
-              <div className={styles.formHeader}>
-                <h2>{isAddAccount ? "Add account" : "Sign in"}</h2>
-              </div>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <label className={styles.field}>
+            <span>Username</span>
+            <input
+              type="text"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              autoComplete="username"
+              required
+            />
+          </label>
 
-              <form className={styles.form} onSubmit={handleSubmit}>
-                <label className={styles.field}>
-                  <span>Username</span>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(event) => setUsername(event.target.value)}
-                    autoComplete="username"
-                    required
-                  />
-                </label>
+          <label className={styles.field}>
+            <span>Password</span>
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </label>
 
-                <label className={styles.field}>
-                  <span>Password</span>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    autoComplete="current-password"
-                    required
-                  />
-                </label>
+          {error && <div className={styles.error}>{error}</div>}
 
-                <button type="button" className={styles.inlineLink} onClick={() => setActiveView("recover")}>
-                  Forgot password?
-                </button>
+          <button type="submit" className={styles.primaryButton} disabled={loading}>
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
 
-                {error && <div className={styles.error}>{error}</div>}
-
-                <button type="submit" className={styles.primaryButton} disabled={loading}>
-                  {loading ? "Signing in..." : "Sign in"}
-                </button>
-              </form>
-
-              {!isAddAccount && (
-                <div className={styles.formFooter}>
-                  <span>New to Rencipe?</span>
-                  <button type="button" onClick={() => setActiveView("signup")}>Create account</button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className={styles.placeholderPanel}>
-              <div className={styles.formHeader}>
-                <h2>{activeView === "signup" ? "Create account" : "Recover password"}</h2>
-              </div>
-              <p>{activeView === "signup" ? "Sign up is not open yet." : "Please contact an administrator to recover your password."}</p>
-              <button type="button" className={styles.primaryButton} onClick={() => setActiveView("signin")}>
-                Back to sign in
-              </button>
-            </div>
+        <div className={styles.formFooter}>
+          <button type="button" onClick={() => toastError("please contant admin")}>
+            Forgot password?
+          </button>
+          {!isAddAccount && (
+            <button type="button" onClick={() => toastError("sign up not open")}>
+              Sign up
+            </button>
           )}
         </div>
       </section>

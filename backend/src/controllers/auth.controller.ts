@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { v2 as cloudinary } from "cloudinary";
-import User from "../models/User";
+import User, { UserLanguage } from "../models/User";
 import { hashPassword, verifyPassword } from "../utils/password";
-import { getAuthUser, signAuthToken } from "../middleware/auth";
+import { AuthUser, getAuthUser, signAuthToken } from "../middleware/auth";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -10,7 +10,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-function pickUser(user: any) {
+function pickUser(user: any): AuthUser {
   return {
     id: String(user._id),
     username: user.username,
@@ -18,12 +18,18 @@ function pickUser(user: any) {
     avatarUrl: user.avatarUrl || "",
     email: user.email || "",
     phone: user.phone || "",
-    role: user.role,
+    role: user.role === "admin" ? "admin" : "user",
+    language: normalizeLanguage(user.language),
+    projectMode: user.projectMode !== false,
   };
 }
 
 function cleanText(value: unknown, fallback = "") {
   return String(value ?? fallback).trim();
+}
+
+function normalizeLanguage(value: unknown): UserLanguage {
+  return value === "zh" ? "zh" : "en";
 }
 
 export async function login(req: Request, res: Response) {
@@ -66,6 +72,7 @@ export async function updateProfile(req: Request, res: Response) {
     const avatarUrl = cleanText(req.body.avatarUrl, user.avatarUrl);
     const email = cleanText(req.body.email, user.email);
     const phone = cleanText(req.body.phone, user.phone);
+    const language = normalizeLanguage(req.body.language ?? user.language);
     const currentPassword = String(req.body.currentPassword || "");
     const newPassword = String(req.body.newPassword || "");
 
@@ -75,6 +82,11 @@ export async function updateProfile(req: Request, res: Response) {
     user.avatarUrl = avatarUrl;
     user.email = email;
     user.phone = phone;
+    user.language = language;
+
+    if (authUser.role === "admin" && typeof req.body.projectMode === "boolean") {
+      user.projectMode = req.body.projectMode;
+    }
 
     if (newPassword) {
       if (newPassword.length < 6) return res.status(400).json({ error: "new password must be at least 6 characters" });

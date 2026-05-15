@@ -2,6 +2,30 @@ import { Request, Response } from "express";
 import Draft, { IDraft } from "../models/Draft";
 import mongoose from "mongoose";
 
+function normalizeDraftType(value: any) {
+  return value === "meal" ? "meal" : "recipe";
+}
+
+function normalizeDraftPeople(people: any) {
+  if (!Array.isArray(people)) return [];
+
+  return people.map((person: any, index: number) => ({
+    name: person?.name || `Person ${index + 1}`,
+    modifier: Math.max(0.1, Math.min(5, Number(person?.modifier) || 1)),
+  }));
+}
+
+function normalizeDraftRecipeIds(recipes: any) {
+  if (!Array.isArray(recipes)) return [];
+
+  return recipes
+    .map((recipe: any) => {
+      const recipeId = typeof recipe === "string" ? recipe : recipe?._id || recipe?.id;
+      return mongoose.Types.ObjectId.isValid(recipeId) ? new mongoose.Types.ObjectId(recipeId) : null;
+    })
+    .filter(Boolean);
+}
+
 /**
  * POST /drafts
  * Create a new recipe draft
@@ -10,6 +34,7 @@ export async function saveDraft(req: Request, res: Response) {
   try {
     const {
       authorId,
+      draftType,
       name,
       title,
       description,
@@ -25,6 +50,8 @@ export async function saveDraft(req: Request, res: Response) {
       steps,
       servings,
       tags,
+      people,
+      recipes,
     } = req.body;
 
     if (!authorId) {
@@ -38,6 +65,7 @@ export async function saveDraft(req: Request, res: Response) {
     // Create a new draft
     const draft = new Draft({
       authorId: new mongoose.Types.ObjectId(authorId),
+      draftType: normalizeDraftType(draftType),
       name: name || "Untitled Draft",
       title: title || "",
       description: description || "",
@@ -53,9 +81,12 @@ export async function saveDraft(req: Request, res: Response) {
       steps: steps || [],
       servings: servings || 1,
       tags: tags || [],
+      people: normalizeDraftPeople(people),
+      recipes: normalizeDraftRecipeIds(recipes),
     });
 
     await draft.save();
+    await draft.populate({ path: "recipes", model: "Recipe" });
     res.status(201).json({ draft });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Failed to save draft" });
@@ -86,14 +117,14 @@ export async function getDraft(req: Request, res: Response) {
       const draft = await Draft.findOne({
         _id: new mongoose.Types.ObjectId(id as string),
         authorId: new mongoose.Types.ObjectId(authorId as string),
-      });
+      }).populate({ path: "recipes", model: "Recipe" });
       return res.json({ draft });
     }
 
     // Otherwise, get all drafts for the author
     const drafts = await Draft.find({
       authorId: new mongoose.Types.ObjectId(authorId as string),
-    }).sort({ updatedAt: -1 });
+    }).populate({ path: "recipes", model: "Recipe" }).sort({ updatedAt: -1 });
 
     res.json({ drafts });
   } catch (e: any) {
@@ -111,6 +142,7 @@ export async function updateDraft(req: Request, res: Response) {
     const id = Array.isArray(rawId) ? rawId[0] : rawId;
     const {
       authorId,
+      draftType,
       name,
       title,
       description,
@@ -126,6 +158,8 @@ export async function updateDraft(req: Request, res: Response) {
       steps,
       servings,
       tags,
+      people,
+      recipes,
     } = req.body;
 
     if (!authorId) {
@@ -146,6 +180,7 @@ export async function updateDraft(req: Request, res: Response) {
         authorId: new mongoose.Types.ObjectId(authorId),
       },
       {
+        draftType: normalizeDraftType(draftType),
         name: name,
         title: title,
         description: description,
@@ -161,9 +196,11 @@ export async function updateDraft(req: Request, res: Response) {
         steps: steps,
         servings: servings,
         tags: tags,
+        people: normalizeDraftPeople(people),
+        recipes: normalizeDraftRecipeIds(recipes),
       },
       { new: true }
-    );
+    ).populate({ path: "recipes", model: "Recipe" });
 
     if (!draft) {
       return res.status(404).json({ error: "Draft not found" });

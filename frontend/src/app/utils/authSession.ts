@@ -9,6 +9,8 @@ export interface AuthUser {
   email?: string;
   phone?: string;
   role: "admin" | "user";
+  language?: "en" | "zh";
+  projectMode?: boolean;
 }
 
 export interface AuthSession {
@@ -64,6 +66,11 @@ function writeSignedInAccounts(accounts: AuthSession[]) {
   window.localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(normalizedAccounts));
 }
 
+function dispatchAuthSessionChange() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event("rencipe-auth-session-change"));
+}
+
 export function readAuthSession(): AuthSession | null {
   if (typeof window === "undefined") return null;
 
@@ -85,6 +92,7 @@ export function readAuthSession(): AuthSession | null {
 export function writeAuthSession(session: AuthSession) {
   window.localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
   writeSignedInAccounts([session, ...readStoredAccountSessions()]);
+  dispatchAuthSessionChange();
 }
 
 export function clearAuthSession() {
@@ -93,6 +101,7 @@ export function clearAuthSession() {
   if (currentSession) {
     writeSignedInAccounts(readStoredAccountSessions().filter((account) => !matchesAccount(account, getAccountKey(currentSession))));
   }
+  dispatchAuthSessionChange();
 }
 
 export function readSignedInAccounts() {
@@ -109,6 +118,7 @@ export function switchToSignedInAccount(accountKey: string) {
 
   window.localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(account));
   writeSignedInAccounts([account, ...readStoredAccountSessions()]);
+  dispatchAuthSessionChange();
   return account;
 }
 
@@ -121,6 +131,8 @@ export function removeSignedInAccount(accountKey: string) {
     window.localStorage.removeItem(AUTH_SESSION_KEY);
   }
 
+  dispatchAuthSessionChange();
+
   return remainingAccounts;
 }
 
@@ -128,6 +140,7 @@ export function clearAllAuthSessions() {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(AUTH_SESSION_KEY);
   window.localStorage.removeItem(AUTH_ACCOUNTS_KEY);
+  dispatchAuthSessionChange();
 }
 
 export function getAuthToken() {

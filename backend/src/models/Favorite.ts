@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IFavorite extends Document {
   userId: mongoose.Types.ObjectId;
   recipes: mongoose.Types.ObjectId[];
+  meals: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +20,12 @@ const FavoriteSchema = new Schema<IFavorite>(
       {
         type: Schema.Types.ObjectId,
         ref: "Recipe",
+      },
+    ],
+    meals: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "MealPlan",
       },
     ],
   },

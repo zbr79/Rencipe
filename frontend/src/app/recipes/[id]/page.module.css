@@ -1,5 +1,5 @@
 .container {
-  max-width: 1080px;
+  max-width: 820px;
   width: 100%;
   margin: 0 auto;
   padding: 22px 18px 96px;
@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .error {
@@ -21,7 +21,7 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--error);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .backLink,
@@ -37,7 +37,7 @@
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 650;
   text-decoration: none;
 }
 
@@ -104,7 +104,6 @@
   border-radius: 0;
   background: color-mix(in srgb, var(--card-bg) 96%, transparent);
   box-shadow: var(--shadow-md);
-  backdrop-filter: blur(16px);
 }
 
 .panelButton {
@@ -154,7 +153,7 @@
   border: 1px solid transparent;
   border-radius: 8px;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   color: white;
 }
 
@@ -197,9 +196,9 @@
   max-width: 860px;
   margin: 24px 0 16px;
   color: var(--foreground);
-  font-size: clamp(34px, 5vw, 62px);
-  line-height: 0.98;
-  font-weight: 900;
+  font-size: clamp(34px, 4vw, 42px);
+  line-height: 1.02;
+  font-weight: 700;
 }
 
 .recipeInfo {
@@ -241,7 +240,7 @@
 .viewCount {
   color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .tagsRow {
@@ -259,13 +258,13 @@
   color: var(--accent);
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .content {
   display: grid;
-  grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1.15fr);
-  gap: 20px;
+  grid-template-columns: 1fr;
+  gap: 14px;
   align-items: start;
 }
 
@@ -291,7 +290,7 @@
   margin: 0 0 16px;
   color: var(--foreground);
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .tipsText {
@@ -325,14 +324,14 @@
   min-width: 0;
   color: var(--foreground);
   font-size: 14px;
-  font-weight: 850;
+  font-weight: 650;
   line-height: 1.45;
 }
 
 .ingredientAmount {
   color: var(--foreground);
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.45;
   text-align: right;
   white-space: nowrap;
@@ -373,7 +372,7 @@
   background: var(--primary);
   color: white;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .step p {
@@ -401,6 +400,17 @@
   border-radius: 8px;
   background: var(--card-bg);
   box-shadow: var(--shadow-sm);
+}
+
+.ratingHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ratingHeader .sectionTitle {
+  margin-bottom: 0;
 }
 
 .ratingButtons {
@@ -436,7 +446,8 @@
 .ratingMessage {
   color: var(--primary);
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 650;
+  text-align: right;
 }
 
 @media (max-width: 820px) {

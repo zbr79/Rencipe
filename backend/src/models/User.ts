@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export type UserRole = "admin" | "user";
+export type UserLanguage = "en" | "zh";
 
 export interface IUser extends Document {
   username: string;
@@ -9,6 +10,8 @@ export interface IUser extends Document {
   email?: string;
   phone?: string;
   role: UserRole;
+  language: UserLanguage;
+  projectMode: boolean;
   passwordHash: string;
   passwordSalt: string;
   createdAt: Date;
@@ -23,6 +26,8 @@ const UserSchema = new Schema<IUser>(
     email: { type: String, trim: true, default: "" },
     phone: { type: String, trim: true, default: "" },
     role: { type: String, enum: ["admin", "user"], default: "user", required: true },
+    language: { type: String, enum: ["en", "zh"], default: "en", required: true },
+    projectMode: { type: Boolean, default: true, required: true },
     passwordHash: { type: String, required: true },
     passwordSalt: { type: String, required: true },
   },

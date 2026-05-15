@@ -37,6 +37,8 @@ export interface IMealPlan extends Document {
   recipes: mongoose.Types.ObjectId[];
   combinations: IMealCombination[];
   checkedIngredients: string[];
+  isPublic: boolean;
+  views: number;
   deletedAt?: Date | null;
   trashExpiresAt?: Date | null;
   createdAt: Date;
@@ -174,6 +176,16 @@ const mealPlanSchema = new Schema<IMealPlan>(
       type: [String],
       default: [],
     },
+    isPublic: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    views: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     deletedAt: {
       type: Date,
       default: undefined,
@@ -189,6 +201,7 @@ const mealPlanSchema = new Schema<IMealPlan>(
 
 // Ensure each user can have multiple plans
 mealPlanSchema.index({ userId: 1, createdAt: -1 });
+mealPlanSchema.index({ kind: 1, isPublic: 1, createdAt: -1 });
 mealPlanSchema.index(
   { trashExpiresAt: 1 },
   { expireAfterSeconds: 0, partialFilterExpression: { trashExpiresAt: { $type: "date" } } }

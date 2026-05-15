@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSaved } from "../contexts/SavedContext";
-import { useQuickCreateMealPlan } from "../hooks/useQuickCreateMealPlan";
 import AccountAvatar from "../components/AccountAvatar";
 import styles from "./page.module.css";
 import { matchesPinyinSearch } from "../utils/pinyinSearch";
@@ -17,22 +16,18 @@ export default function SavedPage() {
     loadingSaved,
     fetchSaved,
     removeFavorite,
-    mealPlans,
-    loadingPlans,
-    fetchMealPlans,
-    deleteMealPlan,
+    savedMeals,
+    removeFavoriteMeal,
   } = useSaved();
-  const { creatingMealPlan, createAndOpenMealPlan } = useQuickCreateMealPlan();
   const swipeRowDrag = useSwipeRowDrag();
 
-  const [activeTab, setActiveTab] = useState<"recipes" | "plans">("recipes");
+  const [activeTab, setActiveTab] = useState<"recipes" | "meals">("recipes");
   const [filters, setFilters] = useState({
     searchTerm: "",
   });
 
   useEffect(() => {
     fetchSaved();
-    fetchMealPlans();
   }, []);
 
   const filteredRecipes = savedRecipes.filter((recipe) => {
@@ -44,27 +39,16 @@ export default function SavedPage() {
     return matchesSearch;
   });
 
-  const filteredPlans = mealPlans.filter((plan) => {
+  const filteredMeals = savedMeals.filter((meal) => {
     const matchesSearch =
       !filters.searchTerm ||
-      matchesPinyinSearch(filters.searchTerm, plan.name);
+      matchesPinyinSearch(filters.searchTerm, meal.name);
 
     return matchesSearch;
   });
-  const getPlanRecipeCount = (plan: any) => {
-    const scheduledCount = (plan.days || []).reduce((total: number, day: any) => {
-      return total + (day.meals || []).reduce((mealTotal: number, meal: any) => mealTotal + (meal.recipes?.length || 0), 0);
-    }, 0);
-    return scheduledCount || plan.recipes?.length || 0;
-  };
 
-  const handleDeletePlan = async (planId: string) => {
-    try {
-      await deleteMealPlan(planId);
-      await fetchMealPlans();
-    } catch (error) {
-      console.error("Failed to move plan to trash:", error);
-    }
+  const getMealRecipeCount = (meal: any) => {
+    return meal.recipes?.length || 0;
   };
 
   const handleRemoveSavedRecipe = async (recipeId: string) => {
@@ -78,7 +62,7 @@ export default function SavedPage() {
         <input
           type="text"
           placeholder={
-            activeTab === "recipes" ? "Search saved recipes" : "Search plans"
+            activeTab === "recipes" ? "Search saved recipes" : "Search saved meals"
           }
           value={filters.searchTerm}
           onChange={(e) =>
@@ -97,10 +81,10 @@ export default function SavedPage() {
           Recipes ({savedRecipes.length})
         </button>
         <button
-          onClick={() => setActiveTab("plans")}
-          className={`${styles.segmentedTab} ${activeTab === "plans" ? styles.segmentedTabActive : ""}`}
+          onClick={() => setActiveTab("meals")}
+          className={`${styles.segmentedTab} ${activeTab === "meals" ? styles.segmentedTabActive : ""}`}
         >
-          Plans ({mealPlans.length})
+          Meals ({savedMeals.length})
         </button>
       </div>
 
@@ -161,52 +145,43 @@ export default function SavedPage() {
         </>
       )}
 
-      {/* ===== Plan Tab ===== */}
-      {activeTab === "plans" && (
+      {/* ===== Meals Tab ===== */}
+      {activeTab === "meals" && (
         <>
           <div className={styles.planToolbar}>
             <div className={styles.count}>
-              Total {filteredPlans.length} plans
+              Saved {filteredMeals.length} meals
             </div>
-            <button
-              onClick={() => createAndOpenMealPlan()}
-              className={styles.newPlanButton}
-              disabled={creatingMealPlan}
-            >
-              {creatingMealPlan ? "Creating Plan..." : "New Plan"}
-            </button>
           </div>
 
-          {loadingPlans && <p className={styles.loading}>Loading...</p>}
+          {loadingSaved && <p className={styles.loading}>Loading...</p>}
 
-          {!loadingPlans && filteredPlans.length === 0 && (
+          {!loadingSaved && filteredMeals.length === 0 && (
             <div className={styles.empty}>
               <p>
-                {mealPlans.length === 0
-                  ? "You have not created any plans yet"
-                  : "No matching plans found"}
+                {savedMeals.length === 0
+                  ? "You have not saved any meals yet"
+                  : "No matching meals found"}
               </p>
-              <button
-                onClick={() => createAndOpenMealPlan()}
-                className={styles.newPlanButton}
-                disabled={creatingMealPlan}
-              >
-                {creatingMealPlan ? "Creating Plan..." : "New Plan"}
-              </button>
+              <Link href="/browse" className={styles.createLink}>Browse</Link>
             </div>
           )}
 
           <div className={styles.savedList}>
-            {filteredPlans.map((plan) => (
-              <div key={plan._id} className={styles.swipeRow} {...swipeRowDrag}>
-                <Link href={`/meal-plans/${plan._id}`} className={styles.savedPlanRow}>
-                  <h3>{plan.name}</h3>
-                  <span>{getPlanRecipeCount(plan)} recipes</span>
+            {filteredMeals.map((meal) => (
+              <div key={meal._id} className={styles.swipeRow} {...swipeRowDrag}>
+                <Link href={`/meal-plans/${meal._id}`} className={styles.savedPlanRow}>
+                  <h3>{meal.name}</h3>
+                  <span>{getMealRecipeCount(meal)} recipes</span>
+                  <div className={styles.uploaderLine}>
+                    <AccountAvatar account={meal.userId as any} size={18} />
+                    <span>{getAccountDisplayName(meal.userId as any)}</span>
+                  </div>
                 </Link>
                 <button
                   type="button"
                   className={styles.swipeDeleteButton}
-                  onClick={() => handleDeletePlan(plan._id)}
+                  onClick={() => removeFavoriteMeal(undefined, meal._id)}
                 >
                   Delete
                 </button>

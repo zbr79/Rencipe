@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import MealPlan, { IMealCombination, MealEntryKind, MealType } from "../models/MealPlan";
 import Recipe from "../models/Recipe";
+import { getAuthUser } from "../middleware/auth";
 
 const VALID_MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner"];
 const TRASH_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -24,6 +25,23 @@ function trashedPlanQuery() {
 
 function isPlanTrashed(plan: any) {
   return Boolean(plan?.deletedAt);
+}
+
+function getPlanOwnerId(plan: any) {
+  return String(plan?.userId?._id || plan?.userId || "");
+}
+
+function canAccessPlan(req: Request, plan: any) {
+  const user = getAuthUser(req);
+  if (normalizeKind(plan.kind) === "meal" && plan.isPublic) return true;
+  if (!user) return false;
+  return user.role === "admin" || getPlanOwnerId(plan) === user.id;
+}
+
+function canMutatePlan(req: Request, plan: any) {
+  const user = getAuthUser(req);
+  if (!user) return false;
+  return user.role === "admin" || getPlanOwnerId(plan) === user.id;
 }
 
 function normalizeKind(kind: any): MealEntryKind {
@@ -85,6 +103,7 @@ function normalizeSubmittedDays(days: any, numberOfDays: number, mealTypes: Meal
 
 async function populateMealPlan(plan: any) {
   return plan.populate([
+    { path: "userId", select: "username displayName role avatarUrl" },
     { path: "recipes", model: "Recipe" },
     { path: "days.meals.recipes", model: "Recipe" },
     { path: "combinations.meatRecipeId", model: "Recipe" },
@@ -101,20 +120,33 @@ export const getMealPlans = async (req: Request, res: Response) => {
   try {
     const { userId } = req.query;
     const trashOnly = String(req.query.trash || "") === "1";
+    const visibility = String(req.query.visibility || "owned");
+    const requestedKind = req.query.kind ? normalizeKind(req.query.kind) : "meal";
 
-    if (!userId) {
-      return res.status(400).json({ error: "userId is required" });
+    if (requestedKind === "mealPlan") {
+      return res.json({ plans: [] });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(userId as string)) {
-      return res.status(400).json({ error: "userId must be a valid MongoDB ObjectId" });
+    const query: any = trashOnly ? trashedPlanQuery() : activePlanQuery();
+    query.kind = requestedKind;
+
+    if (visibility === "public") {
+      query.isPublic = true;
+    } else {
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(userId as string)) {
+        return res.status(400).json({ error: "userId must be a valid MongoDB ObjectId" });
+      }
+
+      query.userId = new mongoose.Types.ObjectId(userId as string);
     }
 
-    const plans = await MealPlan.find({
-      userId: new mongoose.Types.ObjectId(userId as string),
-      ...(trashOnly ? trashedPlanQuery() : activePlanQuery()),
-    })
+    const plans = await MealPlan.find(query)
       .populate([
+        { path: "userId", select: "username displayName role avatarUrl" },
         { path: "recipes", model: "Recipe" },
         { path: "days.meals.recipes", model: "Recipe" },
         { path: "combinations.meatRecipeId", model: "Recipe" },
@@ -144,6 +176,7 @@ export const getMealPlanById = async (req: Request, res: Response) => {
     }
 
     const plan = await MealPlan.findById(idStr).populate([
+      { path: "userId", select: "username displayName role avatarUrl" },
       { path: "recipes", model: "Recipe" },
       { path: "days.meals.recipes", model: "Recipe" },
       { path: "combinations.meatRecipeId", model: "Recipe" },
@@ -159,6 +192,15 @@ export const getMealPlanById = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Plan not found" });
     }
 
+    if (!canAccessPlan(req, plan)) {
+      return res.status(404).json({ error: "Plan not found" });
+    }
+
+    if (normalizeKind(plan.kind) === "meal") {
+      await MealPlan.updateOne({ _id: plan._id }, { $inc: { views: 1 } }, { timestamps: false });
+      plan.views = (plan.views ?? 0) + 1;
+    }
+
     res.json({ plan });
   } catch (err: any) {
     console.error("Error getting plan:", err);
@@ -172,8 +214,13 @@ export const getMealPlanById = async (req: Request, res: Response) => {
  */
 export const createMealPlan = async (req: Request, res: Response) => {
   try {
-    const { userId, numberOfPeople, numberOfDays, mealTypes, name, people, kind } = req.body;
+    const { userId, numberOfPeople, numberOfDays, mealTypes, name, people, kind, isPublic, recipes } = req.body;
     const normalizedKind = normalizeKind(kind);
+    const normalizedRecipeIds = normalizeRecipeIds(recipes);
+
+    if (normalizedKind === "mealPlan") {
+      return res.status(410).json({ error: "Plans are currently disabled" });
+    }
 
     if (!userId || numberOfPeople === undefined) {
       return res.status(400).json({
@@ -187,6 +234,14 @@ export const createMealPlan = async (req: Request, res: Response) => {
 
     if (numberOfPeople < 1) {
       return res.status(400).json({ error: "numberOfPeople must be at least 1" });
+    }
+
+    if (normalizedKind === "meal" && !String(name || "").trim()) {
+      return res.status(400).json({ error: "Meal name is required" });
+    }
+
+    if (normalizedKind === "meal" && normalizedRecipeIds.length === 0) {
+      return res.status(400).json({ error: "Add at least one recipe before creating a meal" });
     }
 
     // Create people array - either from provided data or default
@@ -213,9 +268,10 @@ export const createMealPlan = async (req: Request, res: Response) => {
       plan = new MealPlan({
         kind: normalizedKind,
         userId: new mongoose.Types.ObjectId(userId),
-        name: name || "New Meal",
+        name: String(name).trim(),
         people: peopleArray,
-        recipes: [],
+        isPublic: Boolean(isPublic),
+        recipes: normalizedRecipeIds,
         combinations: [],
         days: [],
       });
@@ -242,6 +298,7 @@ export const createMealPlan = async (req: Request, res: Response) => {
         numberOfDays,
         mealTypes: normalizedMealTypes,
         totalMealsNeeded,
+        isPublic: false,
         days: buildPlanDays(numberOfDays, normalizedMealTypes),
         recipes: [],
         combinations: [],
@@ -267,7 +324,7 @@ export const createMealPlan = async (req: Request, res: Response) => {
 export const renameMealPlan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, people, numberOfDays, mealTypes, days, recipes } = req.body;
+    const { name, people, numberOfDays, mealTypes, days, recipes, isPublic } = req.body;
 
     const idStr = (Array.isArray(id) ? id[0] : id) as string;
     if (!mongoose.Types.ObjectId.isValid(idStr)) {
@@ -280,6 +337,9 @@ export const renameMealPlan = async (req: Request, res: Response) => {
     }
     if (isPlanTrashed(plan)) {
       return res.status(404).json({ error: "Plan not found" });
+    }
+    if (!canMutatePlan(req, plan)) {
+      return res.status(403).json({ error: "Not allowed to update this plan" });
     }
 
     const entryKind = normalizeKind(plan.kind);
@@ -303,6 +363,10 @@ export const renameMealPlan = async (req: Request, res: Response) => {
 
     if (recipes !== undefined) {
       updateData.recipes = normalizeRecipeIds(recipes);
+    }
+
+    if (entryKind === "meal" && isPublic !== undefined) {
+      updateData.isPublic = Boolean(isPublic);
     }
 
     if (entryKind === "mealPlan") {
@@ -360,6 +424,9 @@ export const deleteMealPlan = async (req: Request, res: Response) => {
     if (!plan) {
       return res.status(404).json({ error: "Plan not found" });
     }
+    if (!canMutatePlan(req, plan)) {
+      return res.status(403).json({ error: "Not allowed to delete this plan" });
+    }
 
     const deletedAt = plan.deletedAt || new Date();
     plan.deletedAt = deletedAt;
@@ -389,6 +456,9 @@ export const restoreMealPlan = async (req: Request, res: Response) => {
     const plan = await MealPlan.findById(idStr);
     if (!plan) {
       return res.status(404).json({ error: "Plan not found" });
+    }
+    if (!canMutatePlan(req, plan)) {
+      return res.status(403).json({ error: "Not allowed to restore this plan" });
     }
 
     plan.deletedAt = undefined;
@@ -436,6 +506,9 @@ export const addRecipeToMealPlan = async (req: Request, res: Response) => {
     }
     if (isPlanTrashed(plan)) {
       return res.status(404).json({ error: "Plan not found" });
+    }
+    if (!canMutatePlan(req, plan)) {
+      return res.status(403).json({ error: "Not allowed to update this plan" });
     }
 
     if (!recipe) {
@@ -533,6 +606,9 @@ export const addMealCombination = async (req: Request, res: Response) => {
     if (isPlanTrashed(plan)) {
       return res.status(404).json({ error: "Plan not found" });
     }
+    if (!canMutatePlan(req, plan)) {
+      return res.status(403).json({ error: "Not allowed to update this plan" });
+    }
 
     const newCombination: IMealCombination = {
       meatRecipeId: new mongoose.Types.ObjectId(meatRecipeId),
@@ -580,6 +656,9 @@ export const removeMealCombination = async (req: Request, res: Response) => {
     }
     if (isPlanTrashed(plan)) {
       return res.status(404).json({ error: "Plan not found" });
+    }
+    if (!canMutatePlan(req, plan)) {
+      return res.status(403).json({ error: "Not allowed to update this plan" });
     }
 
     if (index >= plan.combinations.length) {
@@ -629,6 +708,9 @@ export const toggleIngredientCheckStatus = async (req: Request, res: Response) =
     }
     if (isPlanTrashed(plan)) {
       return res.status(404).json({ error: "Plan not found" });
+    }
+    if (!canMutatePlan(req, plan)) {
+      return res.status(403).json({ error: "Not allowed to update this plan" });
     }
 
     // Update checked ingredients array

@@ -1,0 +1,237 @@
+.page {
+  width: min(100%, 860px);
+  margin: 0 auto;
+  padding: 16px 18px 104px;
+}
+
+.header {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.backLink {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.backLink span {
+  font-size: 17px;
+}
+
+.header h1 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 750;
+}
+
+.searchBar {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.searchBar > span {
+  flex: none;
+  color: var(--primary);
+  font-size: 20px;
+}
+
+.searchBar input {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: none !important;
+}
+
+.searchBar button {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--hover-bg);
+  color: var(--text-secondary);
+}
+
+.searchBar button span {
+  font-size: 18px;
+}
+
+.list,
+.emptyState {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.list {
+  display: grid;
+  gap: 8px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.swipeRow {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  border-radius: 8px;
+  overscroll-behavior: contain;
+  touch-action: pan-x;
+  cursor: grab;
+}
+
+.swipeRow:active {
+  cursor: grabbing;
+}
+
+.swipeRow::-webkit-scrollbar {
+  display: none;
+}
+
+.rowMain {
+  flex: 0 0 100%;
+  min-width: 0;
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 11px 8px 8px;
+  scroll-snap-align: start;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--foreground);
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.swipeDeleteButton {
+  flex: 0 0 78px;
+  margin-left: 6px;
+  scroll-snap-align: end;
+  border: 0;
+  border-radius: 8px;
+  background: var(--error);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+
+.swipeDeleteButton:active {
+  background: var(--error-hover);
+}
+
+.imageFallback {
+  flex: none;
+  font-size: 18px;
+}
+
+.rowMain img,
+.imageFallback {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--hover-bg);
+  color: var(--text-muted);
+  object-fit: cover;
+}
+
+.rowText {
+  min-width: 0;
+  display: grid;
+}
+
+.rowText strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowText strong {
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.viewedTime {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.emptyState {
+  min-height: 148px;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.emptyState span {
+  color: var(--primary);
+  font-size: 27px;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 12px 12px 96px;
+  }
+
+  .header h1 {
+    font-size: 26px;
+  }
+}

@@ -21,7 +21,7 @@ export default function DebugBar() {
         alignItems: 'center',
         justifyContent: 'center',
         fontSize: '24px',
-        fontWeight: 'bold',
+        fontWeight: '700',
         color: 'white',
         textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
         border: '5px solid black',

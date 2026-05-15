@@ -14,7 +14,7 @@ interface NavItem {
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const { openCreateForm } = useCreateForm();
+  const { isOpen, openCreateForm, closeCreateForm } = useCreateForm();
 
   if (pathname === "/login") return null;
 
@@ -42,7 +42,13 @@ export default function BottomNav() {
             return (
               <button
                 key={item.label}
-                onClick={item.action}
+                onClick={() => {
+                  if (isOpen) {
+                    closeCreateForm();
+                    return;
+                  }
+                  item.action?.();
+                }}
                 className={styles.item}
                 title={item.label}
               >
@@ -61,6 +67,9 @@ export default function BottomNav() {
               href={item.href!}
               className={`${styles.item} ${active ? styles.active : ""}`}
               title={item.label}
+              onClick={() => {
+                if (isOpen) closeCreateForm();
+              }}
             >
               <span className={`material-symbols-outlined ${styles.icon}`}>
                 {getItemIcon(item, active)}

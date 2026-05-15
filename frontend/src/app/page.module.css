@@ -83,7 +83,7 @@
   margin: 0 0 10px;
   color: var(--secondary);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -93,7 +93,7 @@
   max-width: 540px;
   font-size: clamp(26px, 4.1vw, 48px);
   line-height: 0.98;
-  font-weight: 900;
+  font-weight: 700;
   color: inherit;
 }
 
@@ -173,7 +173,7 @@
   background: var(--card-bg);
   color: var(--text-secondary);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .tab:hover,
@@ -226,7 +226,7 @@
 .emptyTitle {
   margin: 0;
   font-size: 22px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .emptyDescription {
@@ -243,7 +243,7 @@
   border-radius: 8px;
   background: var(--primary);
   color: white;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .recipeGrid {
@@ -313,7 +313,7 @@
 }
 
 .imagePlaceholder span {
-  font-size: 30px;
+  font-size: 27px;
 }
 
 .cardContent {
@@ -330,7 +330,7 @@
   min-height: 40px;
   margin: 0;
   font-size: 17px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.25;
   color: var(--foreground);
   text-align: left;
@@ -356,7 +356,7 @@
   gap: 7px;
   color: var(--text-secondary);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .uploaderLine span:last-child {
@@ -386,7 +386,7 @@
 }
 
 .saveButton span {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1;
 }
 

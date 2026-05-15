@@ -19,7 +19,7 @@ export default function ToastProvider() {
           border: "1px solid var(--border)",
           padding: "10px 14px",
           fontSize: "14px",
-          fontWeight: 800,
+          fontWeight: 600,
           boxShadow: "var(--shadow-md)",
           color: "var(--foreground)",
           background: "var(--card-bg)",

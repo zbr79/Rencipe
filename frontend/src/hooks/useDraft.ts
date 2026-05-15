@@ -4,9 +4,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 interface DraftData {
   _id?: string;
+  draftType?: "recipe" | "meal";
   name?: string;
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   tips?: string;
   recipeOrigin?: "original" | "shared";
   sharedSource?: string;
@@ -17,9 +18,11 @@ interface DraftData {
   mainIngredients?: Array<{ name: string; quantity: string }>;
   seasonings?: Array<{ name: string; quantity: string }>;
   ingredients?: Array<{ name: string; quantity: string }>;
-  steps: Array<{ stepNumber: number; instruction: string; image?: string }>;
-  servings: number;
-  tags: string[];
+  steps?: Array<{ stepNumber: number; instruction: string; image?: string }>;
+  servings?: number;
+  tags?: string[];
+  people?: Array<{ name: string; modifier: number }>;
+  recipes?: Array<{ id?: string; _id?: string; title: string; description?: string; image?: string }>;
   updatedAt?: string | Date;
 }
 

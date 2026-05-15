@@ -18,25 +18,30 @@
   padding: 18px;
 }
 
-.accountSummaryButton {
-  width: 100%;
-  display: flex;
+.accountSummaryRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 24px;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
+}
+
+.accountSummaryAvatarButton,
+.accountSummaryChevronButton,
+.accountSummaryTitleButton,
+.accountSummarySubtitleButton {
+  min-width: 0;
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--foreground);
-  text-align: left;
+  color: inherit;
 }
 
-.accountSummaryMain {
-  min-width: 0;
-  display: flex;
+.accountSummaryAvatarButton,
+.accountSummaryChevronButton {
+  flex: none;
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
-  flex: 1;
+  justify-content: center;
 }
 
 .accountSummaryText {
@@ -45,27 +50,58 @@
   gap: 4px;
 }
 
-.accountSummaryTitle {
-  color: var(--foreground);
-  font-size: 20px;
-  font-weight: 950;
-  line-height: 1.1;
+.accountSummaryTitleLine {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
 
-.accountSummarySubtitle {
+.accountSummaryTitleButton {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: 20px;
+  font-weight: 750;
+  line-height: 1.1;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountSummarySubtitleButton {
   min-width: 0;
   overflow: hidden;
   color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: left;
 }
 
 .accountSummaryChevron {
   flex: none;
   color: var(--text-secondary);
   font-size: 24px;
+}
+
+.accountSwitchButton {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--hover-bg);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.accountSwitchButton span {
+  font-size: 17px;
 }
 
 .backLink {
@@ -80,7 +116,7 @@
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 650;
   text-decoration: none;
 }
 
@@ -97,7 +133,7 @@
   color: var(--foreground);
   font-size: 28px;
   line-height: 1;
-  font-weight: 950;
+  font-weight: 750;
 }
 
 .accountPageHeader p {
@@ -134,7 +170,7 @@
   background: var(--hover-bg);
   color: var(--foreground);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .profileActionButton span:first-child {
@@ -171,14 +207,14 @@
   color: var(--foreground);
   font-size: 22px;
   line-height: 1.15;
-  font-weight: 950;
+  font-weight: 750;
 }
 
 .profileCard p {
   margin: 4px 0 0;
   color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .accountActionList {
@@ -254,7 +290,7 @@
   min-width: 0;
   color: var(--foreground);
   font-size: 14px;
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .settingTextStack {
@@ -268,7 +304,7 @@
   min-width: 0;
   color: var(--foreground);
   font-size: 14px;
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .settingItemValue {
@@ -309,7 +345,7 @@
   min-width: 0;
   color: var(--foreground);
   font-size: 15px;
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .accountRowValueWrap {
@@ -352,7 +388,7 @@
 .accountSwitchText span:first-child {
   color: var(--foreground);
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .accountSwitchText span:last-child {
@@ -360,7 +396,7 @@
   overflow: hidden;
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -368,7 +404,7 @@
 .accountCurrentMarker {
   color: var(--text-secondary) !important;
   font-size: 12px !important;
-  font-weight: 850 !important;
+  font-weight: 650 !important;
 }
 
 .accountCompactRow {
@@ -390,7 +426,7 @@
   color: var(--error);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .accountSignOutButton {
@@ -464,7 +500,7 @@
   padding: 18px 16px;
   color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
   text-align: center;
 }
 
@@ -499,13 +535,13 @@
 .switchAccountField span {
   color: var(--foreground);
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .switchAccountSelected span:last-child {
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .switchAccountField input {
@@ -517,7 +553,7 @@
   background: var(--input-bg);
   color: var(--foreground);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 600;
   box-sizing: border-box;
 }
 
@@ -528,7 +564,7 @@
   background: rgba(239, 68, 68, 0.1);
   color: var(--error);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .accountRowButtonDanger .accountRowLabel,
@@ -543,7 +579,7 @@
 .accountCenteredDangerText {
   color: var(--error);
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .profileEditor {
@@ -575,7 +611,7 @@
 .profileEditor label span {
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .profileEditor input {
@@ -584,7 +620,7 @@
   border-radius: 8px;
   padding: 0 13px;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .profileActions {
@@ -599,11 +635,12 @@
 .shortcutButton,
 .customSelectButton,
 .customSelectOption,
+.projectModeToggle,
 .toggle {
-  min-height: 42px;
+  min-height: 38px;
   border-radius: 8px;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -633,26 +670,25 @@
 .shortcutGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  overflow: hidden;
+  gap: 10px;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .shortcutButton {
   min-width: 0;
-  min-height: 70px;
+  min-height: 66px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 0;
-  border-right: 1px solid var(--border);
-  background: transparent;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  background: var(--card-bg);
   color: var(--foreground);
-}
-
-.shortcutButton:last-child {
-  border-right: 0;
 }
 
 .shortcutButton span:first-child {
@@ -674,15 +710,21 @@
 }
 
 .customSelectButton {
-  min-width: 104px;
+  min-width: 92px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
   border: 1px solid var(--border);
-  padding: 0 9px 0 11px;
+  padding: 0 9px 1px 10px;
   background: var(--input-bg);
   color: var(--foreground);
+  line-height: 1.2;
+}
+
+.customSelectButton span:first-child {
+  line-height: 1.2;
 }
 
 .customSelectButton span:last-child {
@@ -695,7 +737,7 @@
   right: 0;
   top: calc(100% + 6px);
   z-index: 50;
-  width: 136px;
+  width: 124px;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -705,21 +747,33 @@
 
 .customSelectOption {
   width: 100%;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   border: 0;
   border-radius: 0;
-  padding: 0 12px;
+  padding: 1px 10px 2px;
   background: transparent;
   color: var(--foreground);
   text-align: left;
 }
 
-.customSelectOption span:last-child {
+.customSelectOptionLabel {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.22;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customSelectCheck {
   color: var(--primary);
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .toggle {
@@ -729,6 +783,28 @@
   background: var(--hover-bg);
   color: var(--foreground);
   padding: 0 10px;
+}
+
+.projectModeToggle {
+  min-width: 70px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  background: var(--hover-bg);
+  color: var(--foreground);
+  padding: 0 10px;
+}
+
+.projectModeToggle input {
+  width: auto;
+  accent-color: var(--primary);
+}
+
+.projectModeToggle span {
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .toggle.active {
@@ -746,6 +822,7 @@
   justify-content: center;
   padding: 16px;
   background: rgba(15, 23, 42, 0.45);
+  animation: settingsModalFadeIn 160ms ease-out;
 }
 
 .passwordModalCard {
@@ -755,6 +832,23 @@
   border-radius: 14px;
   background: var(--card-bg);
   box-shadow: var(--shadow-xl);
+  animation: settingsModalIn 190ms ease-out;
+}
+
+@keyframes settingsModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes settingsModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .passwordModalHeader {
@@ -770,7 +864,7 @@
   color: var(--foreground);
   font-size: 22px;
   line-height: 1.05;
-  font-weight: 950;
+  font-weight: 750;
 }
 
 .passwordModalHeader p {
@@ -809,8 +903,17 @@
     padding: 14px;
   }
 
-  .accountSummaryTitle {
+  .accountSummaryTitleButton {
     font-size: 18px;
+  }
+
+  .accountSummaryRow {
+    grid-template-columns: auto minmax(0, 1fr) 22px;
+  }
+
+  .accountSwitchButton {
+    width: 26px;
+    height: 26px;
   }
 
   .accountPageHeader h1 {

@@ -24,7 +24,7 @@
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .backLink span {
@@ -35,7 +35,7 @@
   margin: 0 0 6px;
   color: var(--primary);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -44,7 +44,7 @@
   color: var(--foreground);
   font-size: 30px;
   line-height: 1;
-  font-weight: 950;
+  font-weight: 750;
 }
 
 .filtersSection {
@@ -75,7 +75,7 @@
 .count {
   color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .newRecipeButton {
@@ -89,7 +89,7 @@
   background: var(--primary);
   color: white;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -179,20 +179,20 @@
   color: var(--foreground);
   font-size: 15px;
   line-height: 1.25;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .draftText p {
   margin: 0;
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .draftText span {
   color: var(--text-muted);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .swipeDeleteButton {
@@ -204,7 +204,7 @@
   background: var(--error);
   color: white;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .emptyState,
@@ -213,7 +213,7 @@
   padding: 24px;
   text-align: center;
   color: var(--text-secondary);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .emptyMessage {

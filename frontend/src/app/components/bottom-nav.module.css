@@ -13,8 +13,8 @@
   margin: 0 !important;
   padding: 4px 12px calc(6px + env(safe-area-inset-bottom)) !important;
   border: none !important;
-  background: color-mix(in srgb, var(--card-bg) 94%, transparent) !important;
-  backdrop-filter: blur(18px) !important;
+  background: var(--card-bg) !important;
+  opacity: 1 !important;
   border-top: 1px solid var(--border) !important;
   box-shadow: var(--shadow-md) !important;
   box-sizing: border-box !important;
@@ -68,7 +68,7 @@
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 700;
   animation: pulse 2s infinite;
 }
 
@@ -86,7 +86,7 @@
 }
 
 .icon {
-  font-size: 30px;
+  font-size: 27px;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -123,6 +123,6 @@
   }
 
   .icon {
-    font-size: 26px;
+    font-size: 23px;
   }
 }

@@ -14,7 +14,7 @@ export default function SimpleDebug() {
         alignItems: 'center',
         justifyContent: 'center',
         fontSize: '20px',
-        fontWeight: 'bold',
+        fontWeight: '700',
       }}
     >
       TOP DEBUG (Server Component)

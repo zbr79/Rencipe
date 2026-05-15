@@ -3,18 +3,22 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import BackButton from "../../components/BackButton";
+import CommentSection from "../../components/CommentSection";
 import FloatingActionPanel from "../../components/FloatingActionPanel";
 import { toastError } from "../../components/toast/toast";
 import { useSaved } from "../../contexts/SavedContext";
 import { getRecipeImageUrl } from "../../utils/recipeImageUtils";
 import { getVisibleTags } from "../../utils/recipeTags";
 import { authFetch, getCurrentUser, type AuthUser } from "../../utils/authSession";
+import type { RecipeLanguage } from "../../utils/recipeLanguage";
 import styles from "./page.module.css";
+import { recordRecentlyViewedRecipe } from "../../utils/recentlyViewedRecipes";
 
 interface Recipe {
   id: string;
   title: string;
   description: string;
+  language?: RecipeLanguage;
   tips?: string;
   authorId: string;
   image?: string;
@@ -63,6 +67,7 @@ export default function RecipeDetailPage() {
   const [selectedRating, setSelectedRating] = useState(0);
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
   const [ratingMessage, setRatingMessage] = useState("");
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
 
   useEffect(() => {
     fetchRecipe();
@@ -89,8 +94,16 @@ export default function RecipeDetailPage() {
       }
       
       setRecipe(recipeData);
+      recordRecentlyViewedRecipe({
+        id: recipeId,
+        title: recipeData.title,
+        description: recipeData.description || "",
+        language: recipeData.language,
+        image: recipeData.image,
+      });
       setSelectedRating(0);
       setRatingMessage("");
+      setRatingSubmitted(false);
     } catch (err: any) {
       setError(err.message);
       console.error(err);
@@ -119,6 +132,8 @@ export default function RecipeDetailPage() {
   };
 
   const handleRatingSubmit = async (rating: number) => {
+    if (ratingSubmitting || ratingSubmitted) return;
+
     setSelectedRating(rating);
     setRatingSubmitting(true);
     setRatingMessage("");
@@ -133,6 +148,7 @@ export default function RecipeDetailPage() {
       if (!response.ok) throw new Error(data.error || "Rating failed");
       setRecipe(data.recipe);
       setRatingMessage("Rating submitted");
+      setRatingSubmitted(true);
     } catch (err: any) {
       setRatingMessage(err.message || "Rating failed");
     } finally {
@@ -309,8 +325,9 @@ export default function RecipeDetailPage() {
       )}
 
       <section className={styles.submitRatingSection} aria-label="Rate this recipe">
-        <div>
+        <div className={styles.ratingHeader}>
           <h3 className={styles.sectionTitle}>Rate this recipe</h3>
+          {ratingSubmitting ? <span className={styles.ratingMessage}>Submitting...</span> : ratingSubmitted && <span className={styles.ratingMessage}>Thank you for rating</span>}
         </div>
         <div className={styles.ratingButtons}>
           {Array.from({ length: 5 }, (_, index) => {
@@ -319,9 +336,9 @@ export default function RecipeDetailPage() {
               <button
                 key={rating}
                 type="button"
-                className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""} ${ratingMessage === "Rating submitted" ? styles.starButtonDone : ""}`}
+                className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""} ${ratingSubmitted ? styles.starButtonDone : ""}`}
                 onClick={() => handleRatingSubmit(rating)}
-                disabled={ratingSubmitting}
+                disabled={ratingSubmitting || ratingSubmitted}
                 aria-label={`Rate ${rating} star${rating === 1 ? "" : "s"}`}
               >
                 <span className="material-symbols-outlined">star</span>
@@ -329,8 +346,10 @@ export default function RecipeDetailPage() {
             );
           })}
         </div>
-        {ratingSubmitting ? <span className={styles.ratingMessage}>Submitting...</span> : ratingMessage && <span className={styles.ratingMessage}>{ratingMessage === "Rating submitted" ? "Done" : ratingMessage}</span>}
+        {!ratingSubmitting && ratingMessage && !ratingSubmitted && <span className={styles.ratingMessage}>{ratingMessage}</span>}
       </section>
+
+      <CommentSection entryType="recipe" entryId={recipeId} />
     </div>
   );
 }

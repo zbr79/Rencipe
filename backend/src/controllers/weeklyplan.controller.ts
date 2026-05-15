@@ -7,28 +7,9 @@ import Recipe from "../models/Recipe";
  * Get all weekly plans for a user
  * query: { userId }
  */
-export const getWeeklyPlans = async (req: Request, res: Response) => {
+export const getWeeklyPlans = async (_req: Request, res: Response) => {
   try {
-    const { userId } = req.query;
-
-    if (!userId) {
-      return res.status(400).json({ error: "userId is required" });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(userId as string)) {
-      return res.status(400).json({ error: "userId must be a valid MongoDB ObjectId" });
-    }
-
-    const plans = await WeeklyPlan.find({
-      userId: new mongoose.Types.ObjectId(userId as string),
-    })
-      .populate({
-        path: "days.breakfast days.lunch days.dinner",
-        model: "Recipe",
-      })
-      .sort({ createdAt: -1 });
-
-    res.json({ plans });
+    return res.json({ plans: [] });
   } catch (err: any) {
     console.error("Error getting weekly plans:", err);
     res.status(500).json({ error: err.message });
@@ -68,39 +49,9 @@ export const getWeeklyPlanById = async (req: Request, res: Response) => {
  * Create a new weekly plan
  * body: { userId, name? }
  */
-export const createWeeklyPlan = async (req: Request, res: Response) => {
+export const createWeeklyPlan = async (_req: Request, res: Response) => {
   try {
-    const { userId, name, mealTypes = ['breakfast', 'lunch', 'dinner'] } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: "userId is required" });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ error: "userId must be a valid MongoDB ObjectId" });
-    }
-
-    // Initialize days array with empty meal slots
-    const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-    const days = daysOfWeek.map((day) => ({
-      dayOfWeek: day,
-      breakfast: [],
-      lunch: [],
-      dinner: [],
-    }));
-
-    const plan = new WeeklyPlan({
-      userId: new mongoose.Types.ObjectId(userId),
-      name: name || "My Scheduled Plan",
-      breakfastEnabled: mealTypes.includes('breakfast'),
-      lunchEnabled: mealTypes.includes('lunch'),
-      dinnerEnabled: mealTypes.includes('dinner'),
-      days,
-    });
-
-    await plan.save();
-
-    res.json({ plan });
+    return res.status(410).json({ error: "Plans are currently disabled" });
   } catch (err: any) {
     console.error("Error creating weekly plan:", err);
     res.status(500).json({ error: err.message });

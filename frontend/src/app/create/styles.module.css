@@ -22,7 +22,7 @@
 .header h1 {
   font-size: clamp(32px, 5vw, 50px);
   line-height: 1;
-  font-weight: 900;
+  font-weight: 700;
   color: var(--foreground);
   margin: 0;
 }
@@ -38,7 +38,7 @@
   margin: 0 0 8px !important;
   color: var(--secondary) !important;
   font-size: 12px !important;
-  font-weight: 900 !important;
+  font-weight: 700 !important;
   text-transform: uppercase;
 }
 
@@ -105,7 +105,7 @@
   margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .uploadPromptBtn {
@@ -116,7 +116,7 @@
   background: var(--primary-soft);
   color: var(--primary);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 /* Messages */

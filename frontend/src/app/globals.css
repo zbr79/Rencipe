@@ -80,6 +80,21 @@ html {
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+body,
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 body {

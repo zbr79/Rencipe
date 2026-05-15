@@ -1,6 +1,8 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { textToPinyin, textToFirstLetters } from "../utils/pinyin";
 
+export type RecipeLanguage = "en" | "zh";
+
 export interface IRecipe extends Document {
   title: string;
   titlePinyin?: string; // Full pinyin of title
@@ -12,6 +14,7 @@ export interface IRecipe extends Document {
   sharedSourceLink?: string;
   authorId: mongoose.Types.ObjectId;
   image?: string; // Cloudinary image URL
+  language: RecipeLanguage;
   component: boolean; // Can be used as a component in meal prep
   isPublic: boolean;
   deletedAt?: Date | null;
@@ -71,6 +74,7 @@ const RecipeSchema = new Schema<IRecipe>(
     },
     authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     image: String,
+    language: { type: String, enum: ["en", "zh"], default: "en", index: true },
     component: { type: Boolean, default: false }, // Can be used as a component in meal prep
     isPublic: { type: Boolean, default: false },
     deletedAt: { type: Date, default: undefined, index: true },

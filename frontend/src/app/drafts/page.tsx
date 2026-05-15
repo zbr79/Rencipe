@@ -12,6 +12,7 @@ import { useSwipeRowDrag } from "../hooks/useSwipeRowDrag";
 
 interface Draft {
   _id: string;
+  draftType?: "recipe" | "meal";
   name: string;
   title: string;
   description: string;
@@ -51,8 +52,8 @@ export default function DraftsPage() {
   };
 
   const handleOpenDraft = (draftId: string) => {
-    // TODO: Implement opening draft in create form
-    router.push(`/create?draftId=${draftId}`);
+    const draft = drafts.find((item) => item._id === draftId);
+    router.push(draft?.draftType === "meal" ? `/meal-plans/new?draftId=${draftId}#edit` : `/create?draftId=${draftId}`);
   };
 
   const handleDeleteDraft = async (draftId: string) => {
@@ -133,7 +134,7 @@ export default function DraftsPage() {
                 </div>
                 <div className={styles.draftText}>
                   <h3>{draft.name || draft.title || "Untitled Draft"}</h3>
-                  <p>{draft.title || "Untitled recipe"}</p>
+                  <p>{draft.draftType === "meal" ? "Meal draft" : draft.title || "Untitled recipe"}</p>
                   <span>Updated {new Date(draft.updatedAt).toLocaleDateString()}</span>
                 </div>
               </button>

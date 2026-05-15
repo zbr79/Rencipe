@@ -3,7 +3,6 @@
   top: 0;
   z-index: 900;
   background: color-mix(in srgb, var(--card-bg) 92%, transparent);
-  backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--border);
   transition: all var(--transition-base);
 }
@@ -37,14 +36,14 @@
   background: var(--primary-soft);
   color: var(--primary);
   font-size: 23px;
-  font-weight: 950;
+  font-weight: 750;
   line-height: 1;
   letter-spacing: 0;
 }
 
 .logoText {
   font-size: 19px;
-  font-weight: 800;
+  font-weight: 600;
   margin: 0;
   letter-spacing: 0;
 }

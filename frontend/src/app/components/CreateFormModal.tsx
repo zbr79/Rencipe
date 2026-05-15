@@ -7,7 +7,7 @@ import styles from "./create-form-modal.module.css";
 
 export default function CreateFormModal() {
   const { isOpen, closeCreateForm } = useCreateForm();
-  const { creatingMealPlan, creatingMeal, isCreatingAny, createAndOpenMealPlan, createAndOpenMeal } = useQuickCreateMealPlan();
+  const { creatingMeal, isCreatingAny, createAndOpenMeal } = useQuickCreateMealPlan();
   const router = useRouter();
 
   if (!isOpen) return null;
@@ -31,14 +31,6 @@ export default function CreateFormModal() {
           >
             <span className={`material-symbols-outlined ${styles.menuIcon}`}>restaurant</span>
             <span className={styles.menuLabel}>{creatingMeal ? "Creating Meal..." : "New Meal"}</span>
-          </button>
-          <button
-            className={styles.menuOption}
-            onClick={() => createAndOpenMealPlan({ afterSuccess: closeCreateForm })}
-            disabled={isCreatingAny}
-          >
-            <span className={`material-symbols-outlined ${styles.menuIcon}`}>event_note</span>
-            <span className={styles.menuLabel}>{creatingMealPlan ? "Creating Plan..." : "New Plan"}</span>
           </button>
         </div>
       </div>

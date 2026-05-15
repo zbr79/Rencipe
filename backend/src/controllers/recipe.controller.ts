@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import Recipe from "../models/Recipe";
+import Recipe, { RecipeLanguage } from "../models/Recipe";
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
 import { getAuthUser } from "../middleware/auth";
@@ -8,6 +8,7 @@ import { getAuthUser } from "../middleware/auth";
 dotenv.config();
 
 const TRASH_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+const CHINESE_TEXT_PATTERN = /[\u3400-\u9fff]/;
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -43,6 +44,7 @@ function pickRecipe(doc: any) {
     sharedSource: doc.sharedSource ?? "",
     sharedSourceLink: doc.sharedSourceLink ?? "",
     image: doc.image ?? null,
+    language: getRecipeLanguage(doc),
     authorId: getAuthorId(doc),
     author: pickAuthor(doc.authorId),
     component: doc.component ?? false,
@@ -61,6 +63,39 @@ function pickRecipe(doc: any) {
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };
+}
+
+function normalizeRecipeLanguage(value: unknown): RecipeLanguage {
+  return value === "zh" ? "zh" : "en";
+}
+
+function joinRecipeParts(source: any) {
+  const mainIngredients = (source.mainIngredients || []).map((ingredient: any) => `${ingredient?.name || ""} ${ingredient?.quantity || ""}`);
+  const seasonings = (source.seasonings || []).map((ingredient: any) => `${ingredient?.name || ""} ${ingredient?.quantity || ""}`);
+  const steps = (source.steps || []).map((step: any) => step?.instruction || "");
+  const tags = Array.isArray(source.tags) ? source.tags : [];
+
+  return [
+    source.title,
+    source.description,
+    source.tips,
+    source.sharedSource,
+    ...mainIngredients,
+    ...seasonings,
+    ...steps,
+    ...tags,
+  ].filter(Boolean).join(" ");
+}
+
+function detectRecipeLanguage(source: any): RecipeLanguage {
+  return CHINESE_TEXT_PATTERN.test(joinRecipeParts(source)) ? "zh" : "en";
+}
+
+function getRecipeLanguage(doc: any): RecipeLanguage {
+  const detectedLanguage = detectRecipeLanguage(doc);
+  if (detectedLanguage === "zh") return "zh";
+  if (doc.language === "en" || doc.language === "zh") return doc.language;
+  return "en";
 }
 
 function activeRecipeQuery() {
@@ -110,6 +145,12 @@ function canAccessRecipe(req: Request, doc: any) {
   return Boolean(user && getAuthorId(doc) === user.id);
 }
 
+function matchesProjectLanguage(req: Request, doc: any) {
+  const user = getAuthUser(req);
+  if (!user || user.projectMode === false) return true;
+  return getRecipeLanguage(doc) === normalizeRecipeLanguage(user.language);
+}
+
 function canMutateRecipe(req: Request, doc: any) {
   const user = getAuthUser(req);
   if (!user) return false;
@@ -149,10 +190,12 @@ export async function listRecipes(req: Request, res: Response) {
     const docs = await Recipe.find(query)
       .populate("authorId", "username displayName role")
       .sort(trashOnly ? { deletedAt: -1, updatedAt: -1 } : { updatedAt: -1, createdAt: -1 })
-      .limit(limit);
+      .limit(1000);
+
+    const filteredDocs = docs.filter((doc) => matchesProjectLanguage(req, doc)).slice(0, limit);
 
     res.json({
-      recipes: docs.map(pickRecipe),
+      recipes: filteredDocs.map(pickRecipe),
     });
   } catch (e: any) {
     res.status(500).json({ error: e?.message || "Failed to list recipes" });
@@ -213,6 +256,7 @@ export async function createRecipe(req: Request, res: Response) {
       servings: servings || 1,
       tags: tags || [],
       image: image || undefined,
+      language: detectRecipeLanguage({ title, description, tips, sharedSource, mainIngredients, seasonings, steps, tags }),
       component: component ?? false,
       isPublic: Boolean(isPublic),
     });
@@ -237,6 +281,7 @@ export async function getRecipeById(req: Request, res: Response) {
     if (!doc) return res.status(404).json({ error: "recipe not found" });
     if (isRecipeTrashed(doc)) return res.status(404).json({ error: "recipe not found" });
     if (!canAccessRecipe(req, doc)) return res.status(404).json({ error: "recipe not found" });
+    if (!matchesProjectLanguage(req, doc)) return res.status(404).json({ error: "recipe not found" });
 
     await Recipe.updateOne({ _id: doc._id }, { $inc: { views: 1 } }, { timestamps: false });
     doc.views = (doc.views ?? 0) + 1;
@@ -309,6 +354,7 @@ export async function updateRecipe(req: Request, res: Response) {
     if (typeof isPublic === "boolean") {
       existing.isPublic = isPublic;
     }
+    existing.language = detectRecipeLanguage(existing);
 
     await existing.save();
     await existing.populate("authorId", "username displayName role");
@@ -336,6 +382,7 @@ export async function rateRecipe(req: Request, res: Response) {
     if (!existing) return res.status(404).json({ error: "recipe not found" });
     if (isRecipeTrashed(existing)) return res.status(404).json({ error: "recipe not found" });
     if (!canAccessRecipe(req, existing)) return res.status(404).json({ error: "recipe not found" });
+    if (!matchesProjectLanguage(req, existing)) return res.status(404).json({ error: "recipe not found" });
 
     const nextCount = (existing.ratingCount ?? 0) + 1;
     const nextAverage = (((existing.ratingAverage ?? 0) * (existing.ratingCount ?? 0)) + rating) / nextCount;

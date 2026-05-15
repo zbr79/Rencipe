@@ -60,10 +60,6 @@ export default function WeeklyPlansPage() {
           <h1>Plans</h1>
           <p>Arrange breakfast, lunch, and dinner slots across the week.</p>
         </div>
-        <Link href="/weekly-plans/create" className={styles.primaryButton}>
-          <span className="material-symbols-outlined">add</span>
-          New Scheduled Plan
-        </Link>
       </header>
 
       {loadingWeeklyPlans && <p className={styles.statusText}>Loading...</p>}

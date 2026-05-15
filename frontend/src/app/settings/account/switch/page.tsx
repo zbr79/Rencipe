@@ -16,7 +16,7 @@ import {
 import { getAccountDisplayName } from "../../../utils/accountAvatar";
 import styles from "../../page.module.css";
 
-const ADD_ACCOUNT_PATH = `/login?mode=add-account&next=${encodeURIComponent("/settings/account/switch")}`;
+const ADD_ACCOUNT_PATH = `/login?mode=add-account&next=${encodeURIComponent("/")}`;
 
 function getSessionKey(session: AuthSession) {
   return session.user.id || session.user.username;
@@ -43,7 +43,7 @@ export default function SwitchAccountPage() {
     const nextSession = switchToSignedInAccount(getSessionKey(account));
     if (nextSession) {
       toastSuccess(`Switched to ${getAccountDisplayName(nextSession.user)}`);
-      router.replace("/settings/account");
+      router.replace("/");
       return;
     }
 

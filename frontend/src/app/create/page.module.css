@@ -40,7 +40,6 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(2px);
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -54,7 +53,7 @@
 
 .header h1 {
   font-size: 36px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--foreground);
   margin: 0 0 8px;
   background: none;

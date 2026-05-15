@@ -14,13 +14,6 @@ interface QuickCreateTemplate {
   mealTypes?: MealPlanMealType[];
 }
 
-const DEFAULT_MEAL_PLAN_TEMPLATE: QuickCreateTemplate = {
-  name: "New Plan",
-  numberOfPeople: 2,
-  numberOfDays: 3,
-  mealTypes: ["dinner"],
-};
-
 const DEFAULT_MEAL_TEMPLATE: QuickCreateTemplate = {
   name: "New Meal",
   numberOfPeople: 2,
@@ -30,6 +23,7 @@ const CREATE_FAILURE_MESSAGE: Record<QuickCreateKind, string> = {
   mealPlan: "Could not create plan",
   meal: "Could not create meal",
 };
+const PLANS_DISABLED_MESSAGE = "Plans are currently disabled";
 
 interface QuickCreateMealPlanOptions {
   afterSuccess?: () => void;
@@ -53,7 +47,7 @@ export function useQuickCreateMealPlan() {
         name: template.name,
       });
       options?.afterSuccess?.();
-      router.push(`/meal-plans/${plan._id}`);
+      router.push(kind === "meal" ? `/meal-plans/${plan._id}#edit` : `/meal-plans/${plan._id}`);
       return plan;
     } catch (error: any) {
       toastError(error?.message || CREATE_FAILURE_MESSAGE[kind]);
@@ -64,15 +58,26 @@ export function useQuickCreateMealPlan() {
   };
 
   const createAndOpenMealPlan = async (options?: QuickCreateMealPlanOptions) => {
-    return createFromTemplate(DEFAULT_MEAL_PLAN_TEMPLATE, "mealPlan", options);
+    options?.afterSuccess?.();
+    toastError(PLANS_DISABLED_MESSAGE);
+    return null;
   };
 
   const createAndOpenMeal = async (options?: QuickCreateMealPlanOptions) => {
-    return createFromTemplate(DEFAULT_MEAL_TEMPLATE, "meal", options);
+    if (creatingKind) return null;
+
+    setCreatingKind("meal");
+    try {
+      options?.afterSuccess?.();
+      router.push("/meal-plans/new#edit");
+      return null;
+    } finally {
+      setCreatingKind(null);
+    }
   };
 
   return {
-    creatingMealPlan: creatingKind === "mealPlan",
+    creatingMealPlan: false,
     creatingMeal: creatingKind === "meal",
     isCreatingAny: creatingKind !== null,
     createAndOpenMealPlan,

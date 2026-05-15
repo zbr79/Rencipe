@@ -229,7 +229,7 @@ export default function WeeklyPlanEditorPage() {
             border: "none",
             cursor: "pointer",
             fontSize: "13px",
-            fontWeight: 850,
+            fontWeight: 650,
           }}
         />
       </div>
@@ -321,7 +321,7 @@ export default function WeeklyPlanEditorPage() {
             border: "none",
             cursor: "pointer",
             fontSize: "13px",
-            fontWeight: 850,
+            fontWeight: 650,
           }}
         />
       </div>

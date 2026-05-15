@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import User, { UserRole } from "../models/User";
+import User, { UserLanguage, UserRole } from "../models/User";
 
 const JWT_SECRET = process.env.JWT_SECRET || "rencipe-phase-one-demo-secret";
 
@@ -12,6 +12,8 @@ export interface AuthUser {
   email?: string;
   phone?: string;
   role: UserRole;
+  language: UserLanguage;
+  projectMode: boolean;
 }
 
 export function signAuthToken(user: AuthUser) {
@@ -40,6 +42,8 @@ export async function authenticateOptional(req: Request, _res: Response, next: N
         email: user.email || "",
         phone: user.phone || "",
         role: user.role,
+        language: user.language === "zh" ? "zh" : "en",
+        projectMode: user.projectMode !== false,
       } satisfies AuthUser;
     }
   } catch {
@@ -66,6 +70,8 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       email: user.email || "",
       phone: user.phone || "",
       role: user.role,
+      language: user.language === "zh" ? "zh" : "en",
+      projectMode: user.projectMode !== false,
     } satisfies AuthUser;
     next();
   } catch {

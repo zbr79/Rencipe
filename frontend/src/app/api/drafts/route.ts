@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = "http://localhost:6000";
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:6000";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log("POST /api/drafts - body:", body);
-
     const response = await fetch(`${API_URL}/drafts`, {
       method: "POST",
       headers: {
@@ -42,14 +40,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!id) {
-      return NextResponse.json(
-        { error: "id is required" },
-        { status: 400 }
-      );
+    let url = `${API_URL}/drafts?authorId=${authorId}`;
+    if (id) {
+      url += `&id=${id}`;
     }
-
-    const url = `${API_URL}/drafts?authorId=${authorId}&id=${id}`;
 
     const response = await fetch(url, {
       method: "GET",

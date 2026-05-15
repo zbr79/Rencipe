@@ -19,7 +19,7 @@ const EMPTY_DRAG_STATE: DragState = {
 };
 
 function isInteractiveTarget(target: EventTarget | null) {
-  return target instanceof Element && Boolean(target.closest("a, button, input, textarea, select, label"));
+  return target instanceof Element && Boolean(target.closest("button, input, textarea, select, label"));
 }
 
 export function useSwipeRowDrag() {
@@ -63,9 +63,12 @@ export function useSwipeRowDrag() {
 
     dragStateRef.current = EMPTY_DRAG_STATE;
     if (dragState.moved) {
+      const maxScrollLeft = Math.max(0, event.currentTarget.scrollWidth - event.currentTarget.clientWidth);
+      const targetScrollLeft = event.currentTarget.scrollLeft > maxScrollLeft * 0.35 ? maxScrollLeft : 0;
+      event.currentTarget.scrollTo({ left: targetScrollLeft, behavior: "smooth" });
       window.setTimeout(() => {
         suppressClickRef.current = false;
-      }, 180);
+      }, 220);
     } else {
       suppressClickRef.current = false;
     }

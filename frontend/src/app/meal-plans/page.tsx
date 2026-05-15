@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import { useSaved } from "../contexts/SavedContext";
 import { useQuickCreateMealPlan } from "../hooks/useQuickCreateMealPlan";
@@ -12,24 +11,16 @@ import styles from "./page.module.css";
 export default function MealPlansPage() {
   const {
     mealPlans,
-    weeklyPlans,
     loadingPlans,
-    loadingWeeklyPlans,
     fetchMealPlans,
-    fetchWeeklyPlans,
     deleteMealPlan,
-    deleteWeeklyPlan,
   } = useSaved();
-  const { creatingMealPlan, creatingMeal, createAndOpenMealPlan, createAndOpenMeal } = useQuickCreateMealPlan();
+  const { creatingMeal, createAndOpenMeal } = useQuickCreateMealPlan();
   const { confirm, notify } = useConfirmDialog();
-  const searchParams = useSearchParams();
-  const kindFilter = searchParams.get("kind");
-  const showMealsOnly = kindFilter === "meal";
   const getEntryKind = (plan: { kind?: "mealPlan" | "meal" }) => (plan.kind === "meal" ? "meal" : "mealPlan");
   
   useEffect(() => {
     fetchMealPlans();
-    fetchWeeklyPlans();
   }, []);
 
   const handleDeletePlan = async (planId: string) => {
@@ -52,28 +43,9 @@ export default function MealPlansPage() {
     }
   };
 
-  const handleDeleteScheduledPlan = async (planId: string) => {
-    if (!(await confirm({
-      title: "Delete scheduled plan",
-      message: "Delete this scheduled plan?",
-      intent: "danger",
-      confirmText: "Delete",
-    }))) return;
-    try {
-      await deleteWeeklyPlan(planId);
-    } catch (error) {
-      console.error("Failed to delete scheduled plan:", error);
-      await notify({
-        title: "Delete failed",
-        message: "Failed to delete this scheduled plan.",
-        intent: "danger",
-      });
-    }
-  };
-
-  const loading = loadingPlans || loadingWeeklyPlans;
-  const visibleMealPlans = showMealsOnly ? mealPlans.filter((plan) => getEntryKind(plan) === "meal") : mealPlans;
-  const hasPlans = showMealsOnly ? visibleMealPlans.length > 0 : mealPlans.length > 0 || weeklyPlans.length > 0;
+  const loading = loadingPlans;
+  const visibleMealPlans = mealPlans.filter((plan) => getEntryKind(plan) === "meal");
+  const hasPlans = visibleMealPlans.length > 0;
   const getPlanRecipeCount = (plan: any) => {
     const scheduledCount = (plan.days || []).reduce((total: number, day: any) => {
       return total + (day.meals || []).reduce((mealTotal: number, meal: any) => mealTotal + (meal.recipes?.length || 0), 0);
@@ -85,20 +57,14 @@ export default function MealPlansPage() {
     <div className={styles.container}>
       <header className={styles.header}>
         <div>
-          <p className={styles.kicker}>{showMealsOnly ? "Meals" : "Planning"}</p>
-          <h1>{showMealsOnly ? "Meals" : "Plans"}</h1>
-          <p className={styles.headerMeta}>{showMealsOnly ? "Create and collect recipe combinations as reusable meals." : "Create reusable plans or schedule meals across the week."}</p>
+          <p className={styles.kicker}>Meals</p>
+          <h1>Meals</h1>
+          <p className={styles.headerMeta}>Create and collect recipe combinations as reusable meals.</p>
         </div>
         <div className={styles.headerActions}>
-          {!showMealsOnly && (
-            <Link href="/weekly-plans" className={styles.subtleButton}>
-              <span className="material-symbols-outlined">calendar_month</span>
-              Scheduled Plans
-            </Link>
-          )}
-          <button type="button" className={styles.createButton} onClick={() => showMealsOnly ? createAndOpenMeal() : createAndOpenMealPlan()} disabled={showMealsOnly ? creatingMeal : creatingMealPlan}>
+          <button type="button" className={styles.createButton} onClick={() => createAndOpenMeal()} disabled={creatingMeal}>
             <span className="material-symbols-outlined">add</span>
-            {showMealsOnly ? (creatingMeal ? "Creating Meal..." : "New Meal") : (creatingMealPlan ? "Creating Plan..." : "New Plan")}
+            {creatingMeal ? "Creating Meal..." : "New Meal"}
           </button>
         </div>
       </header>
@@ -107,14 +73,14 @@ export default function MealPlansPage() {
         <p className={styles.loading}>Loading...</p>
       ) : !hasPlans ? (
         <div className={styles.empty}>
-          <p>{showMealsOnly ? "No meals yet" : "No plans yet"}</p>
+          <p>No meals yet</p>
         </div>
       ) : (
         <>
           {visibleMealPlans.length > 0 && (
             <section>
               <div className={styles.toolbarRow}>
-                <div className={styles.count}>{showMealsOnly ? `${visibleMealPlans.length} meals` : `${visibleMealPlans.length} meal entries`}</div>
+                <div className={styles.count}>{`${visibleMealPlans.length} meals`}</div>
               </div>
               <div className={styles.planList}>
                 {visibleMealPlans.map((plan) => (
@@ -155,38 +121,6 @@ export default function MealPlansPage() {
             </section>
           )}
 
-          {!showMealsOnly && weeklyPlans.length > 0 && (
-            <section className={styles.planSection}>
-              <div className={styles.toolbarRow}>
-                <div className={styles.count}>{weeklyPlans.length} scheduled plans</div>
-              </div>
-              <div className={styles.planList}>
-                {weeklyPlans.map((plan) => (
-                  <Link key={plan._id} href={`/weekly-plans/${plan._id}`} className={styles.planCard}>
-                    <div>
-                      <h3>{getScheduledPlanDisplayName(plan.name)}</h3>
-                      <p>Calendar-style meal schedule</p>
-                      <p>
-                        {[plan.breakfastEnabled && "Breakfast", plan.lunchEnabled && "Lunch", plan.dinnerEnabled && "Dinner"].filter(Boolean).join(", ") || "No meals enabled"}
-                      </p>
-                    </div>
-                    <div className={styles.planActions}>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleDeleteScheduledPlan(plan._id);
-                        }}
-                        className={styles.dangerButton}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
         </>
       )}
     </div>
