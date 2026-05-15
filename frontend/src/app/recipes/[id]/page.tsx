@@ -56,7 +56,7 @@ export default function RecipeDetailPage() {
   const params = useParams();
   const router = useRouter();
   const recipeId = params.id as string;
-  const { isSaved, addFavorite, removeFavorite, fetchSaved } = useSaved();
+  const { isSaved, saveRecipe, unsaveRecipe, fetchSaved } = useSaved();
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
@@ -114,9 +114,9 @@ export default function RecipeDetailPage() {
     setIsSavingRecipe(true);
     try {
       if (isSaved(recipeId)) {
-        await removeFavorite(undefined, recipeId);
+        await unsaveRecipe(undefined, recipeId);
       } else {
-        await addFavorite(undefined, recipeId);
+        await saveRecipe(undefined, recipeId);
       }
     } catch (err: any) {
       toastError(err.message || "Could not update saved recipe");

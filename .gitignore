@@ -29,6 +29,7 @@ GEMINI.md
 # Local verification artifacts
 temp/
 backend/temp/
+backend/scripts/
 frontend/test-results/
 frontend/temp/
 frontend/build_output.txt

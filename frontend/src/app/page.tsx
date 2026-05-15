@@ -88,7 +88,7 @@ export default function HomePage() {
   const swipeWidthRef = useRef(1);
   const swipePointerTypeRef = useRef<string>("");
   const suppressSlideClickUntilRef = useRef(0);
-  const { isSaved, addFavorite, removeFavorite, fetchSaved } = useSaved();
+  const { isSaved, saveRecipe, unsaveRecipe, fetchSaved } = useSaved();
   const publicRecipes = recipes.filter((recipe) => recipe.isPublic !== false);
   const recommendedPublicRecipes = [...publicRecipes].sort((left, right) => {
     const scoreDiff = getRecommendationScore(right) - getRecommendationScore(left);
@@ -390,9 +390,9 @@ export default function HomePage() {
                       e.preventDefault();
                       e.stopPropagation();
                       if (saved) {
-                        removeFavorite(undefined, recipeId);
+                        unsaveRecipe(undefined, recipeId);
                       } else {
-                        addFavorite(undefined, recipeId);
+                        saveRecipe(undefined, recipeId);
                       }
                     }}
                     className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}

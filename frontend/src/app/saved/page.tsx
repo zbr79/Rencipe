@@ -15,9 +15,9 @@ export default function SavedPage() {
     savedRecipes,
     loadingSaved,
     fetchSaved,
-    removeFavorite,
+    unsaveRecipe,
     savedMeals,
-    removeFavoriteMeal,
+    unsaveMeal,
   } = useSaved();
   const swipeRowDrag = useSwipeRowDrag();
 
@@ -51,7 +51,7 @@ export default function SavedPage() {
   };
 
   const handleRemoveSavedRecipe = async (recipeId: string) => {
-    await removeFavorite(undefined, recipeId);
+    await unsaveRecipe(undefined, recipeId);
   };
 
   return (
@@ -147,7 +147,7 @@ export default function SavedPage() {
       {/* ===== Meals Tab ===== */}
       {activeTab === "meals" && (
         <>
-          <div className={styles.planToolbar}>
+          <div className={styles.mealToolbar}>
             <div className={styles.count}>
               Saved {filteredMeals.length} meals
             </div>
@@ -169,7 +169,7 @@ export default function SavedPage() {
           <div className={styles.savedList}>
             {filteredMeals.map((meal) => (
               <div key={meal._id} className={styles.swipeRow} {...swipeRowDrag}>
-                <Link href={`/meal-plans/${meal._id}`} className={styles.savedPlanRow}>
+                <Link href={`/meals/${meal._id}`} className={styles.savedMealRow}>
                   <h3>{meal.name}</h3>
                   <span>{getMealRecipeCount(meal)} recipes</span>
                   <div className={styles.uploaderLine}>
@@ -180,7 +180,7 @@ export default function SavedPage() {
                 <button
                   type="button"
                   className={styles.swipeDeleteButton}
-                  onClick={() => removeFavoriteMeal(undefined, meal._id)}
+                  onClick={() => unsaveMeal(undefined, meal._id)}
                 >
                   Delete
                 </button>

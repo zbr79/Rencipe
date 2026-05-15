@@ -17,7 +17,7 @@ export function useQuickCreateMeal() {
     setCreatingMeal(true);
     try {
       options?.afterSuccess?.();
-      router.push("/meal-plans/new#edit");
+      router.push("/meals/new#edit");
       return null;
     } finally {
       setCreatingMeal(false);

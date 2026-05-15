@@ -186,7 +186,7 @@
   text-decoration: none;
 }
 
-.plannerShell {
+.mealEditorShell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: start;
@@ -654,7 +654,7 @@
 
 @media (max-width: 980px) {
   .settingsPanel,
-  .plannerShell {
+  .mealEditorShell {
     grid-template-columns: 1fr;
   }
 }

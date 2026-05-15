@@ -5,14 +5,14 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import BackButton from "../components/BackButton";
 import { toastError, toastSuccess } from "../components/toast/toast";
-import { useSaved, type MealPlan } from "../contexts/SavedContext";
+import { useSaved, type Meal } from "../contexts/SavedContext";
 import { authFetch, getCurrentUser, type AuthUser } from "../utils/authSession";
 import type { AccountIdentity } from "../utils/accountAvatar";
 import styles from "./page.module.css";
 
 type VisibilityTab = "private" | "public";
-type WorkKind = "all" | "recipes" | "meals" | "plans" | "trash";
-type WorkItemKind = "recipes" | "meals" | "plans";
+type WorkKind = "all" | "recipes" | "meals" | "trash";
+type WorkItemKind = "recipes" | "meals";
 
 interface Recipe {
   id: string;
@@ -78,31 +78,28 @@ function recipeToItem(recipe: Recipe, trashed = false): WorkItem {
   };
 }
 
-function planToItem(plan: MealPlan, trashed = false): WorkItem {
-  const isMeal = plan.kind === "meal";
-  const recipeCount = isMeal
-    ? plan.recipes?.length || 0
-    : (plan.days || []).reduce((total, day) => total + day.meals.reduce((mealTotal, meal) => mealTotal + meal.recipes.length, 0), 0);
+function mealToItem(meal: Meal, trashed = false): WorkItem {
+  const recipeCount = meal.recipes?.length || 0;
 
   return {
-    id: plan._id,
-    kind: isMeal ? "meals" : "plans",
-    title: plan.name || (isMeal ? "Untitled Meal" : "Untitled Plan"),
-    meta: trashed ? `${isMeal ? "Meal" : "Plan"} | ${formatTrashTime(plan.trashExpiresAt)}` : `${isMeal ? "Meal" : "Plan"} | ${recipeCount} recipes`,
-    href: trashed ? undefined : `/meal-plans/${plan._id}`,
-    icon: isMeal ? "restaurant" : "event_note",
-    updatedAt: trashed ? plan.deletedAt || plan.updatedAt : plan.updatedAt,
+    id: meal._id,
+    kind: "meals",
+    title: meal.name || "Untitled Meal",
+    meta: trashed ? `Meal | ${formatTrashTime(meal.trashExpiresAt)}` : `Meal | ${recipeCount} recipes`,
+    href: trashed ? undefined : `/meals/${meal._id}`,
+    icon: "restaurant",
+    updatedAt: trashed ? meal.deletedAt || meal.updatedAt : meal.updatedAt,
     trashed,
   };
 }
 
 export default function MyWorkPage() {
-  const { mealPlans, fetchMealPlans, loadingPlans } = useSaved();
+  const { meals, fetchMeals, loadingMeals } = useSaved();
   const searchParams = useSearchParams();
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [trashRecipes, setTrashRecipes] = useState<Recipe[]>([]);
-  const [trashMealPlans, setTrashMealPlans] = useState<MealPlan[]>([]);
+  const [trashMeals, setTrashMeals] = useState<Meal[]>([]);
   const [loadingRecipes, setLoadingRecipes] = useState(true);
   const [loadingTrash, setLoadingTrash] = useState(true);
   const [error, setError] = useState("");
@@ -113,7 +110,7 @@ export default function MyWorkPage() {
   useEffect(() => {
     const account = getCurrentUser();
     setCurrentUser(account);
-    fetchMealPlans();
+    fetchMeals();
     fetchRecipes();
     fetchTrash(account?.id || "");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -144,29 +141,29 @@ export default function MyWorkPage() {
   const fetchTrash = async (accountId: string) => {
     if (!accountId) {
       setTrashRecipes([]);
-      setTrashMealPlans([]);
+      setTrashMeals([]);
       setLoadingTrash(false);
       return;
     }
 
     setLoadingTrash(true);
     try {
-      const [recipeResponse, planResponse] = await Promise.all([
+      const [recipeResponse, mealResponse] = await Promise.all([
         authFetch("/api/recipes?limit=1000&trash=1"),
         authFetch(`/api/meals?userId=${accountId}&trash=1&kind=meal`),
       ]);
 
       if (!recipeResponse.ok) throw new Error("Failed to fetch trashed recipes");
-      if (!planResponse.ok) throw new Error("Failed to fetch trashed plans");
+      if (!mealResponse.ok) throw new Error("Failed to fetch trashed meals");
 
       const recipeData = await recipeResponse.json();
-      const planData = await planResponse.json();
+      const mealData = await mealResponse.json();
       setTrashRecipes((recipeData.recipes || []) as Recipe[]);
-      setTrashMealPlans((planData.plans || []) as MealPlan[]);
+      setTrashMeals((mealData.meals || []) as Meal[]);
     } catch (err: any) {
       setError(err.message || "Failed to load trash");
       setTrashRecipes([]);
-      setTrashMealPlans([]);
+      setTrashMeals([]);
     } finally {
       setLoadingTrash(false);
     }
@@ -180,7 +177,7 @@ export default function MyWorkPage() {
         : `/api/meals/${item.id}/restore`;
       const response = await authFetch(restorePath, { method: "PATCH" });
       if (!response.ok) throw new Error("Restore failed");
-      await Promise.all([fetchRecipes(), fetchMealPlans(), fetchTrash(currentUser?.id || "")]);
+      await Promise.all([fetchRecipes(), fetchMeals(), fetchTrash(currentUser?.id || "")]);
       toastSuccess(`${item.title} restored`);
     } catch (err: any) {
       toastError(err.message || "Could not restore item");
@@ -203,17 +200,17 @@ export default function MyWorkPage() {
       .filter((recipe) => visibilityTab === "public" ? recipe.isPublic !== false : recipe.isPublic === false)
       .map((recipe) => recipeToItem(recipe));
 
-    const planItems = visibilityTab === "private" ? mealPlans.map((plan) => planToItem(plan)) : [];
-    return [...recipeItems, ...planItems].sort((left, right) => Date.parse(right.updatedAt || "") - Date.parse(left.updatedAt || ""));
-  }, [mealPlans, ownedRecipes, visibilityTab]);
+    const mealItems = visibilityTab === "private" ? meals.map((meal) => mealToItem(meal)) : [];
+    return [...recipeItems, ...mealItems].sort((left, right) => Date.parse(right.updatedAt || "") - Date.parse(left.updatedAt || ""));
+  }, [meals, ownedRecipes, visibilityTab]);
 
   const trashItems = useMemo(() => {
     const recipeItems = trashRecipes
       .filter((recipe) => visibilityTab === "public" ? recipe.isPublic !== false : recipe.isPublic === false)
       .map((recipe) => recipeToItem(recipe, true));
-    const planItems = visibilityTab === "private" ? trashMealPlans.map((plan) => planToItem(plan, true)) : [];
-    return [...recipeItems, ...planItems].sort((left, right) => Date.parse(right.updatedAt || "") - Date.parse(left.updatedAt || ""));
-  }, [trashMealPlans, trashRecipes, visibilityTab]);
+    const mealItems = visibilityTab === "private" ? trashMeals.map((meal) => mealToItem(meal, true)) : [];
+    return [...recipeItems, ...mealItems].sort((left, right) => Date.parse(right.updatedAt || "") - Date.parse(left.updatedAt || ""));
+  }, [trashMeals, trashRecipes, visibilityTab]);
 
   const workItems = useMemo(() => {
     if (workKind === "trash") return trashItems;
@@ -225,23 +222,22 @@ export default function MyWorkPage() {
     const publicRecipes = ownedRecipes.filter((recipe) => recipe.isPublic !== false).length;
     const privateItems = [
       ...ownedRecipes.filter((recipe) => recipe.isPublic === false).map((recipe) => recipeToItem(recipe)),
-      ...mealPlans.map((plan) => planToItem(plan)),
+      ...meals.map((meal) => mealToItem(meal)),
     ];
     const scopedItems = visibilityTab === "public"
       ? ownedRecipes.filter((recipe) => recipe.isPublic !== false).map((recipe) => recipeToItem(recipe))
       : privateItems;
     return {
-      private: privateRecipes + mealPlans.length,
+      private: privateRecipes + meals.length,
       public: publicRecipes,
       all: scopedItems.length,
       recipes: scopedItems.filter((item) => item.kind === "recipes").length,
       meals: scopedItems.filter((item) => item.kind === "meals").length,
-      plans: scopedItems.filter((item) => item.kind === "plans").length,
       trash: trashItems.length,
     };
-  }, [mealPlans, ownedRecipes, trashItems.length, visibilityTab]);
+  }, [meals, ownedRecipes, trashItems.length, visibilityTab]);
 
-  const loading = loadingRecipes || loadingPlans || (workKind === "trash" && loadingTrash);
+  const loading = loadingRecipes || loadingMeals || (workKind === "trash" && loadingTrash);
 
   return (
     <main className={styles.container}>

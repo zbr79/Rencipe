@@ -114,7 +114,7 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 - Meal-plan ingredient totals are currently calculated in the frontend, but the backend ingredient-check PATCH handler should be verified because it updates state without visibly returning a response in the controller.
 - Visible source UI was translated to English and verified with source scans.
 - Existing Mongo recipe data was translated to English and verified with a direct Mongoose check: 37 recipes, zero Chinese characters in selected recipe fields.
-- Added the backend seed script; the current product seed command is `npm run seed:product`.
+- Local backend seed scripts are workspace-only and ignored from product delivery.
 - `source.unsplash.com` generated URLs produced broken images in Playwright. Stable `images.unsplash.com` URLs fixed the demo image issue; final database check showed zero `source.unsplash.com` recipe images.
 - Frontend UI polish now covers the app shell, home dashboard, recipe library, recipe detail, search, saved, create, drafts, meals, settings, and profile list surfaces. Deep detail flows still need rehearsal-driven polish.
 - Existing meal names also needed data checks because public route checks can surface older database records even when source UI scans are clean.
@@ -137,7 +137,7 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 - The `baizhan-v2` auth reference maps well to Rencipe as a client-side `AuthGate`: check one demo session, redirect unauthenticated users to `/login`, and block protected UI until the session state is known. Real JWT/cookie auth remains a future backend scope decision.
 - Backend auth is now implemented with JWT demo users: `admin/admin` and `testuser1/testuser1`. Recipe list/detail APIs use optional auth so admin sees all recipes, normal users see public recipes plus their own private recipes, and anonymous users only receive public recipes.
 - AuthGate session verification must ignore stale async results after route changes. A navigation-aborted `/api/auth/me` request can otherwise clear a valid local JWT session and redirect the user back to login.
-- The auth demo data setup is repeatable with `npm run setup:auth-demo`: it creates the demo users, marks existing recipes public, and upserts two admin-private recipes for Playwright visibility checks.
+- Old auth demo setup notes are no longer part of product delivery.
 - PowerPoint tooling on this VM has no `python-pptx`, pip, LibreOffice, or Pandoc. Updating `.pptx` files can be done with Python stdlib/OpenXML; browser screenshots can be saved by posting base64 PNG data from Playwright to a small local receiver, converting the Playwright screenshot buffer in-page before posting.
 - Avoid using `scrollIntoView` for auto-advancing the home carousel. It can move the whole page back toward the slideshow during interval updates; a transform-based carousel keeps the page scroll position stable.
 - For public Playwright checks, `waitUntil: "networkidle"` can hang on Rencipe route changes because app fetches and aborted prefetches keep the page noisy. Prefer `domcontentloaded` plus a short UI settle wait for route-level visual verification.

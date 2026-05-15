@@ -13,8 +13,8 @@ function activeRecipeQuery() {
   };
 }
 
-function removeTrashedFavoriteRecipes(favorites: any) {
-  favorites.recipes = (favorites.recipes || []).filter((recipe: any) => recipe && !recipe.deletedAt);
+function removeTrashedSavedRecipes(savedItems: any) {
+  savedItems.recipes = (savedItems.recipes || []).filter((recipe: any) => recipe && !recipe.deletedAt);
 }
 
 function activeMealQuery() {
@@ -27,15 +27,15 @@ function activeMealQuery() {
   };
 }
 
-function removeTrashedFavoriteMeals(favorites: any) {
-  favorites.meals = (favorites.meals || []).filter((meal: any) => meal && meal.kind === "meal" && !meal.deletedAt);
+function removeTrashedSavedMeals(savedItems: any) {
+  savedItems.meals = (savedItems.meals || []).filter((meal: any) => meal && meal.kind === "meal" && !meal.deletedAt);
 }
 
 /**
  * Get a user's saved recipes and meals with full details
  * query: { userId }
  */
-export const getFavorites = async (req: Request, res: Response) => {
+export const getSavedItems = async (req: Request, res: Response) => {
   try {
     const { userId } = req.query;
 
@@ -47,7 +47,7 @@ export const getFavorites = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "userId must be a valid MongoDB ObjectId" });
     }
 
-    let favorites = await Saved.findOne({
+    let savedItems = await Saved.findOne({
       userId: new mongoose.Types.ObjectId(userId as string),
     }).populate([
       {
@@ -63,25 +63,25 @@ export const getFavorites = async (req: Request, res: Response) => {
       },
     ]);
 
-    if (!favorites) {
-      favorites = new Saved({
+    if (!savedItems) {
+      savedItems = new Saved({
         userId: new mongoose.Types.ObjectId(userId as string),
         recipes: [],
         meals: [],
       });
-      await favorites.save();
+      await savedItems.save();
     }
 
-    removeTrashedFavoriteRecipes(favorites);
-    removeTrashedFavoriteMeals(favorites);
+    removeTrashedSavedRecipes(savedItems);
+    removeTrashedSavedMeals(savedItems);
 
     res.json({
       saved: {
-        userId: favorites.userId,
-        recipes: favorites.recipes,
-        meals: favorites.meals || [],
-        createdAt: favorites.createdAt,
-        updatedAt: favorites.updatedAt,
+        userId: savedItems.userId,
+        recipes: savedItems.recipes,
+        meals: savedItems.meals || [],
+        createdAt: savedItems.createdAt,
+        updatedAt: savedItems.updatedAt,
       },
     });
   } catch (err: any) {
@@ -94,7 +94,7 @@ export const getFavorites = async (req: Request, res: Response) => {
  * Save a recipe
  * body: { userId, recipeId }
  */
-export const addFavorite = async (req: Request, res: Response) => {
+export const saveRecipe = async (req: Request, res: Response) => {
   try {
     const { userId, recipeId } = req.body;
 
@@ -112,25 +112,25 @@ export const addFavorite = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Recipe not found" });
     }
 
-    let favorites = await Saved.findOne({
+    let savedItems = await Saved.findOne({
       userId: new mongoose.Types.ObjectId(userId),
     });
 
-    if (!favorites) {
-      favorites = new Saved({
+    if (!savedItems) {
+      savedItems = new Saved({
         userId: new mongoose.Types.ObjectId(userId),
         recipes: [new mongoose.Types.ObjectId(recipeId)],
         meals: [],
       });
     } else {
       const recipeObjectId = new mongoose.Types.ObjectId(recipeId);
-      if (!favorites.recipes.some((id) => id.equals(recipeObjectId))) {
-        favorites.recipes.push(recipeObjectId);
+      if (!savedItems.recipes.some((id) => id.equals(recipeObjectId))) {
+        savedItems.recipes.push(recipeObjectId);
       }
     }
 
-    await favorites.save();
-    await favorites.populate([
+    await savedItems.save();
+    await savedItems.populate([
       {
         path: "recipes",
         populate: { path: "authorId", select: "username displayName role avatarUrl" },
@@ -143,21 +143,21 @@ export const addFavorite = async (req: Request, res: Response) => {
         ],
       },
     ]);
-    removeTrashedFavoriteRecipes(favorites);
-    removeTrashedFavoriteMeals(favorites);
+    removeTrashedSavedRecipes(savedItems);
+    removeTrashedSavedMeals(savedItems);
 
     res.json({
       message: "Recipe saved",
       saved: {
-        userId: favorites.userId,
-        recipes: favorites.recipes,
-        meals: favorites.meals || [],
-        createdAt: favorites.createdAt,
-        updatedAt: favorites.updatedAt,
+        userId: savedItems.userId,
+        recipes: savedItems.recipes,
+        meals: savedItems.meals || [],
+        createdAt: savedItems.createdAt,
+        updatedAt: savedItems.updatedAt,
       },
     });
   } catch (err: any) {
-    console.error("Error adding favorite:", err);
+    console.error("Error saving recipe:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -166,7 +166,7 @@ export const addFavorite = async (req: Request, res: Response) => {
  * Remove a saved recipe
  * body: { userId, recipeId }
  */
-export const removeFavorite = async (req: Request, res: Response) => {
+export const unsaveRecipe = async (req: Request, res: Response) => {
   try {
     const { userId, recipeId } = req.body;
 
@@ -178,19 +178,19 @@ export const removeFavorite = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "userId and recipeId must be valid MongoDB ObjectIds" });
     }
 
-    const favorites = await Saved.findOne({
+    const savedItems = await Saved.findOne({
       userId: new mongoose.Types.ObjectId(userId),
     });
 
-    if (!favorites) {
+    if (!savedItems) {
       return res.status(404).json({ error: "Saved items not found" });
     }
 
     const recipeObjectId = new mongoose.Types.ObjectId(recipeId);
-    favorites.recipes = favorites.recipes.filter((id) => !id.equals(recipeObjectId));
+    savedItems.recipes = savedItems.recipes.filter((id) => !id.equals(recipeObjectId));
 
-    await favorites.save();
-    await favorites.populate([
+    await savedItems.save();
+    await savedItems.populate([
       {
         path: "recipes",
         populate: { path: "authorId", select: "username displayName role avatarUrl" },
@@ -203,21 +203,21 @@ export const removeFavorite = async (req: Request, res: Response) => {
         ],
       },
     ]);
-    removeTrashedFavoriteRecipes(favorites);
-    removeTrashedFavoriteMeals(favorites);
+    removeTrashedSavedRecipes(savedItems);
+    removeTrashedSavedMeals(savedItems);
 
     res.json({
       message: "Recipe removed from saved items",
       saved: {
-        userId: favorites.userId,
-        recipes: favorites.recipes,
-        meals: favorites.meals || [],
-        createdAt: favorites.createdAt,
-        updatedAt: favorites.updatedAt,
+        userId: savedItems.userId,
+        recipes: savedItems.recipes,
+        meals: savedItems.meals || [],
+        createdAt: savedItems.createdAt,
+        updatedAt: savedItems.updatedAt,
       },
     });
   } catch (err: any) {
-    console.error("Error removing favorite:", err);
+    console.error("Error unsaving recipe:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -226,7 +226,7 @@ export const removeFavorite = async (req: Request, res: Response) => {
  * Save a meal
  * body: { userId, mealId }
  */
-export const addFavoriteMeal = async (req: Request, res: Response) => {
+export const saveMeal = async (req: Request, res: Response) => {
   try {
     const { userId, mealId } = req.body;
 
@@ -243,21 +243,21 @@ export const addFavoriteMeal = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Meal not found" });
     }
 
-    let favorites = await Saved.findOne({ userId: new mongoose.Types.ObjectId(userId) });
+    let savedItems = await Saved.findOne({ userId: new mongoose.Types.ObjectId(userId) });
     const mealObjectId = new mongoose.Types.ObjectId(mealId);
 
-    if (!favorites) {
-      favorites = new Saved({
+    if (!savedItems) {
+      savedItems = new Saved({
         userId: new mongoose.Types.ObjectId(userId),
         recipes: [],
         meals: [mealObjectId],
       });
-    } else if (!(favorites.meals || []).some((id) => id.equals(mealObjectId))) {
-      favorites.meals = [...(favorites.meals || []), mealObjectId];
+    } else if (!(savedItems.meals || []).some((id) => id.equals(mealObjectId))) {
+      savedItems.meals = [...(savedItems.meals || []), mealObjectId];
     }
 
-    await favorites.save();
-    await favorites.populate([
+    await savedItems.save();
+    await savedItems.populate([
       {
         path: "recipes",
         populate: { path: "authorId", select: "username displayName role avatarUrl" },
@@ -270,21 +270,21 @@ export const addFavoriteMeal = async (req: Request, res: Response) => {
         ],
       },
     ]);
-    removeTrashedFavoriteRecipes(favorites);
-    removeTrashedFavoriteMeals(favorites);
+    removeTrashedSavedRecipes(savedItems);
+    removeTrashedSavedMeals(savedItems);
 
     res.json({
       message: "Meal saved",
       saved: {
-        userId: favorites.userId,
-        recipes: favorites.recipes,
-        meals: favorites.meals || [],
-        createdAt: favorites.createdAt,
-        updatedAt: favorites.updatedAt,
+        userId: savedItems.userId,
+        recipes: savedItems.recipes,
+        meals: savedItems.meals || [],
+        createdAt: savedItems.createdAt,
+        updatedAt: savedItems.updatedAt,
       },
     });
   } catch (err: any) {
-    console.error("Error adding favorite meal:", err);
+    console.error("Error saving meal:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -293,7 +293,7 @@ export const addFavoriteMeal = async (req: Request, res: Response) => {
  * Remove a saved meal
  * body: { userId, mealId }
  */
-export const removeFavoriteMeal = async (req: Request, res: Response) => {
+export const unsaveMeal = async (req: Request, res: Response) => {
   try {
     const { userId, mealId } = req.body;
 
@@ -305,16 +305,16 @@ export const removeFavoriteMeal = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "userId and mealId must be valid MongoDB ObjectIds" });
     }
 
-    const favorites = await Saved.findOne({ userId: new mongoose.Types.ObjectId(userId) });
-    if (!favorites) {
+    const savedItems = await Saved.findOne({ userId: new mongoose.Types.ObjectId(userId) });
+    if (!savedItems) {
       return res.status(404).json({ error: "Saved items not found" });
     }
 
     const mealObjectId = new mongoose.Types.ObjectId(mealId);
-    favorites.meals = (favorites.meals || []).filter((id) => !id.equals(mealObjectId));
+    savedItems.meals = (savedItems.meals || []).filter((id) => !id.equals(mealObjectId));
 
-    await favorites.save();
-    await favorites.populate([
+    await savedItems.save();
+    await savedItems.populate([
       {
         path: "recipes",
         populate: { path: "authorId", select: "username displayName role avatarUrl" },
@@ -327,21 +327,21 @@ export const removeFavoriteMeal = async (req: Request, res: Response) => {
         ],
       },
     ]);
-    removeTrashedFavoriteRecipes(favorites);
-    removeTrashedFavoriteMeals(favorites);
+    removeTrashedSavedRecipes(savedItems);
+    removeTrashedSavedMeals(savedItems);
 
     res.json({
       message: "Meal removed from saved items",
       saved: {
-        userId: favorites.userId,
-        recipes: favorites.recipes,
-        meals: favorites.meals || [],
-        createdAt: favorites.createdAt,
-        updatedAt: favorites.updatedAt,
+        userId: savedItems.userId,
+        recipes: savedItems.recipes,
+        meals: savedItems.meals || [],
+        createdAt: savedItems.createdAt,
+        updatedAt: savedItems.updatedAt,
       },
     });
   } catch (err: any) {
-    console.error("Error removing favorite meal:", err);
+    console.error("Error unsaving meal:", err);
     res.status(500).json({ error: err.message });
   }
 };

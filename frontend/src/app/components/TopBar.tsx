@@ -19,7 +19,7 @@ export default function TopBar() {
   const navLinks = [
     { href: "/browse", label: "Browse" },
     { href: "/saved", label: "Saved" },
-    { href: "/meal-plans", label: "Meals" },
+    { href: "/meals", label: "Meals" },
   ];
 
   return (

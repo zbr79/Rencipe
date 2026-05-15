@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch plans from backend");
+      throw new Error("Failed to fetch meals from backend");
     }
 
     const data = await response.json();
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const { userId, kind = "meal", numberOfPeople, numberOfDays, mealTypes, name, people, isPublic, recipes } = body;
 
     if (kind !== "meal") {
-      return NextResponse.json({ error: "Plans are currently disabled" }, { status: 410 });
+      return NextResponse.json({ error: "Only meals are currently supported" }, { status: 410 });
     }
 
     if (!userId || numberOfPeople === undefined) {

@@ -1,12 +1,12 @@
 import express from "express";
-import { getFavorites, addFavorite, removeFavorite, addFavoriteMeal, removeFavoriteMeal } from "../controllers/saved.controller";
+import { getSavedItems, saveRecipe, unsaveRecipe, saveMeal, unsaveMeal } from "../controllers/saved.controller";
 
 const router = express.Router();
 
-router.get("/saved", getFavorites);
-router.post("/saved/add", addFavorite);
-router.post("/saved/remove", removeFavorite);
-router.post("/saved/meals/add", addFavoriteMeal);
-router.post("/saved/meals/remove", removeFavoriteMeal);
+router.get("/saved", getSavedItems);
+router.post("/saved/add", saveRecipe);
+router.post("/saved/remove", unsaveRecipe);
+router.post("/saved/meals/add", saveMeal);
+router.post("/saved/meals/remove", unsaveMeal);
 
 export default router;

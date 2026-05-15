@@ -39,7 +39,7 @@ function matchesRecipeSearch(recipe: Recipe, query: string) {
 
 export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { isSaved, addFavorite, removeFavorite, fetchSaved } = useSaved();
+  const { isSaved, saveRecipe, unsaveRecipe, fetchSaved } = useSaved();
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [didLoadRecipes, setDidLoadRecipes] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -272,9 +272,9 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                       event.preventDefault();
                       event.stopPropagation();
                       if (saved) {
-                        removeFavorite(undefined, recipeId);
+                        unsaveRecipe(undefined, recipeId);
                       } else {
-                        addFavorite(undefined, recipeId);
+                        saveRecipe(undefined, recipeId);
                       }
                     }}
                     aria-label={saved ? "Remove from saved" : "Save recipe"}

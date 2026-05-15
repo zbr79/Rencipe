@@ -16,8 +16,8 @@ import { readRecentlyViewedRecipes, type RecentlyViewedRecipe } from "../../util
 import styles from "./page.module.css";
 
 type MealType = "breakfast" | "lunch" | "dinner";
-type MealEntryKind = "mealPlan" | "meal";
-type RecipeSource = "plan" | "recent" | "website" | "saved";
+type MealEntryKind = "meal";
+type RecipeSource = "meal" | "recent" | "website" | "saved";
 type IngredientViewMode = "combined" | "byRecipe";
 type SettingsSaveState = "idle" | "saving" | "saved" | "error" | "blocked";
 type DraftSaveState = "idle" | "saving" | "saved" | "error";
@@ -43,17 +43,17 @@ interface Person {
   modifier: number;
 }
 
-interface PlannedMeal {
+interface MealScheduleSlot {
   mealType: MealType;
   recipes: Recipe[];
 }
 
-interface PlannedDay {
+interface MealScheduleDay {
   dayNumber: number;
-  meals: PlannedMeal[];
+  meals: MealScheduleSlot[];
 }
 
-interface MealPlan {
+interface Meal {
   _id: string;
   kind?: MealEntryKind;
   userId: string;
@@ -62,9 +62,8 @@ interface MealPlan {
   numberOfDays?: number;
   mealTypes?: MealType[];
   totalMealsNeeded?: number;
-  days?: PlannedDay[];
+  days?: MealScheduleDay[];
   recipes?: Recipe[];
-  checkedIngredients: string[];
   isPublic?: boolean;
   views?: number;
   createdAt: string;
@@ -87,8 +86,8 @@ interface ActiveSlot {
 }
 
 const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner"];
-const PLAN_SOURCE_TABS: { id: RecipeSource; label: string }[] = [
-  { id: "plan", label: "This Plan" },
+const MEAL_ENTRY_SOURCE_TABS: { id: RecipeSource; label: string }[] = [
+  { id: "meal", label: "This Meal" },
   { id: "website", label: "All" },
   { id: "saved", label: "Saved" },
 ];
@@ -103,7 +102,7 @@ function getRecipeId(recipe: Recipe) {
   return recipe._id || recipe.id;
 }
 
-function createEmptyMealDraft(userId: string): MealPlan {
+function createEmptyMealDraft(userId: string): Meal {
   const timestamp = new Date().toISOString();
 
   return {
@@ -114,15 +113,13 @@ function createEmptyMealDraft(userId: string): MealPlan {
     people: [{ name: "Person 1", modifier: 1 }],
     recipes: [],
     days: [],
-    checkedIngredients: [],
-    combinations: [],
     isPublic: false,
     createdAt: timestamp,
     updatedAt: timestamp,
-  } as MealPlan;
+  } as Meal;
 }
 
-function createMealPlanFromDraft(draft: MealDraft, userId: string): MealPlan {
+function createMealFromDraft(draft: MealDraft, userId: string): Meal {
   const timestamp = new Date().toISOString();
 
   return {
@@ -133,20 +130,18 @@ function createMealPlanFromDraft(draft: MealDraft, userId: string): MealPlan {
     people: draft.people?.length ? draft.people : [{ name: "Person 1", modifier: 1 }],
     recipes: uniqueRecipes((draft.recipes || []) as Recipe[]),
     days: [],
-    checkedIngredients: [],
-    combinations: [],
     isPublic: Boolean(draft.isPublic),
     createdAt: timestamp,
     updatedAt: timestamp,
-  } as MealPlan;
+  } as Meal;
 }
 
 function titleCaseMeal(type: MealType) {
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
-function getMealEntryKind(plan?: { kind?: MealEntryKind }) {
-  return plan?.kind === "mealPlan" ? "mealPlan" : "meal";
+function getMealEntryKind(meal?: { kind?: MealEntryKind }): MealEntryKind {
+  return "meal";
 }
 
 function uniqueRecipes(recipes: Recipe[]) {
@@ -178,15 +173,15 @@ function normalizeMealTypes(types?: MealType[]): MealType[] {
   return filtered.length > 0 ? filtered : ["dinner"];
 }
 
-function normalizePlan(rawPlan: MealPlan, user?: AuthUser | null): MealPlan {
-  const kind = getMealEntryKind(rawPlan);
-  const inboxRecipes = filterRecipesForUserLanguage((rawPlan.recipes || []) as Recipe[], user);
+function normalizeMeal(rawMeal: Meal, user?: AuthUser | null): Meal {
+  const kind = getMealEntryKind(rawMeal);
+  const inboxRecipes = filterRecipesForUserLanguage((rawMeal.recipes || []) as Recipe[], user);
 
   if (kind === "meal") {
     return {
-      ...rawPlan,
+      ...rawMeal,
       kind,
-      people: rawPlan.people?.length ? rawPlan.people : [{ name: "Person 1", modifier: 1 }],
+      people: rawMeal.people?.length ? rawMeal.people : [{ name: "Person 1", modifier: 1 }],
       recipes: uniqueRecipes(inboxRecipes),
       mealTypes: [],
       days: [],
@@ -194,9 +189,9 @@ function normalizePlan(rawPlan: MealPlan, user?: AuthUser | null): MealPlan {
     };
   }
 
-  const mealTypes = normalizeMealTypes(rawPlan.mealTypes);
-  const dayCount = Math.max(1, rawPlan.numberOfDays || rawPlan.days?.length || 1);
-  const existingDays = rawPlan.days || [];
+  const mealTypes = normalizeMealTypes(rawMeal.mealTypes);
+  const dayCount = Math.max(1, rawMeal.numberOfDays || rawMeal.days?.length || 1);
+  const existingDays = rawMeal.days || [];
 
   const days = Array.from({ length: dayCount }, (_, index) => {
     const dayNumber = index + 1;
@@ -215,9 +210,9 @@ function normalizePlan(rawPlan: MealPlan, user?: AuthUser | null): MealPlan {
   });
 
   return {
-    ...rawPlan,
+    ...rawMeal,
     kind,
-    people: rawPlan.people?.length ? rawPlan.people : [{ name: "Person 1", modifier: 1 }],
+    people: rawMeal.people?.length ? rawMeal.people : [{ name: "Person 1", modifier: 1 }],
     numberOfDays: dayCount,
     mealTypes,
     totalMealsNeeded: dayCount * mealTypes.length,
@@ -226,7 +221,7 @@ function normalizePlan(rawPlan: MealPlan, user?: AuthUser | null): MealPlan {
   };
 }
 
-function serializeDays(days: PlannedDay[]) {
+function serializeDays(days: MealScheduleDay[]) {
   return days.map((day) => ({
     dayNumber: day.dayNumber,
     meals: day.meals.map((meal) => ({
@@ -240,7 +235,7 @@ function serializeRecipes(recipes: Recipe[]) {
   return recipes.map(getRecipeId).filter(Boolean);
 }
 
-function getSettingsFromPlan(plan: MealPlan): {
+function getSettingsFromMeal(meal: Meal): {
   name: string;
   peopleCount: number;
   numberOfDays: number;
@@ -248,25 +243,25 @@ function getSettingsFromPlan(plan: MealPlan): {
   isPublic: boolean;
 } {
   return {
-    name: plan.name,
-    peopleCount: plan.people.length,
-    numberOfDays: plan.numberOfDays || 1,
-    mealTypes: plan.mealTypes?.length ? normalizeMealTypes(plan.mealTypes) : ["dinner"],
-    isPublic: Boolean(plan.isPublic),
+    name: meal.name,
+    peopleCount: meal.people.length,
+    numberOfDays: meal.numberOfDays || 1,
+    mealTypes: meal.mealTypes?.length ? normalizeMealTypes(meal.mealTypes) : ["dinner"],
+    isPublic: Boolean(meal.isPublic),
   };
 }
 
-function getPlanOwnerId(plan: MealPlan | null) {
-  const owner = plan?.userId as any;
+function getMealOwnerId(meal: Meal | null) {
+  const owner = meal?.userId as any;
   return String(owner?._id || owner?.id || owner || "");
 }
 
-function getInitialSlot(plan: MealPlan): ActiveSlot | null {
-  if (getMealEntryKind(plan) === "meal") return null;
+function getInitialSlot(meal: Meal): ActiveSlot | null {
+  if (getMealEntryKind(meal) === "meal") return null;
 
   return {
-    dayNumber: plan.days?.[0]?.dayNumber || 1,
-    mealType: plan.mealTypes?.[0] || "dinner",
+    dayNumber: meal.days?.[0]?.dayNumber || 1,
+    mealType: meal.mealTypes?.[0] || "dinner",
   };
 }
 
@@ -277,12 +272,7 @@ function getSettingsSignature(
   return JSON.stringify({
     name: settings.name.trim(),
     peopleCount: settings.peopleCount,
-    ...(entryKind === "meal"
-      ? { isPublic: settings.isPublic }
-      : {
-          numberOfDays: settings.numberOfDays,
-          mealTypes: normalizeMealTypes(settings.mealTypes),
-        }),
+    isPublic: settings.isPublic,
   });
 }
 
@@ -293,11 +283,7 @@ function getSettingsValidationMessage(
   if (!settings.name.trim()) {
     return entryKind === "meal"
       ? "Autosave paused until the meal has a name."
-      : "Autosave paused until the plan has a name.";
-  }
-
-  if (entryKind === "mealPlan" && settings.mealTypes.length === 0) {
-    return "Autosave paused until at least one meal type is selected.";
+      : "Autosave paused until the meal has a name.";
   }
 
   return null;
@@ -323,12 +309,12 @@ function getMealDraftName(settings: { name: string }) {
   return settings.name.trim() || "Untitled Meal Draft";
 }
 
-export default function MealPlanDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function MealDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const { savedRecipes, fetchSaved, deleteMealPlan, isMealSaved, addFavoriteMeal, removeFavoriteMeal } = useSaved();
+  const { savedRecipes, fetchSaved, deleteMeal, isMealSaved, saveMeal, unsaveMeal } = useSaved();
   const { confirm, notify } = useConfirmDialog();
-  const [planId, setPlanId] = useState("");
-  const [plan, setPlan] = useState<MealPlan | null>(null);
+  const [mealId, setMealId] = useState("");
+  const [meal, setMeal] = useState<Meal | null>(null);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isSavingMeal, setIsSavingMeal] = useState(false);
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
@@ -350,7 +336,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     mealTypes: ["dinner"] as MealType[],
     isPublic: false,
   });
-  const [revertSettingsSnapshot, setRevertSettingsSnapshot] = useState<ReturnType<typeof getSettingsFromPlan> | null>(null);
+  const [revertSettingsSnapshot, setRevertSettingsSnapshot] = useState<ReturnType<typeof getSettingsFromMeal> | null>(null);
   const [settingsSaveState, setSettingsSaveState] = useState<SettingsSaveState>("idle");
   const [settingsSaveMessage, setSettingsSaveMessage] = useState("");
   const [mealDraftId, setMealDraftId] = useState<string | null>(null);
@@ -362,7 +348,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
   const lastSavedMealDraftSignatureRef = useRef("");
 
   useEffect(() => {
-    params.then((value) => setPlanId(value.id));
+    params.then((value) => setMealId(value.id));
     setCurrentUser(getCurrentUser());
   }, [params]);
 
@@ -372,18 +358,18 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
   }, []);
 
   useEffect(() => {
-    if (!planId) return;
+    if (!mealId) return;
 
-    async function fetchPlan() {
+    async function fetchMeal() {
       setLoading(true);
       setError("");
       try {
         const activeUser = getCurrentUser();
         setCurrentUser(activeUser);
 
-        if (planId === "new") {
+        if (mealId === "new") {
           const activeUserId = activeUser?.id || getCurrentUserId();
-          let draftPlan = createEmptyMealDraft(activeUserId);
+          let draftMeal = createEmptyMealDraft(activeUserId);
           let loadedDraftId: string | null = null;
 
           if (typeof window !== "undefined" && activeUserId) {
@@ -393,21 +379,21 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
               if (draftResponse.ok) {
                 const draftData = await draftResponse.json();
                 if (draftData.draft?.draftType === "meal") {
-                  draftPlan = createMealPlanFromDraft(draftData.draft, activeUserId);
+                  draftMeal = createMealFromDraft(draftData.draft, activeUserId);
                   loadedDraftId = draftData.draft._id;
                 }
               }
             }
           }
 
-          const initialSettings = getSettingsFromPlan(draftPlan);
+          const initialSettings = getSettingsFromMeal(draftMeal);
           const shouldAutoEdit = typeof window !== "undefined" && window.location.hash === "#edit";
-          setPlan(draftPlan);
+          setMeal(draftMeal);
           setMealDraftId(loadedDraftId);
           setSettings(initialSettings);
           setRevertSettingsSnapshot(initialSettings);
           lastSavedSettingsSignatureRef.current = getSettingsSignature(initialSettings, "meal");
-          lastSavedMealDraftSignatureRef.current = getMealDraftSignature(initialSettings, draftPlan.recipes || []);
+          lastSavedMealDraftSignatureRef.current = getMealDraftSignature(initialSettings, draftMeal.recipes || []);
           setSettingsSaveState("blocked");
           setSettingsSaveMessage("Saved as draft until required fields are complete.");
           setDraftSaveState("idle");
@@ -416,42 +402,42 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
           setMealEditMode(true);
 
           if (typeof window !== "undefined" && window.location.hash) {
-            const nextPath = loadedDraftId ? `/meal-plans/new?draftId=${loadedDraftId}` : "/meal-plans/new";
+            const nextPath = loadedDraftId ? `/meals/new?draftId=${loadedDraftId}` : "/meals/new";
             window.history.replaceState(window.history.state, "", nextPath);
           }
           return;
         }
 
-        const response = await authFetch(`/api/meals/${planId}`);
-        if (!response.ok) throw new Error("Failed to fetch plan");
+        const response = await authFetch(`/api/meals/${mealId}`);
+        if (!response.ok) throw new Error("Failed to fetch meal");
         const data = await response.json();
         setCurrentUser(activeUser);
-        const normalizedPlan = normalizePlan(data.plan, activeUser);
-        const initialSettings = getSettingsFromPlan(normalizedPlan);
+        const normalizedMeal = normalizeMeal(data.meal, activeUser);
+        const initialSettings = getSettingsFromMeal(normalizedMeal);
         const shouldAutoEdit = typeof window !== "undefined"
-          && getMealEntryKind(normalizedPlan) === "meal"
+          && getMealEntryKind(normalizedMeal) === "meal"
           && window.location.hash === "#edit";
-        setPlan(normalizedPlan);
+        setMeal(normalizedMeal);
         setSettings(initialSettings);
         setRevertSettingsSnapshot(initialSettings);
-        lastSavedSettingsSignatureRef.current = getSettingsSignature(initialSettings, getMealEntryKind(normalizedPlan));
+        lastSavedSettingsSignatureRef.current = getSettingsSignature(initialSettings, getMealEntryKind(normalizedMeal));
         setSettingsSaveState("saved");
         setSettingsSaveMessage("All changes saved.");
-        setActiveSlot(getInitialSlot(normalizedPlan));
+        setActiveSlot(getInitialSlot(normalizedMeal));
         setMealEditMode(shouldAutoEdit);
 
         if (shouldAutoEdit) {
-          window.history.replaceState(window.history.state, "", `/meal-plans/${normalizedPlan._id}`);
+          window.history.replaceState(window.history.state, "", `/meals/${normalizedMeal._id}`);
         }
       } catch (err: any) {
-        setError(err.message || "Failed to load plan");
+        setError(err.message || "Failed to load meal");
       } finally {
         setLoading(false);
       }
     }
 
-    fetchPlan();
-  }, [planId]);
+    fetchMeal();
+  }, [mealId]);
 
   function getMealDraftSignature(nextSettings: typeof settings, recipes: Recipe[]) {
     return JSON.stringify({
@@ -464,7 +450,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
 
   function getMealDraftPayload(nextSettings: typeof settings, recipes: Recipe[]) {
     const people = Array.from({ length: nextSettings.peopleCount }, (_, index) => ({
-      name: plan?.people[index]?.name || `Person ${index + 1}`,
+      name: meal?.people[index]?.name || `Person ${index + 1}`,
       modifier: 1,
     }));
 
@@ -512,7 +498,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       if (savedDraft?._id) {
         setMealDraftId(savedDraft._id);
         if (typeof window !== "undefined" && !new URLSearchParams(window.location.search).get("draftId")) {
-          window.history.replaceState(window.history.state, "", `/meal-plans/new?draftId=${savedDraft._id}`);
+          window.history.replaceState(window.history.state, "", `/meals/new?draftId=${savedDraft._id}`);
         }
       }
       lastSavedMealDraftSignatureRef.current = getMealDraftSignature(nextSettings, recipes);
@@ -527,10 +513,10 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     }
   }
 
-  async function createMealFromDraft() {
-    if (!plan || !currentUser) return;
+  async function submitMealDraft() {
+    if (!meal || !currentUser) return;
 
-    const recipes = uniqueRecipes(plan.recipes || []);
+    const recipes = uniqueRecipes(meal.recipes || []);
     const completionMessage = getMealCompletionMessage(settings, recipes);
     if (completionMessage) {
       setSettingsSaveState("blocked");
@@ -545,7 +531,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
 
     try {
       const people = Array.from({ length: settings.peopleCount }, (_, index) => ({
-        name: plan.people[index]?.name || `Person ${index + 1}`,
+        name: meal.people[index]?.name || `Person ${index + 1}`,
         modifier: 1,
       }));
 
@@ -569,14 +555,14 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       }
 
       const data = await response.json();
-      const normalizedPlan = normalizePlan(data.plan, currentUser);
+      const normalizedMeal = normalizeMeal(data.meal, currentUser);
       if (mealDraftId) {
         await fetch(`/api/drafts?authorId=${currentUser.id}&id=${mealDraftId}`, { method: "DELETE" }).catch(() => null);
       }
 
-      const normalizedSettings = getSettingsFromPlan(normalizedPlan);
-      setPlan(normalizedPlan);
-      setPlanId(normalizedPlan._id);
+      const normalizedSettings = getSettingsFromMeal(normalizedMeal);
+      setMeal(normalizedMeal);
+      setMealId(normalizedMeal._id);
       setMealDraftId(null);
       setSettings(normalizedSettings);
       setRevertSettingsSnapshot(normalizedSettings);
@@ -586,7 +572,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       setDraftSaveState("idle");
       setDraftSaveMessage("");
       toastSuccess("Meal created successfully.");
-      window.history.replaceState(window.history.state, "", `/meal-plans/${normalizedPlan._id}`);
+      window.history.replaceState(window.history.state, "", `/meals/${normalizedMeal._id}`);
     } catch (err: any) {
       const nextMessage = err.message || "Could not create meal.";
       setSettingsSaveState("error");
@@ -602,10 +588,10 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
   }, [pickerOpen]);
 
   useEffect(() => {
-    if (plan && getMealEntryKind(plan) === "meal" && recipeSource === "plan") {
+    if (meal && getMealEntryKind(meal) === "meal" && recipeSource === "meal") {
       setRecipeSource("website");
     }
-  }, [plan, recipeSource]);
+  }, [meal, recipeSource]);
 
   useEffect(() => {
     async function fetchRecipes() {
@@ -625,19 +611,19 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     fetchRecipes();
   }, []);
 
-  const recipesInPlan = useMemo(() => {
-    if (!plan) return [];
-    if (getMealEntryKind(plan) === "meal") {
-      return uniqueRecipes(plan.recipes || []);
+  const recipesInMeal = useMemo(() => {
+    if (!meal) return [];
+    if (getMealEntryKind(meal) === "meal") {
+      return uniqueRecipes(meal.recipes || []);
     }
-    const scheduledRecipes = (plan.days || []).flatMap((day) => day.meals.flatMap((meal) => meal.recipes));
-    return uniqueRecipes([...scheduledRecipes, ...(plan.recipes || [])]);
-  }, [plan]);
+    const scheduledRecipes = (meal.days || []).flatMap((day) => day.meals.flatMap((meal) => meal.recipes));
+    return uniqueRecipes([...scheduledRecipes, ...(meal.recipes || [])]);
+  }, [meal]);
 
   const ingredientList = useMemo(() => {
     const ingredients = new Map<string, { name: string; quantities: string[]; sources: string[] }>();
 
-    recipesInPlan.forEach((recipe) => {
+    recipesInMeal.forEach((recipe) => {
       [...(recipe.mainIngredients || []), ...(recipe.seasonings || [])].forEach((ingredient) => {
         const key = ingredient.name.toLowerCase();
         const current = ingredients.get(key) || { name: ingredient.name, quantities: [], sources: [] };
@@ -648,10 +634,10 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     });
 
     return Array.from(ingredients.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [recipesInPlan]);
+  }, [recipesInMeal]);
 
   const ingredientsByRecipe = useMemo(() => {
-    return recipesInPlan
+    return recipesInMeal
       .map((recipe) => ({
         recipeId: getRecipeId(recipe),
         recipeTitle: recipe.title,
@@ -663,18 +649,18 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
           })),
       }))
       .filter((recipeGroup) => recipeGroup.ingredients.length > 0);
-  }, [recipesInPlan]);
+  }, [recipesInMeal]);
 
-  const canEditPlan = Boolean(plan && currentUser && (currentUser.role === "admin" || getPlanOwnerId(plan) === currentUser.id));
-  const isMealEntry = getMealEntryKind(plan || undefined) === "meal";
-  const canEditCurrentView = canEditPlan && (!isMealEntry || mealEditMode);
+  const canEditMeal = Boolean(meal && currentUser && (currentUser.role === "admin" || getMealOwnerId(meal) === currentUser.id));
+  const isMealEntry = getMealEntryKind(meal || undefined) === "meal";
+  const canEditCurrentView = canEditMeal && (!isMealEntry || mealEditMode);
 
   const sourceRecipes = useMemo(() => {
-    if (recipeSource === "plan") return recipesInPlan;
+    if (recipeSource === "meal") return recipesInMeal;
     if (recipeSource === "recent") return recentRecipes;
     if (recipeSource === "saved") return savedRecipes as Recipe[];
     return allRecipes;
-  }, [allRecipes, recentRecipes, recipeSource, recipesInPlan, savedRecipes]);
+  }, [allRecipes, recentRecipes, recipeSource, recipesInMeal, savedRecipes]);
 
   const filteredSourceRecipes = useMemo(() => {
     const query = recipeSearch.trim();
@@ -682,48 +668,48 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     return sourceRecipes.filter((recipe) => matchesTextSearch(query, recipe.title, recipe.description));
   }, [recipeSearch, sourceRecipes]);
 
-  async function savePlan(nextPlan: MealPlan, successMessage?: string) {
-    if (nextPlan._id === "new") {
-      setPlan(nextPlan);
+  async function saveMealChanges(nextMeal: Meal, successMessage?: string) {
+    if (nextMeal._id === "new") {
+      setMeal(nextMeal);
       if (successMessage) toastSuccess(successMessage);
       return true;
     }
 
     setSaving(true);
     try {
-      const body = getMealEntryKind(nextPlan) === "meal"
-        ? { recipes: serializeRecipes(nextPlan.recipes || []) }
-        : { days: serializeDays(nextPlan.days || []) };
+      const body = getMealEntryKind(nextMeal) === "meal"
+        ? { recipes: serializeRecipes(nextMeal.recipes || []) }
+        : { days: serializeDays(nextMeal.days || []) };
 
-      const response = await authFetch(`/api/meals/${nextPlan._id}`, {
+      const response = await authFetch(`/api/meals/${nextMeal._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (!response.ok) throw new Error("Failed to update plan");
+      if (!response.ok) throw new Error("Failed to update meal");
       const data = await response.json();
-      const normalizedPlan = normalizePlan(data.plan, currentUser);
-      setPlan(normalizedPlan);
-      if (getMealEntryKind(normalizedPlan) === "meal") {
+      const normalizedMeal = normalizeMeal(data.meal, currentUser);
+      setMeal(normalizedMeal);
+      if (getMealEntryKind(normalizedMeal) === "meal") {
         setActiveSlot(null);
       }
       if (successMessage) toastSuccess(successMessage);
       return true;
     } catch (err: any) {
-      toastError(err.message || "Could not update plan");
+      toastError(err.message || "Could not update meal");
       return false;
     } finally {
       setSaving(false);
     }
   }
 
-  async function handleDeleteCurrentPlan() {
-    if (!plan || !canEditCurrentView) return;
+  async function handleDeleteCurrentMeal() {
+    if (!meal || !canEditCurrentView) return;
 
-    const entryKind = getMealEntryKind(plan);
-    const itemName = entryKind === "meal" ? "meal" : "plan";
+    const entryKind = getMealEntryKind(meal);
+    const itemName = "meal";
     const approved = await confirm({
-      title: entryKind === "meal" ? "Delete meal" : "Delete plan",
+      title: "Delete meal",
       message: `Move this ${itemName} to Trash for 7 days?`,
       intent: "danger",
       confirmText: "Delete",
@@ -732,7 +718,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     if (!approved) return;
 
     try {
-      await deleteMealPlan(plan._id);
+      await deleteMeal(meal._id);
       router.push("/my-work?kind=trash");
     } catch (error) {
       console.error(`Failed to move ${itemName} to trash:`, error);
@@ -752,17 +738,17 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       errorMessage?: string;
     }
   ) {
-    if (!plan || !canEditCurrentView) return false;
+    if (!meal || !canEditCurrentView) return false;
 
-    const entryKind = getMealEntryKind(plan);
+    const entryKind = getMealEntryKind(meal);
     const people = Array.from({ length: nextSettings.peopleCount }, (_, index) => ({
-      name: plan.people[index]?.name || `Person ${index + 1}`,
+      name: meal.people[index]?.name || `Person ${index + 1}`,
       modifier: 1,
     }));
 
     setSaving(true);
     try {
-      const response = await authFetch(`/api/meals/${plan._id}`, {
+      const response = await authFetch(`/api/meals/${meal._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
@@ -777,8 +763,8 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
                 people,
                 numberOfDays: nextSettings.numberOfDays,
                 mealTypes: nextSettings.mealTypes,
-                days: normalizePlan({
-                    ...plan,
+                days: normalizeMeal({
+                    ...meal,
                     name: nextSettings.name.trim(),
                     people,
                     numberOfDays: nextSettings.numberOfDays,
@@ -795,31 +781,31 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       });
 
       if (!response.ok) {
-        throw new Error(entryKind === "meal" ? "Failed to save meal settings" : "Failed to save plan settings");
+        throw new Error(entryKind === "meal" ? "Failed to save meal settings" : "Failed to save meal settings");
       }
 
       const data = await response.json();
-      const normalizedPlan = normalizePlan(data.plan, currentUser);
-      const normalizedSettings = getSettingsFromPlan(normalizedPlan);
-      setPlan(normalizedPlan);
+      const normalizedMeal = normalizeMeal(data.meal, currentUser);
+      const normalizedSettings = getSettingsFromMeal(normalizedMeal);
+      setMeal(normalizedMeal);
       setSettings(normalizedSettings);
-      lastSavedSettingsSignatureRef.current = getSettingsSignature(normalizedSettings, getMealEntryKind(normalizedPlan));
+      lastSavedSettingsSignatureRef.current = getSettingsSignature(normalizedSettings, getMealEntryKind(normalizedMeal));
       setSettingsSaveState("saved");
       setSettingsSaveMessage(options?.statusMessage || "All changes saved.");
       setActiveSlot((current) => {
-        if (getMealEntryKind(normalizedPlan) === "meal") {
+        if (getMealEntryKind(normalizedMeal) === "meal") {
           return null;
         }
 
         if (
           current
-          && normalizedPlan.days?.some((day) => day.dayNumber === current.dayNumber)
-          && normalizedPlan.mealTypes?.includes(current.mealType)
+          && normalizedMeal.days?.some((day) => day.dayNumber === current.dayNumber)
+          && normalizedMeal.mealTypes?.includes(current.mealType)
         ) {
           return current;
         }
 
-        return getInitialSlot(normalizedPlan);
+        return getInitialSlot(normalizedMeal);
       });
 
       if (options?.successMessage) {
@@ -890,11 +876,11 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
   }, []);
 
   useEffect(() => {
-    if (!plan || plan._id !== "new" || !canEditCurrentView || loading || saving) {
+    if (!meal || meal._id !== "new" || !canEditCurrentView || loading || saving) {
       return;
     }
 
-    const recipes = uniqueRecipes(plan.recipes || []);
+    const recipes = uniqueRecipes(meal.recipes || []);
     const nextSignature = getMealDraftSignature(settings, recipes);
     if (nextSignature === lastSavedMealDraftSignatureRef.current) {
       return;
@@ -910,7 +896,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
         return;
       }
 
-      void createMealFromDraft();
+      void submitMealDraft();
     }, 800);
 
     mealDraftAutosaveTimerRef.current = timeoutId;
@@ -921,14 +907,14 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
         mealDraftAutosaveTimerRef.current = null;
       }
     };
-  }, [canEditCurrentView, loading, plan, saving, settings]);
+  }, [canEditCurrentView, loading, meal, saving, settings]);
 
   useEffect(() => {
-    if (!plan || plan._id === "new" || !canEditCurrentView || loading || saving) {
+    if (!meal || meal._id === "new" || !canEditCurrentView || loading || saving) {
       return;
     }
 
-    const entryKind = getMealEntryKind(plan);
+    const entryKind = getMealEntryKind(meal);
     const nextSignature = getSettingsSignature(settings, entryKind);
     if (nextSignature === lastSavedSettingsSignatureRef.current) {
       if (settingsSaveState === "saving") {
@@ -960,7 +946,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
         settingsAutosaveTimerRef.current = null;
       }
     };
-  }, [canEditCurrentView, loading, plan, saving, settings, settingsSaveState]);
+  }, [canEditCurrentView, loading, meal, saving, settings, settingsSaveState]);
 
   async function revertSettings() {
     if (!revertSettingsSnapshot || !canEditCurrentView) return;
@@ -971,7 +957,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
     }
 
     const reverted = await persistSettings(revertSettingsSnapshot, {
-      successMessage: getMealEntryKind(plan || { kind: "mealPlan" } as MealPlan) === "meal" ? "Reverted meal settings" : "Reverted plan settings",
+      successMessage: "Reverted meal settings",
       statusMessage: "Original version restored.",
       errorMessage: "Could not revert settings.",
     });
@@ -982,26 +968,26 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
   }
 
   async function addRecipeToActiveMeal(recipe: Recipe) {
-    if (!plan || !canEditCurrentView) return;
+    if (!meal || !canEditCurrentView) return;
     const recipeId = getRecipeId(recipe);
 
-    if (getMealEntryKind(plan) === "meal") {
-      if ((plan.recipes || []).some((item) => getRecipeId(item) === recipeId)) return;
+    if (getMealEntryKind(meal) === "meal") {
+      if ((meal.recipes || []).some((item) => getRecipeId(item) === recipeId)) return;
 
-      const nextPlan = {
-        ...plan,
-        recipes: [...(plan.recipes || []), recipe],
+      const nextMeal = {
+        ...meal,
+        recipes: [...(meal.recipes || []), recipe],
       };
 
-      const saved = await savePlan(nextPlan);
+      const saved = await saveMealChanges(nextMeal);
       if (saved) setPickerOpen(false);
       return;
     }
 
     if (!activeSlot) return;
-    const nextPlan = {
-      ...plan,
-      days: (plan.days || []).map((day) => {
+    const nextMeal = {
+      ...meal,
+      days: (meal.days || []).map((day) => {
         if (day.dayNumber !== activeSlot.dayNumber) return day;
         return {
           ...day,
@@ -1014,26 +1000,26 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       }),
     };
 
-    const saved = await savePlan(nextPlan);
+    const saved = await saveMealChanges(nextMeal);
     if (saved) setPickerOpen(false);
   }
 
   async function removeRecipeFromMeal(recipeId: string, dayNumber?: number, mealType?: MealType) {
-    if (!plan || !canEditCurrentView) return;
+    if (!meal || !canEditCurrentView) return;
 
-    if (getMealEntryKind(plan) === "meal") {
-      const nextPlan = {
-        ...plan,
-        recipes: (plan.recipes || []).filter((recipe) => getRecipeId(recipe) !== recipeId),
+    if (getMealEntryKind(meal) === "meal") {
+      const nextMeal = {
+        ...meal,
+        recipes: (meal.recipes || []).filter((recipe) => getRecipeId(recipe) !== recipeId),
       };
 
-      await savePlan(nextPlan, "Recipe removed");
+      await saveMealChanges(nextMeal, "Recipe removed");
       return;
     }
 
-    const nextPlan = {
-      ...plan,
-      days: (plan.days || []).map((day) => {
+    const nextMeal = {
+      ...meal,
+      days: (meal.days || []).map((day) => {
         if (day.dayNumber !== dayNumber) return day;
         return {
           ...day,
@@ -1045,33 +1031,33 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       }),
     };
 
-    await savePlan(nextPlan, "Recipe removed");
+    await saveMealChanges(nextMeal, "Recipe removed");
   }
 
   if (loading) {
     return <main className={styles.page}><p className={styles.loading}>Loading...</p></main>;
   }
 
-  if (error || !plan) {
+  if (error || !meal) {
     return (
       <main className={styles.page}>
         <div className={styles.emptyState}>
-          <p>{error || "Plan not found"}</p>
-          <BackButton fallbackHref="/meal-plans" className={styles.primaryLink} label="Back to Plans" />
+          <p>{error || "Meal not found"}</p>
+          <BackButton fallbackHref="/meals" className={styles.primaryLink} label="Back to Meals" />
         </div>
       </main>
     );
   }
 
   const isMeal = isMealEntry;
-  const mealSaved = isMeal ? isMealSaved(plan._id) : false;
-  const sourceTabs = isMeal ? MEAL_SOURCE_TABS : PLAN_SOURCE_TABS;
+  const mealSaved = isMeal ? isMealSaved(meal._id) : false;
+  const sourceTabs = isMeal ? MEAL_SOURCE_TABS : MEAL_ENTRY_SOURCE_TABS;
   const sourceLabel = sourceTabs.find((tab) => tab.id === recipeSource)?.label.toLowerCase() || "website";
   const hasRevertableSettingsChanges = revertSettingsSnapshot
-    ? getSettingsSignature(settings, isMeal ? "meal" : "mealPlan") !== getSettingsSignature(revertSettingsSnapshot, isMeal ? "meal" : "mealPlan")
+    ? getSettingsSignature(settings, "meal") !== getSettingsSignature(revertSettingsSnapshot, "meal")
     : false;
-  const statusMessage = plan._id === "new" ? (draftSaveMessage || settingsSaveMessage) : settingsSaveMessage;
-  const statusState = plan._id === "new" && draftSaveState === "error" ? "error" : settingsSaveState;
+  const statusMessage = meal._id === "new" ? (draftSaveMessage || settingsSaveMessage) : settingsSaveMessage;
+  const statusState = meal._id === "new" && draftSaveState === "error" ? "error" : settingsSaveState;
 
   return (
     <main className={styles.page}>
@@ -1096,13 +1082,13 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
       <header className={styles.header}>
         <BackButton fallbackHref="/" className={styles.backLink} />
         <div>
-          {!isMeal && <p className={styles.kicker}>Planning</p>}
-          <h1>{plan.name}</h1>
+          {!isMeal && <p className={styles.kicker}>Meal</p>}
+          <h1>{meal.name}</h1>
         </div>
       </header>
 
       <FloatingActionPanel
-        ariaLabel={isMeal ? "Meal actions" : "Plan actions"}
+        ariaLabel="Meal actions"
         actions={[
           ...(isMeal
             ? [
@@ -1114,9 +1100,9 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
                     setIsSavingMeal(true);
                     try {
                       if (mealSaved) {
-                        await removeFavoriteMeal(undefined, plan._id);
+                        await unsaveMeal(undefined, meal._id);
                       } else {
-                        await addFavoriteMeal(undefined, plan._id);
+                        await saveMeal(undefined, meal._id);
                       }
                     } finally {
                       setIsSavingMeal(false);
@@ -1127,7 +1113,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
                 },
               ]
             : []),
-          ...(canEditPlan && isMeal && !mealEditMode
+          ...(canEditMeal && isMeal && !mealEditMode
             ? [
                 {
                   id: "edit",
@@ -1143,8 +1129,8 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
                 {
                   id: "delete",
                   icon: "delete",
-                  label: isMeal ? "Delete meal" : "Delete plan",
-                  onClick: () => void handleDeleteCurrentPlan(),
+                  label: isMeal ? "Delete meal" : "Delete meal",
+                  onClick: () => void handleDeleteCurrentMeal(),
                   disabled: saving,
                   tone: "danger" as const,
                 },
@@ -1207,14 +1193,14 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
         </section>
       )}
 
-      <section className={styles.plannerShell}>
+      <section className={styles.mealEditorShell}>
         <div className={styles.dayColumn}>
           {isMeal ? (
             <section className={`${styles.dayCard} ${pickerOpen ? styles.mealCardActive : ""}`}>
               <h2>Meal Recipes</h2>
-              {(plan.recipes || []).length > 0 && (
+              {(meal.recipes || []).length > 0 && (
                 <div className={styles.scheduledRecipes}>
-                  {(plan.recipes || []).map((recipe) => {
+                  {(meal.recipes || []).map((recipe) => {
                     const recipeId = getRecipeId(recipe);
                     return (
                       <div key={recipeId} className={`${styles.scheduledRecipe} ${styles.scheduledRecipeWithImage} ${!canEditCurrentView ? styles.scheduledRecipeReadOnly : ""}`}>
@@ -1243,7 +1229,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
               )}
             </section>
           ) : (
-            (plan.days || []).map((day) => (
+            (meal.days || []).map((day) => (
               <section key={day.dayNumber} className={styles.dayCard}>
                 <h2>Day {day.dayNumber}</h2>
                 <div className={styles.mealList}>

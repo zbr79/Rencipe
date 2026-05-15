@@ -46,28 +46,21 @@ export interface Person {
   modifier: number;
 }
 
-export interface MealCombination {
-  meatRecipeId: SavedRecipe;
-  vegeRecipeId: SavedRecipe;
-  sideRecipeId: SavedRecipe;
-  portions: number;
-}
+export type MealEntryKind = "meal";
 
-export type MealEntryKind = "mealPlan" | "meal";
+export type MealType = 'breakfast' | 'lunch' | 'dinner';
 
-export type MealPlanMealType = 'breakfast' | 'lunch' | 'dinner';
-
-export interface MealPlanMeal {
-  mealType: MealPlanMealType;
+export interface ScheduledMeal {
+  mealType: MealType;
   recipes: SavedRecipe[];
 }
 
-export interface MealPlanDay {
+export interface MealDay {
   dayNumber: number;
-  meals: MealPlanMeal[];
+  meals: ScheduledMeal[];
 }
 
-export interface MealPlan {
+export interface Meal {
   _id: string;
   id?: string;
   kind?: MealEntryKind;
@@ -75,12 +68,10 @@ export interface MealPlan {
   name: string;
   people: Person[];
   numberOfDays?: number;
-  mealTypes?: MealPlanMealType[];
+  mealTypes?: MealType[];
   totalMealsNeeded?: number;
-  days?: MealPlanDay[];
+  days?: MealDay[];
   recipes?: SavedRecipe[];
-  combinations: MealCombination[];
-  checkedIngredients: string[];
   isPublic?: boolean;
   views?: number;
   deletedAt?: string | null;
@@ -89,12 +80,12 @@ export interface MealPlan {
   updatedAt: string;
 }
 
-export interface CreateMealPlanInput {
+export interface CreateMealInput {
   userId?: string;
   kind?: MealEntryKind;
   numberOfPeople: number;
   numberOfDays?: number;
-  mealTypes?: MealPlanMealType[];
+  mealTypes?: MealType[];
   name?: string;
   people?: Person[];
   recipes?: string[];
@@ -102,53 +93,44 @@ export interface CreateMealPlanInput {
 }
 
 interface SavedContextType {
-  // Favorites/Saved Recipes
   savedRecipes: SavedRecipe[];
   loadingSaved: boolean;
   errorSaved: string | null;
   fetchSaved: (userId?: string) => Promise<void>;
-  addFavorite: (userId: string | undefined, recipeId: string) => Promise<void>;
-  removeFavorite: (userId: string | undefined, recipeId: string) => Promise<void>;
+  saveRecipe: (userId: string | undefined, recipeId: string) => Promise<void>;
+  unsaveRecipe: (userId: string | undefined, recipeId: string) => Promise<void>;
   savedCount: number;
   isSaved: (recipeId: string) => boolean;
-  savedMeals: MealPlan[];
-  addFavoriteMeal: (userId: string | undefined, mealId: string) => Promise<void>;
-  removeFavoriteMeal: (userId: string | undefined, mealId: string) => Promise<void>;
+  savedMeals: Meal[];
+  saveMeal: (userId: string | undefined, mealId: string) => Promise<void>;
+  unsaveMeal: (userId: string | undefined, mealId: string) => Promise<void>;
   isMealSaved: (mealId: string) => boolean;
 
-  // Plans
-  mealPlans: MealPlan[];
-  loadingPlans: boolean;
-  errorPlans: string | null;
-  fetchMealPlans: (userId?: string) => Promise<void>;
-  createMealPlan: (input: CreateMealPlanInput) => Promise<MealPlan>;
-  renameMealPlan: (planId: string, newName: string) => Promise<MealPlan>;
-  deleteMealPlan: (planId: string) => Promise<void>;
-  addRecipeToMealPlan: (planId: string, recipeId: string) => Promise<MealPlan>;
-  addMealCombination: (planId: string, meatRecipeId: string, vegeRecipeId: string, sideRecipeId: string, portions: number) => Promise<MealPlan>;
-  removeMealCombination: (planId: string, index: number) => Promise<MealPlan>;
+  meals: Meal[];
+  loadingMeals: boolean;
+  errorMeals: string | null;
+  fetchMeals: (userId?: string) => Promise<void>;
+  createMeal: (input: CreateMealInput) => Promise<Meal>;
+  renameMeal: (mealId: string, newName: string) => Promise<Meal>;
+  deleteMeal: (mealId: string) => Promise<void>;
+  addRecipeToMeal: (mealId: string, recipeId: string) => Promise<Meal>;
 
 }
 
 const SavedContext = createContext<SavedContextType | undefined>(undefined);
 
 export function SavedProvider({ children }: { children: ReactNode }) {
-  // Saved Recipes state
   const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
-  const [savedMeals, setSavedMeals] = useState<MealPlan[]>([]);
+  const [savedMeals, setSavedMeals] = useState<Meal[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [errorSaved, setErrorSaved] = useState<string | null>(null);
 
-  // Plans state
-  const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
-  const [loadingPlans, setLoadingPlans] = useState(false);
-  const [errorPlans, setErrorPlans] = useState<string | null>(null);
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const [loadingMeals, setLoadingMeals] = useState(false);
+  const [errorMeals, setErrorMeals] = useState<string | null>(null);
 
   const resolveUserId = (userId?: string) => getCurrentUserId() || userId || "";
 
-  // =========================
-  // Saved Recipes Functions
-  // =========================
   const fetchSaved = async (userId?: string) => {
     const accountId = resolveUserId(userId);
     if (!accountId) {
@@ -162,15 +144,15 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     try {
       const response = await authFetch(`/api/saved?userId=${accountId}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch favorites");
+        throw new Error("Failed to fetch saved items");
       }
       const data = await response.json();
-      const saved = data.saved || data.favorites || {};
+      const saved = data.saved || {};
       const recipes = filterRecipesForUserLanguage((saved.recipes || []) as SavedRecipe[], getCurrentUser());
       setSavedRecipes(recipes);
-      setSavedMeals((saved.meals || []) as MealPlan[]);
+      setSavedMeals((saved.meals || []) as Meal[]);
     } catch (err: any) {
-      console.error("Error fetching favorites:", err);
+      console.error("Error fetching saved items:", err);
       setErrorSaved(err.message);
       setSavedRecipes([]);
       setSavedMeals([]);
@@ -179,7 +161,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addFavorite = async (userId: string | undefined, recipeId: string) => {
+  const saveRecipe = async (userId: string | undefined, recipeId: string) => {
     const accountId = resolveUserId(userId);
     if (!accountId) {
       toastError("Sign in before saving recipes");
@@ -194,23 +176,23 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add favorite");
+        throw new Error("Failed to save recipe");
       }
 
       const data = await response.json();
-      const saved = data.saved || data.favorites || {};
+      const saved = data.saved || {};
       const recipes = filterRecipesForUserLanguage((saved.recipes || []) as SavedRecipe[], getCurrentUser());
       setSavedRecipes(recipes);
-      setSavedMeals((saved.meals || []) as MealPlan[]);
+      setSavedMeals((saved.meals || []) as Meal[]);
       toastSuccess("Saved recipe");
     } catch (err: any) {
-      console.error("Error adding favorite:", err);
+      console.error("Error saving recipe:", err);
       setErrorSaved(err.message);
       toastError(err.message || "Could not save recipe");
     }
   };
 
-  const removeFavorite = async (userId: string | undefined, recipeId: string) => {
+  const unsaveRecipe = async (userId: string | undefined, recipeId: string) => {
     const accountId = resolveUserId(userId);
     if (!accountId) return;
 
@@ -222,17 +204,17 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to remove favorite");
+        throw new Error("Failed to unsave recipe");
       }
 
       const data = await response.json();
-      const saved = data.saved || data.favorites || {};
+      const saved = data.saved || {};
       const recipes = filterRecipesForUserLanguage((saved.recipes || []) as SavedRecipe[], getCurrentUser());
       setSavedRecipes(recipes);
-      setSavedMeals((saved.meals || []) as MealPlan[]);
+      setSavedMeals((saved.meals || []) as Meal[]);
       toastSuccess("Unsaved recipe");
     } catch (err: any) {
-      console.error("Error removing favorite:", err);
+      console.error("Error unsaving recipe:", err);
       setErrorSaved(err.message);
       toastError(err.message || "Could not unsave recipe");
     }
@@ -242,7 +224,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     return savedRecipes.some((r) => (r._id || r.id) === recipeId);
   };
 
-  const addFavoriteMeal = async (userId: string | undefined, mealId: string) => {
+  const saveMeal = async (userId: string | undefined, mealId: string) => {
     const accountId = resolveUserId(userId);
     if (!accountId) {
       toastError("Sign in before saving meals");
@@ -261,8 +243,8 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      const saved = data.saved || data.favorites || {};
-      setSavedMeals((saved.meals || []) as MealPlan[]);
+      const saved = data.saved || {};
+      setSavedMeals((saved.meals || []) as Meal[]);
       toastSuccess("Saved meal");
     } catch (err: any) {
       console.error("Error saving meal:", err);
@@ -271,7 +253,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const removeFavoriteMeal = async (userId: string | undefined, mealId: string) => {
+  const unsaveMeal = async (userId: string | undefined, mealId: string) => {
     const accountId = resolveUserId(userId);
     if (!accountId) return;
 
@@ -287,8 +269,8 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      const saved = data.saved || data.favorites || {};
-      setSavedMeals((saved.meals || []) as MealPlan[]);
+      const saved = data.saved || {};
+      setSavedMeals((saved.meals || []) as Meal[]);
       toastSuccess("Unsaved meal");
     } catch (err: any) {
       console.error("Error unsaving meal:", err);
@@ -301,41 +283,38 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     return savedMeals.some((meal) => (meal._id || meal.id) === mealId);
   };
 
-  // =========================
-  // Plans Functions
-  // =========================
-  const fetchMealPlans = async (userId?: string) => {
+  const fetchMeals = async (userId?: string) => {
     const accountId = resolveUserId(userId);
     if (!accountId) {
-      setMealPlans([]);
+      setMeals([]);
       return;
     }
 
-    setLoadingPlans(true);
-    setErrorPlans(null);
+    setLoadingMeals(true);
+    setErrorMeals(null);
     try {
       const response = await authFetch(`/api/meals?userId=${accountId}&kind=meal`);
       if (!response.ok) {
-        throw new Error("Failed to fetch plans");
+        throw new Error("Failed to fetch meals");
       }
       const data = await response.json();
-      setMealPlans(data.plans || []);
+      setMeals(data.meals || []);
     } catch (err: any) {
-      console.error("Error fetching plans:", err);
-      setErrorPlans(err.message);
-      setMealPlans([]);
+      console.error("Error fetching meals:", err);
+      setErrorMeals(err.message);
+      setMeals([]);
     } finally {
-      setLoadingPlans(false);
+      setLoadingMeals(false);
     }
   };
 
-  const createMealPlan = async ({ userId, kind = "meal", numberOfPeople, numberOfDays, mealTypes, name, people, recipes, isPublic }: CreateMealPlanInput): Promise<MealPlan> => {
+  const createMeal = async ({ userId, kind = "meal", numberOfPeople, numberOfDays, mealTypes, name, people, recipes, isPublic }: CreateMealInput): Promise<Meal> => {
     if (kind !== "meal") {
-      throw new Error("Plans are currently disabled");
+      throw new Error("Only meals are currently supported");
     }
 
     const accountId = resolveUserId(userId);
-    if (!accountId) throw new Error(kind === "meal" ? "Sign in before creating a meal" : "Sign in before creating a plan");
+    if (!accountId) throw new Error("Sign in before creating a meal");
 
     try {
       const response = await authFetch(`/api/meals`, {
@@ -346,132 +325,82 @@ export function SavedProvider({ children }: { children: ReactNode }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.error || (kind === "meal" ? "Failed to create meal" : "Failed to create plan"));
+        throw new Error(errorData?.error || "Failed to create meal");
       }
 
       const data = await response.json();
-      setMealPlans([data.plan, ...mealPlans]);
-      return data.plan;
+      setMeals([data.meal, ...meals]);
+      return data.meal;
     } catch (err: any) {
-      console.error("Error creating plan:", err);
-      setErrorPlans(err.message);
+      console.error("Error creating meal:", err);
+      setErrorMeals(err.message);
       throw err;
     }
   };
 
-  const renameMealPlan = async (planId: string, newName: string): Promise<MealPlan> => {
+  const renameMeal = async (mealId: string, newName: string): Promise<Meal> => {
     try {
-      const response = await authFetch(`/api/meals/${planId}`, {
+      const response = await authFetch(`/api/meals/${mealId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to rename plan");
+        throw new Error("Failed to rename meal");
       }
 
       const data = await response.json();
-      setMealPlans(
-        mealPlans.map((plan) => (plan._id === planId ? data.plan : plan))
+      setMeals(
+        meals.map((meal) => (meal._id === mealId ? data.meal : meal))
       );
-      return data.plan;
+      return data.meal;
     } catch (err: any) {
-      console.error("Error renaming plan:", err);
-      setErrorPlans(err.message);
+      console.error("Error renaming meal:", err);
+      setErrorMeals(err.message);
       throw err;
     }
   };
 
-  const deleteMealPlan = async (planId: string) => {
+  const deleteMeal = async (mealId: string) => {
     try {
-      const response = await authFetch(`/api/meals/${planId}`, {
+      const response = await authFetch(`/api/meals/${mealId}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error("Failed to move plan to trash");
+        throw new Error("Failed to move meal to trash");
       }
 
-      setMealPlans(mealPlans.filter((plan) => plan._id !== planId));
+      setMeals(meals.filter((meal) => meal._id !== mealId));
       toastSuccess("Moved to Trash");
     } catch (err: any) {
-      console.error("Error deleting plan:", err);
-      setErrorPlans(err.message);
+      console.error("Error deleting meal:", err);
+      setErrorMeals(err.message);
       throw err;
     }
   };
 
-  const addRecipeToMealPlan = async (planId: string, recipeId: string): Promise<MealPlan> => {
+  const addRecipeToMeal = async (mealId: string, recipeId: string): Promise<Meal> => {
     try {
-      const response = await authFetch(`/api/meals/${planId}/recipes`, {
+      const response = await authFetch(`/api/meals/${mealId}/recipes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipeId }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add recipe to plan");
+        throw new Error("Failed to add recipe to meal");
       }
 
       const data = await response.json();
-      setMealPlans(
-        mealPlans.map((plan) => (plan._id === planId ? data.plan : plan))
+      setMeals(
+        meals.map((meal) => (meal._id === mealId ? data.meal : meal))
       );
-      return data.plan;
+      return data.meal;
     } catch (err: any) {
-      console.error("Error adding recipe to plan:", err);
-      setErrorPlans(err.message);
-      throw err;
-    }
-  };
-
-  const addMealCombination = async (planId: string, meatRecipeId: string, vegeRecipeId: string, sideRecipeId: string, portions: number): Promise<MealPlan> => {
-    try {
-      console.log("Adding combination with:", { meatRecipeId, vegeRecipeId, sideRecipeId, portions });
-      const response = await authFetch(`/api/meals/${planId}/combinations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ meatRecipeId, vegeRecipeId, sideRecipeId, portions }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMsg = errorData.error || `API returned ${response.status}: ${response.statusText}`;
-        console.error("Backend error:", errorMsg, errorData);
-        throw new Error(errorMsg);
-      }
-
-      const data = await response.json();
-      setMealPlans(
-        mealPlans.map((plan) => (plan._id === planId ? data.plan : plan))
-      );
-      return data.plan;
-    } catch (err: any) {
-      console.error("Error adding meal combination:", err);
-      setErrorPlans(err.message);
-      throw err;
-    }
-  };
-
-  const removeMealCombination = async (planId: string, index: number): Promise<MealPlan> => {
-    try {
-      const response = await authFetch(`/api/meals/${planId}/combinations/${index}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to remove meal combination");
-      }
-
-      const data = await response.json();
-      setMealPlans(
-        mealPlans.map((plan) => (plan._id === planId ? data.plan : plan))
-      );
-      return data.plan;
-    } catch (err: any) {
-      console.error("Error removing meal combination:", err);
-      setErrorPlans(err.message);
+      console.error("Error adding recipe to meal:", err);
+      setErrorMeals(err.message);
       throw err;
     }
   };
@@ -479,30 +408,26 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   return (
     <SavedContext.Provider
       value={{
-        // Saved Recipes
         savedRecipes,
         loadingSaved,
         errorSaved,
         fetchSaved,
-        addFavorite,
-        removeFavorite,
+        saveRecipe,
+        unsaveRecipe,
         savedCount: savedRecipes.length,
         isSaved,
         savedMeals,
-        addFavoriteMeal,
-        removeFavoriteMeal,
+        saveMeal,
+        unsaveMeal,
         isMealSaved,
-        // Plans
-        mealPlans,
-        loadingPlans,
-        errorPlans,
-        fetchMealPlans,
-        createMealPlan,
-        renameMealPlan,
-        deleteMealPlan,
-        addRecipeToMealPlan,
-        addMealCombination,
-        removeMealCombination,
+        meals,
+        loadingMeals,
+        errorMeals,
+        fetchMeals,
+        createMeal,
+        renameMeal,
+        deleteMeal,
+        addRecipeToMeal,
       }}
     >
       {children}

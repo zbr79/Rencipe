@@ -22,7 +22,7 @@ export async function POST(
     });
 
     if (!response.ok) {
-      throw new Error("Failed to add recipe to plan");
+      throw new Error("Failed to add recipe to meal");
     }
 
     const data = await response.json();

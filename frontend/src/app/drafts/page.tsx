@@ -53,7 +53,7 @@ export default function DraftsPage() {
 
   const handleOpenDraft = (draftId: string) => {
     const draft = drafts.find((item) => item._id === draftId);
-    router.push(draft?.draftType === "meal" ? `/meal-plans/new?draftId=${draftId}#edit` : `/create?draftId=${draftId}`);
+    router.push(draft?.draftType === "meal" ? `/meals/new?draftId=${draftId}#edit` : `/create?draftId=${draftId}`);
   };
 
   const handleDeleteDraft = async (draftId: string) => {

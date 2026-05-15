@@ -21,7 +21,7 @@ export async function GET(
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch plan from backend");
+      throw new Error("Failed to fetch meal from backend");
     }
 
     const data = await response.json();
@@ -47,7 +47,7 @@ export async function PUT(
     });
 
     if (!response.ok) {
-      throw new Error("Failed to update plan");
+      throw new Error("Failed to update meal");
     }
 
     const data = await response.json();
@@ -71,7 +71,7 @@ export async function DELETE(
     });
 
     if (!response.ok) {
-      throw new Error("Failed to move plan to trash");
+      throw new Error("Failed to move meal to trash");
     }
 
     const data = await response.json();

@@ -88,7 +88,7 @@
   border: 1px solid rgba(239, 68, 68, 0.22);
 }
 
-.planSection {
+.mealSection {
   margin-top: 18px;
 }
 
@@ -100,12 +100,12 @@
   margin-bottom: 16px;
 }
 
-.planList {
+.mealList {
   display: grid;
   gap: 12px;
 }
 
-.planCard {
+.mealCard {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -119,27 +119,27 @@
   transition: all var(--transition-base);
 }
 
-.planCard:hover {
+.mealCard:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   border-color: color-mix(in srgb, var(--primary) 42%, var(--border));
 }
 
-.planCard h3 {
+.mealCard h3 {
   margin: 0 0 6px;
   color: var(--foreground);
   font-size: 17px;
   font-weight: 700;
 }
 
-.planCard p {
+.mealCard p {
   margin: 0;
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 700;
 }
 
-.planActions {
+.mealActions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -177,12 +177,12 @@
 }
 
 @media (max-width: 640px) {
-  .planCard {
+  .mealCard {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .planActions {
+  .mealActions {
     width: 100%;
     justify-content: flex-start;
   }

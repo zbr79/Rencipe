@@ -5,9 +5,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "seed:product": "node scripts/seed-product-data.js",
-    "setup:auth": "node scripts/setup-product-auth.js"
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
   },
   "keywords": [],
   "author": "",

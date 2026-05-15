@@ -31,7 +31,7 @@ interface Recipe {
 interface Meal {
   _id: string;
   id?: string;
-  kind?: "mealPlan" | "meal";
+  kind?: "meal";
   name: string;
   recipes?: Recipe[];
   userId?: string | AccountIdentity | null;
@@ -132,7 +132,7 @@ function iconForTag(tag: string) {
 }
 
 export default function BrowsePage() {
-  const { isSaved, addFavorite, removeFavorite, fetchSaved, isMealSaved, addFavoriteMeal, removeFavoriteMeal } = useSaved();
+  const { isSaved, saveRecipe, unsaveRecipe, fetchSaved, isMealSaved, saveMeal, unsaveMeal } = useSaved();
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [allMeals, setAllMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -185,10 +185,10 @@ export default function BrowsePage() {
 
       const recipeData = await recipeResponse.json();
       const publicMealData = await publicMealResponse.json();
-      const privateMealData = privateMealResponse ? await privateMealResponse.json() : { plans: [] };
+      const privateMealData = privateMealResponse ? await privateMealResponse.json() : { meals: [] };
       const mealsById = new Map<string, Meal>();
 
-      [...(publicMealData.plans || []), ...(privateMealData.plans || [])].forEach((meal: Meal) => {
+      [...(publicMealData.meals || []), ...(privateMealData.meals || [])].forEach((meal: Meal) => {
         const mealId = getMealId(meal);
         if (mealId && meal.kind === "meal") mealsById.set(mealId, meal);
       });
@@ -355,7 +355,7 @@ export default function BrowsePage() {
             return (
               <div key={`meal-${item.id}`} className={styles.recipeCardWrapper}>
                 <article className={styles.recipeCard}>
-                  <Link href={`/meal-plans/${item.id}`} className={styles.recipeCardLink}>
+                  <Link href={`/meals/${item.id}`} className={styles.recipeCardLink}>
                     <div className={styles.recipeImage}>
                       <span className="material-symbols-rounded">restaurant_menu</span>
                     </div>
@@ -376,9 +376,9 @@ export default function BrowsePage() {
                         event.preventDefault();
                         event.stopPropagation();
                         if (saved) {
-                          removeFavoriteMeal(undefined, item.id);
+                          unsaveMeal(undefined, item.id);
                         } else {
-                          addFavoriteMeal(undefined, item.id);
+                          saveMeal(undefined, item.id);
                         }
                       }}
                       aria-label={saved ? "Remove meal from saved" : "Save meal"}
@@ -420,9 +420,9 @@ export default function BrowsePage() {
                       event.preventDefault();
                       event.stopPropagation();
                       if (saved) {
-                        removeFavorite(undefined, recipeId);
+                        unsaveRecipe(undefined, recipeId);
                       } else {
-                        addFavorite(undefined, recipeId);
+                        saveRecipe(undefined, recipeId);
                       }
                     }}
                     aria-label={saved ? "Remove from saved" : "Save recipe"}
