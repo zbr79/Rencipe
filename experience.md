@@ -4,7 +4,7 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 
 ## 2026-05-15
 
-- When rewriting DOCX report bodies with python-docx, preserve the final Word `sectPr` body element and avoid assuming the template has a `Table Grid` style. This report template accepts default tables, and new/changed report content should be marked with explicit blue run color.
+- When rewriting DOCX report bodies with python-docx, preserve the final Word `sectPr` body element and avoid assuming the template has a `Table Grid` style. For reliable report formatting, create real DOCX bullets with `w:numPr`, add explicit table borders through `w:tblBorders`, and mark new/changed content with explicit blue run color.
 - New reusable meals should start as draft-backed editor state, not as saved `MealPlan` documents with placeholder names. Promote a meal only after required fields are complete, and keep incomplete meal work in Drafts with `draftType: "meal"`.
 - Meal edit screens should not include a separate saved/exit button that navigates to a fixed list URL. Use the shared history-aware BackButton for leaving detail/edit views.
 - Account language checks must use the backend-backed session, not only localStorage overrides, because AuthGate refresh can replace local-only language changes. Runtime UI translation also needs leaf-element text handling for React split text such as `Recipes (1)`.
