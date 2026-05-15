@@ -101,30 +101,6 @@ export interface CreateMealPlanInput {
   isPublic?: boolean;
 }
 
-export interface MealSlot {
-  recipeIds: string[];
-}
-
-export interface DayPlan {
-  dayOfWeek: "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday";
-  breakfast: string[];
-  lunch: string[];
-  dinner: string[];
-}
-
-export interface WeeklyPlan {
-  _id: string;
-  id?: string;
-  userId: string;
-  name: string;
-  days: DayPlan[];
-  breakfastEnabled: boolean;
-  lunchEnabled: boolean;
-  dinnerEnabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
 interface SavedContextType {
   // Favorites/Saved Recipes
   savedRecipes: SavedRecipe[];
@@ -152,16 +128,6 @@ interface SavedContextType {
   addMealCombination: (planId: string, meatRecipeId: string, vegeRecipeId: string, sideRecipeId: string, portions: number) => Promise<MealPlan>;
   removeMealCombination: (planId: string, index: number) => Promise<MealPlan>;
 
-  // Scheduled plans
-  weeklyPlans: WeeklyPlan[];
-  loadingWeeklyPlans: boolean;
-  errorWeeklyPlans: string | null;
-  fetchWeeklyPlans: (userId?: string) => Promise<void>;
-  createWeeklyPlan: (userId: string | undefined, name?: string, mealTypes?: ('breakfast' | 'lunch' | 'dinner')[]) => Promise<WeeklyPlan>;
-  renameWeeklyPlan: (planId: string, newName: string) => Promise<WeeklyPlan>;
-  updateWeeklyPlanSettings: (planId: string, mealTypes: ('breakfast' | 'lunch' | 'dinner')[]) => Promise<WeeklyPlan>;
-  deleteWeeklyPlan: (planId: string) => Promise<void>;
-  updateMealSlot: (planId: string, dayOfWeek: string, mealType: 'breakfast' | 'lunch' | 'dinner', recipeId: string | null, index?: number) => Promise<WeeklyPlan>;
 }
 
 const SavedContext = createContext<SavedContextType | undefined>(undefined);
@@ -177,11 +143,6 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(false);
   const [errorPlans, setErrorPlans] = useState<string | null>(null);
-
-  // Scheduled plans state
-  const [weeklyPlans, setWeeklyPlans] = useState<WeeklyPlan[]>([]);
-  const [loadingWeeklyPlans, setLoadingWeeklyPlans] = useState(false);
-  const [errorWeeklyPlans, setErrorWeeklyPlans] = useState<string | null>(null);
 
   const resolveUserId = (userId?: string) => getCurrentUserId() || userId || "";
 
@@ -363,7 +324,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const createMealPlan = async ({ userId, kind = "mealPlan", numberOfPeople, numberOfDays, mealTypes, name, people, recipes, isPublic }: CreateMealPlanInput): Promise<MealPlan> => {
+  const createMealPlan = async ({ userId, kind = "meal", numberOfPeople, numberOfDays, mealTypes, name, people, recipes, isPublic }: CreateMealPlanInput): Promise<MealPlan> => {
     if (kind !== "meal") {
       throw new Error("Plans are currently disabled");
     }
@@ -510,128 +471,6 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // =========================
-  // Scheduled plan functions
-  // =========================
-  const fetchWeeklyPlans = async (userId?: string) => {
-    const accountId = resolveUserId(userId);
-    if (!accountId) {
-      setWeeklyPlans([]);
-      return;
-    }
-
-    setLoadingWeeklyPlans(true);
-    setErrorWeeklyPlans(null);
-    try {
-      const response = await authFetch(`/api/weekly-plans?userId=${accountId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch scheduled plans");
-      }
-      const data = await response.json();
-      setWeeklyPlans(data.plans || []);
-    } catch (err: any) {
-      console.error("Error fetching scheduled plans:", err);
-      setErrorWeeklyPlans(err.message);
-      setWeeklyPlans([]);
-    } finally {
-      setLoadingWeeklyPlans(false);
-    }
-  };
-
-  const createWeeklyPlan = async (_userId: string | undefined, _name?: string, _mealTypes?: ('breakfast' | 'lunch' | 'dinner')[]): Promise<WeeklyPlan> => {
-    throw new Error("Plans are currently disabled");
-  };
-
-  const renameWeeklyPlan = async (planId: string, newName: string): Promise<WeeklyPlan> => {
-    try {
-      const response = await authFetch(`/api/weekly-plans/${planId}/rename`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to rename scheduled plan");
-      }
-
-      const data = await response.json();
-      setWeeklyPlans(
-        weeklyPlans.map((plan) => (plan._id === planId ? data.plan : plan))
-      );
-      return data.plan;
-    } catch (err: any) {
-      console.error("Error renaming scheduled plan:", err);
-      setErrorWeeklyPlans(err.message);
-      throw err;
-    }
-  };
-
-  const updateWeeklyPlanSettings = async (planId: string, mealTypes: ('breakfast' | 'lunch' | 'dinner')[]): Promise<WeeklyPlan> => {
-    try {
-      const response = await authFetch(`/api/weekly-plans/${planId}/settings`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mealTypes }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update scheduled plan settings");
-      }
-
-      const data = await response.json();
-      setWeeklyPlans(
-        weeklyPlans.map((plan) => (plan._id === planId ? data.plan : plan))
-      );
-      return data.plan;
-    } catch (err: any) {
-      console.error("Error updating scheduled plan settings:", err);
-      setErrorWeeklyPlans(err.message);
-      throw err;
-    }
-  };
-
-  const deleteWeeklyPlan = async (planId: string) => {
-    try {
-      const response = await authFetch(`/api/weekly-plans/${planId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete scheduled plan");
-      }
-
-      setWeeklyPlans(weeklyPlans.filter((plan) => plan._id !== planId));
-    } catch (err: any) {
-      console.error("Error deleting scheduled plan:", err);
-      setErrorWeeklyPlans(err.message);
-      throw err;
-    }
-  };
-
-  const updateMealSlot = async (planId: string, dayOfWeek: string, mealType: 'breakfast' | 'lunch' | 'dinner', recipeId: string | null, index?: number): Promise<WeeklyPlan> => {
-    try {
-      const response = await authFetch(`/api/weekly-plans/${planId}/meals`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dayOfWeek, mealType, recipeId, index }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update meal slot");
-      }
-
-      const data = await response.json();
-      setWeeklyPlans(
-        weeklyPlans.map((plan) => (plan._id === planId ? data.plan : plan))
-      );
-      return data.plan;
-    } catch (err: any) {
-      console.error("Error updating meal slot:", err);
-      setErrorWeeklyPlans(err.message);
-      throw err;
-    }
-  };
-
   return (
     <SavedContext.Provider
       value={{
@@ -659,16 +498,6 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         addRecipeToMealPlan,
         addMealCombination,
         removeMealCombination,
-        // Scheduled plans
-        weeklyPlans,
-        loadingWeeklyPlans,
-        errorWeeklyPlans,
-        fetchWeeklyPlans,
-        createWeeklyPlan,
-        renameWeeklyPlan,
-        updateWeeklyPlanSettings,
-        deleteWeeklyPlan,
-        updateMealSlot,
       }}
     >
       {children}

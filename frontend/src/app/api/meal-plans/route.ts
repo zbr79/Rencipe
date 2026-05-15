@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, kind = "mealPlan", numberOfPeople, numberOfDays, mealTypes, name, people, isPublic, recipes } = body;
+    const { userId, kind = "meal", numberOfPeople, numberOfDays, mealTypes, name, people, isPublic, recipes } = body;
 
     if (kind !== "meal") {
       return NextResponse.json({ error: "Plans are currently disabled" }, { status: 410 });

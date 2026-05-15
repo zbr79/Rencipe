@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Comment, { CommentEntryType } from "../models/Comment";
-import MealPlan from "../models/MealPlan";
+import Meal from "../models/Meal";
 import Recipe from "../models/Recipe";
 import { getAuthUser } from "../middleware/auth";
 
@@ -43,7 +43,7 @@ async function canAccessEntry(req: Request, entryType: CommentEntryType, entryId
     return user.role === "admin" || objectIdEquals(recipe.authorId, user.id);
   }
 
-  const meal = await MealPlan.findOne({ _id: entryId, kind: "meal", ...activeQuery() });
+  const meal = await Meal.findOne({ _id: entryId, kind: "meal", ...activeQuery() });
   if (!meal) return false;
   if (meal.isPublic) return true;
   if (!user) return false;

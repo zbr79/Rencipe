@@ -28,7 +28,7 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 - Full-screen create/account modals must stack above the mobile bottom nav or close on route changes, so bottom-nav taps cannot leave an old modal open on the next page.
 - Native select/dropdown controls are not a good fit for Rencipe UI. Use custom app-styled menus so option sizing, color, and typography stay controlled.
 - Do not use blur effects for overlays, headers, or modal backdrops. Use plain dimmed gray/black backgrounds for open modal states.
-- When Plans are temporarily closed, preserve reusable Meals by deleting only `MealPlan` documents where `kind` is `mealPlan` or missing, plus scheduled `WeeklyPlan` documents; never delete `kind: "meal"` records during that cleanup.
+- When removing old planning data, preserve reusable Meals and never delete records where `kind` is `meal`.
 
 ## 2026-05-11
 
@@ -74,7 +74,7 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 - Keep only one recipe-browsing surface in the product. The canonical browsing route is `/browse`; remove the old `/recipes` list page and the old `/categories` page instead of maintaining parallel browse surfaces or aliases.
 - Treat the bottom-bar Saved tab like every other nav item for color. Keep the heart icon language if needed, but use the standard gray inactive state and the standard blue active state instead of a dedicated pink saved-tab style.
 - In the mobile bottom bar, active state should not enlarge the icon. Keep the same icon size between inactive and active states, and use color/background changes alone so selection feels steady instead of jumpy.
-- Product copy should distinguish Meals from Plans. Visible UI should use `Plans`, `Plan`, `New Plan`, and `Creating Plan...` rather than `Meal Plans` or repeated `Create...` labels, while internal route/API names can remain stable.
+- Product copy should present the current reusable-meal feature as `Meals`, `Meal`, `New Meal`, and `Creating Meal...`; avoid reviving old meal-plan wording in visible UI.
 - Keep route-tree cleanup separate from compatibility redirects. Empty folders like old `/categories` or cart API shells should be removed, while legacy pages that only `redirect()` can stay briefly when they protect stale links.
 - For desktop carousel dragging, apply a mouse-specific drag multiplier while keeping touch movement direct; this preserves phone-like swipe feel without making mobile overshoot.
 
@@ -109,22 +109,22 @@ Record mistakes, findings, deployment notes, and lessons learned during developm
 - Frontend build blockers fixed during this work: Next 16 route params needed `Promise` typing, image enrichment needed explicit recipe types, draft types were missing `name`, and a few meal-plan numeric inputs needed `number | ""` state.
 - The CPSC 597 demo requirements require PowerPoint slides, a recorded video presentation, and a project/outcomes demo limited to about 20 minutes.
 - The presentation should cover background, motivation, problem, significance, goals, objectives, approaches, solutions, results, goal achievement, and success criteria, using visual material instead of long slide text.
-- The report draft identifies core Rencipe scope as recipe management, meal planning, favorites, shopping cart, live deployment, and planned account/login support; keto dietary features are still in progress.
-- Current app inventory shows the strongest Phase 1 gaps are full English UI coverage, auth/JWT/account flow, keto-specific behavior, responsive polish, demo seed data, and meal-plan ingredient checklist verification.
+- The report draft identifies core Rencipe scope as recipe management, reusable meals, saved items, live deployment, and account/login support.
+- Current app inventory showed the strongest Phase 1 gaps were full English UI coverage, auth/JWT/account flow, responsive polish, demo seed data, and meal ingredient checklist verification.
 - Meal-plan ingredient totals are currently calculated in the frontend, but the backend ingredient-check PATCH handler should be verified because it updates state without visibly returning a response in the controller.
 - Visible source UI was translated to English and verified with source scans.
 - Existing Mongo recipe data was translated to English and verified with a direct Mongoose check: 37 recipes, zero Chinese characters in selected recipe fields.
 - Added the backend seed script; the current product seed command is `npm run seed:product`.
 - `source.unsplash.com` generated URLs produced broken images in Playwright. Stable `images.unsplash.com` URLs fixed the demo image issue; final database check showed zero `source.unsplash.com` recipe images.
-- Frontend UI polish now covers the app shell, home dashboard, recipe library, recipe detail, search, saved, cart, create, drafts, meal plans, weekly plans, settings, and profile list surfaces. Deep detail flows still need rehearsal-driven polish.
-- Existing meal-plan and weekly-plan names also needed translation because public route checks can surface Chinese from database records even when source UI scans are clean.
+- Frontend UI polish now covers the app shell, home dashboard, recipe library, recipe detail, search, saved, create, drafts, meals, settings, and profile list surfaces. Deep detail flows still need rehearsal-driven polish.
+- Existing meal names also needed data checks because public route checks can surface older database records even when source UI scans are clean.
 - Final public Playwright checks against `https://rencipe.renstoolbox.com` confirmed English main demo routes, 37 recipe cards, loaded recipe images, visible mobile bottom nav, and no horizontal overflow.
 - Mechanical translation cleanup also needs a rough-English artifact scan for strings like joined words, missing spaces, or placeholder fragments; a Chinese-character scan alone will not catch those.
 - Draft autosave must keep a stable draft id after the first save. Otherwise each autosave can create a duplicate draft, and deleting after publish can target the wrong scope.
 - Draft deletion should require a specific draft id. A delete endpoint that treats missing id as delete-all is unsafe for a create-flow cleanup helper.
 - Recipe creation should let users start without a cover image, but publishing needs an explicit final cover-image check so the validation happens at the right moment.
 - The desired Phase 1 UI direction is clean and light: white or pale-gray surfaces, thin borders, subtle selected states, and small accent colors instead of heavy black filled controls.
-- Product language should present reusable plans and scheduled plans under the single visible “Meal Plans” concept, even if existing internal route names still include weekly-plan terminology.
+- Product language should present the current collection feature as reusable Meals.
 - Public nginx strips the `/api/` prefix before proxying to the backend. API calls that rely on path params need backend-compatible public routes too; draft updates now support body-id `PUT /drafts` as well as `PUT /drafts/:id`.
 - Homepage empty hero space reads better as an automatic recipe image carousel using real recipe photos, with stable slide dimensions for phone-first layouts.
 - The component concept should stay as a recipe eligibility property (`component`) instead of a visible browsing category or public tag; legacy `Component` tags should be hidden in UI tag displays.

@@ -2,12 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useCreateForm } from "../contexts/CreateFormContext";
-import { useQuickCreateMealPlan } from "../hooks/useQuickCreateMealPlan";
+import { useQuickCreateMeal } from "../hooks/useQuickCreateMeal";
 import styles from "./create-form-modal.module.css";
 
 export default function CreateFormModal() {
   const { isOpen, closeCreateForm } = useCreateForm();
-  const { creatingMeal, isCreatingAny, createAndOpenMeal } = useQuickCreateMealPlan();
+  const { creatingMeal, isCreatingAny, createAndOpenMeal } = useQuickCreateMeal();
   const router = useRouter();
 
   if (!isOpen) return null;

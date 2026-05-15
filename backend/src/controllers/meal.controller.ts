@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import MealPlan, { IMealCombination, MealEntryKind, MealType } from "../models/MealPlan";
+import Meal, { IMealCombination, MealEntryKind, MealType } from "../models/Meal";
 import Recipe from "../models/Recipe";
 import { getAuthUser } from "../middleware/auth";
 
@@ -45,7 +45,7 @@ function canMutatePlan(req: Request, plan: any) {
 }
 
 function normalizeKind(kind: any): MealEntryKind {
-  return kind === "meal" ? "meal" : "mealPlan";
+  return kind === "mealPlan" ? "mealPlan" : "meal";
 }
 
 function normalizeMealTypes(mealTypes: any): MealType[] {
@@ -144,7 +144,7 @@ export const getMealPlans = async (req: Request, res: Response) => {
       query.userId = new mongoose.Types.ObjectId(userId as string);
     }
 
-    const plans = await MealPlan.find(query)
+    const plans = await Meal.find(query)
       .populate([
         { path: "userId", select: "username displayName role avatarUrl" },
         { path: "recipes", model: "Recipe" },
@@ -175,7 +175,7 @@ export const getMealPlanById = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid plan ID" });
     }
 
-    const plan = await MealPlan.findById(idStr).populate([
+    const plan = await Meal.findById(idStr).populate([
       { path: "userId", select: "username displayName role avatarUrl" },
       { path: "recipes", model: "Recipe" },
       { path: "days.meals.recipes", model: "Recipe" },
@@ -197,7 +197,7 @@ export const getMealPlanById = async (req: Request, res: Response) => {
     }
 
     if (normalizeKind(plan.kind) === "meal") {
-      await MealPlan.updateOne({ _id: plan._id }, { $inc: { views: 1 } }, { timestamps: false });
+      await Meal.updateOne({ _id: plan._id }, { $inc: { views: 1 } }, { timestamps: false });
       plan.views = (plan.views ?? 0) + 1;
     }
 
@@ -265,7 +265,7 @@ export const createMealPlan = async (req: Request, res: Response) => {
     let plan;
 
     if (normalizedKind === "meal") {
-      plan = new MealPlan({
+      plan = new Meal({
         kind: normalizedKind,
         userId: new mongoose.Types.ObjectId(userId),
         name: String(name).trim(),
@@ -290,7 +290,7 @@ export const createMealPlan = async (req: Request, res: Response) => {
 
       const totalMealsNeeded = numberOfDays * normalizedMealTypes.length;
 
-      plan = new MealPlan({
+      plan = new Meal({
         kind: normalizedKind,
         userId: new mongoose.Types.ObjectId(userId),
         name: name || `${numberOfPeople}-person ${numberOfDays}-day plan`,
@@ -331,7 +331,7 @@ export const renameMealPlan = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid plan ID" });
     }
 
-    const plan = await MealPlan.findById(idStr);
+    const plan = await Meal.findById(idStr);
     if (!plan) {
       return res.status(404).json({ error: "Plan not found" });
     }
@@ -419,7 +419,7 @@ export const deleteMealPlan = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid plan ID" });
     }
 
-    const plan = await MealPlan.findById(idStr);
+    const plan = await Meal.findById(idStr);
 
     if (!plan) {
       return res.status(404).json({ error: "Plan not found" });
@@ -453,7 +453,7 @@ export const restoreMealPlan = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid plan ID" });
     }
 
-    const plan = await MealPlan.findById(idStr);
+    const plan = await Meal.findById(idStr);
     if (!plan) {
       return res.status(404).json({ error: "Plan not found" });
     }
@@ -497,7 +497,7 @@ export const addRecipeToMealPlan = async (req: Request, res: Response) => {
     }
 
     const [plan, recipe] = await Promise.all([
-      MealPlan.findById(idStr),
+      Meal.findById(idStr),
       Recipe.findById(recipeId),
     ]);
 
@@ -599,7 +599,7 @@ export const addMealCombination = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "One or more recipes not found" });
     }
 
-    const plan = await MealPlan.findById(idStr);
+    const plan = await Meal.findById(idStr);
     if (!plan) {
       return res.status(404).json({ error: "Plan not found" });
     }
@@ -650,7 +650,7 @@ export const removeMealCombination = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid combination index" });
     }
 
-    const plan = await MealPlan.findById(idStr);
+    const plan = await Meal.findById(idStr);
     if (!plan) {
       return res.status(404).json({ error: "Plan not found" });
     }
@@ -702,7 +702,7 @@ export const toggleIngredientCheckStatus = async (req: Request, res: Response) =
       return res.status(400).json({ error: "Invalid plan ID" });
     }
 
-    const plan = await MealPlan.findById(idStr);
+    const plan = await Meal.findById(idStr);
     if (!plan) {
       return res.status(404).json({ error: "Plan not found" });
     }

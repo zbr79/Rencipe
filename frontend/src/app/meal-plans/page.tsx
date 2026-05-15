@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import { useSaved } from "../contexts/SavedContext";
-import { useQuickCreateMealPlan } from "../hooks/useQuickCreateMealPlan";
-import { getScheduledPlanDisplayName } from "../utils/planDisplay";
+import { useQuickCreateMeal } from "../hooks/useQuickCreateMeal";
+import { getMealDisplayName } from "../utils/planDisplay";
 import styles from "./page.module.css";
 
 export default function MealPlansPage() {
@@ -15,7 +15,7 @@ export default function MealPlansPage() {
     fetchMealPlans,
     deleteMealPlan,
   } = useSaved();
-  const { creatingMeal, createAndOpenMeal } = useQuickCreateMealPlan();
+  const { creatingMeal, createAndOpenMeal } = useQuickCreateMeal();
   const { confirm, notify } = useConfirmDialog();
   const getEntryKind = (plan: { kind?: "mealPlan" | "meal" }) => (plan.kind === "meal" ? "meal" : "mealPlan");
   
@@ -86,7 +86,7 @@ export default function MealPlansPage() {
                 {visibleMealPlans.map((plan) => (
                   <Link key={plan._id} href={`/meal-plans/${plan._id}`} className={styles.planCard}>
                     <div>
-                      <h3>{getScheduledPlanDisplayName(plan.name)}</h3>
+                      <h3>{getMealDisplayName(plan.name)}</h3>
                       {getEntryKind(plan) === "meal" ? (
                         <>
                           <p>{plan.people.length} people | Meal</p>

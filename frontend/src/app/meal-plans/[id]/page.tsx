@@ -146,7 +146,7 @@ function titleCaseMeal(type: MealType) {
 }
 
 function getMealEntryKind(plan?: { kind?: MealEntryKind }) {
-  return plan?.kind === "meal" ? "meal" : "mealPlan";
+  return plan?.kind === "mealPlan" ? "mealPlan" : "meal";
 }
 
 function uniqueRecipes(recipes: Recipe[]) {

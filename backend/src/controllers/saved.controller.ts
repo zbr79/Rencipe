@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import Favorite from "../models/Favorite";
+import Saved from "../models/Saved";
 import Recipe from "../models/Recipe";
-import MealPlan from "../models/MealPlan";
+import Meal from "../models/Meal";
 
 function activeRecipeQuery() {
   return {
@@ -47,7 +47,7 @@ export const getFavorites = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "userId must be a valid MongoDB ObjectId" });
     }
 
-    let favorites = await Favorite.findOne({
+    let favorites = await Saved.findOne({
       userId: new mongoose.Types.ObjectId(userId as string),
     }).populate([
       {
@@ -64,7 +64,7 @@ export const getFavorites = async (req: Request, res: Response) => {
     ]);
 
     if (!favorites) {
-      favorites = new Favorite({
+      favorites = new Saved({
         userId: new mongoose.Types.ObjectId(userId as string),
         recipes: [],
         meals: [],
@@ -112,12 +112,12 @@ export const addFavorite = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Recipe not found" });
     }
 
-    let favorites = await Favorite.findOne({
+    let favorites = await Saved.findOne({
       userId: new mongoose.Types.ObjectId(userId),
     });
 
     if (!favorites) {
-      favorites = new Favorite({
+      favorites = new Saved({
         userId: new mongoose.Types.ObjectId(userId),
         recipes: [new mongoose.Types.ObjectId(recipeId)],
         meals: [],
@@ -178,7 +178,7 @@ export const removeFavorite = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "userId and recipeId must be valid MongoDB ObjectIds" });
     }
 
-    const favorites = await Favorite.findOne({
+    const favorites = await Saved.findOne({
       userId: new mongoose.Types.ObjectId(userId),
     });
 
@@ -238,16 +238,16 @@ export const addFavoriteMeal = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "userId and mealId must be valid MongoDB ObjectIds" });
     }
 
-    const meal = await MealPlan.findOne({ _id: mealId, ...activeMealQuery() });
+    const meal = await Meal.findOne({ _id: mealId, ...activeMealQuery() });
     if (!meal) {
       return res.status(404).json({ error: "Meal not found" });
     }
 
-    let favorites = await Favorite.findOne({ userId: new mongoose.Types.ObjectId(userId) });
+    let favorites = await Saved.findOne({ userId: new mongoose.Types.ObjectId(userId) });
     const mealObjectId = new mongoose.Types.ObjectId(mealId);
 
     if (!favorites) {
-      favorites = new Favorite({
+      favorites = new Saved({
         userId: new mongoose.Types.ObjectId(userId),
         recipes: [],
         meals: [mealObjectId],
@@ -305,7 +305,7 @@ export const removeFavoriteMeal = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "userId and mealId must be valid MongoDB ObjectIds" });
     }
 
-    const favorites = await Favorite.findOne({ userId: new mongoose.Types.ObjectId(userId) });
+    const favorites = await Saved.findOne({ userId: new mongoose.Types.ObjectId(userId) });
     if (!favorites) {
       return res.status(404).json({ error: "Favorites not found" });
     }

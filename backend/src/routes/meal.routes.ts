@@ -10,7 +10,7 @@ import {
   addMealCombination,
   removeMealCombination,
   toggleIngredientCheckStatus,
-} from "../controllers/mealplan.controller";
+} from "../controllers/meal.controller";
 import { authenticateOptional, requireAuth } from "../middleware/auth";
 
 const router = express.Router();

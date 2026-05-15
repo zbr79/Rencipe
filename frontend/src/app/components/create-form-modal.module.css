@@ -221,101 +221,6 @@
   padding: 40px 32px;
 }
 
-.mealPlanForm {
-  display: grid;
-  gap: 18px;
-}
-
-.mealPlanForm .menuTitle {
-  margin-bottom: 2px;
-  padding-right: 34px;
-  text-align: left;
-  font-size: 25px;
-}
-
-.mealPlanField {
-  display: grid;
-  gap: 8px;
-}
-
-.mealPlanField > span {
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.mealPlanField > input {
-  min-height: 46px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.mealPlanInlineRow {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.mealTypeGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.mealTypeOption {
-  min-width: 0;
-  min-height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--hover-bg);
-  color: var(--foreground);
-  font-size: 13px;
-  font-weight: 650;
-  text-transform: capitalize;
-}
-
-.mealTypeOption input {
-  width: auto;
-  accent-color: var(--primary);
-}
-
-.mealPlanSummary {
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 0 14px;
-  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
-  border-radius: 8px;
-  background: var(--primary-soft);
-  color: var(--primary);
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.mealPlanSummary strong {
-  color: var(--foreground);
-  font-size: 24px;
-  line-height: 1;
-}
-
-.createPlanButton {
-  width: 100%;
-  min-height: 48px;
-  border: 0;
-  border-radius: 8px;
-  background: var(--primary);
-  color: white;
-  font-size: 16px;
-  font-weight: 700;
-}
-
 .header {
   text-align: center;
   margin-bottom: 28px;
@@ -489,11 +394,6 @@
 
   .formContainer {
     padding: 28px 20px;
-  }
-
-  .mealPlanInlineRow,
-  .mealTypeGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .header h1 {

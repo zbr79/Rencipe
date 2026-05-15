@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface IFavorite extends Document {
+export interface ISavedCollection extends Document {
   userId: mongoose.Types.ObjectId;
   recipes: mongoose.Types.ObjectId[];
   meals: mongoose.Types.ObjectId[];
@@ -8,7 +8,7 @@ export interface IFavorite extends Document {
   updatedAt: Date;
 }
 
-const FavoriteSchema = new Schema<IFavorite>(
+const savedSchema = new Schema<ISavedCollection>(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -34,6 +34,6 @@ const FavoriteSchema = new Schema<IFavorite>(
   }
 );
 
-const Favorite = mongoose.model<IFavorite>("Favorite", FavoriteSchema);
+const Saved = mongoose.model<ISavedCollection>("Favorite", savedSchema);
 
-export default Favorite;
+export default Saved;
