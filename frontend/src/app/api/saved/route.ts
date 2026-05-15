@@ -11,10 +11,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/favorites?userId=${userId}`);
+    const response = await fetch(`${BACKEND_URL}/saved?userId=${userId}`);
 
     if (!response.ok) {
-      throw new Error("Failed to fetch favorites from backend");
+      throw new Error("Failed to fetch saved items from backend");
     }
 
     const data = await response.json();

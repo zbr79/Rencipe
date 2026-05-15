@@ -4,17 +4,18 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:600
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string; recipeId: string }> }
+  { params }: { params: Promise<{ id: string; index: string }> }
 ) {
   try {
-    const { id, recipeId } = await params;
+    const { id, index } = await params;
 
-    const response = await fetch(`${BACKEND_URL}/meal-plans/${id}/recipes/${recipeId}`, {
+    const response = await fetch(`${BACKEND_URL}/meals/${id}/combinations/${index}`, {
       method: "DELETE",
     });
 
     if (!response.ok) {
-      throw new Error("Failed to remove recipe from plan");
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to remove meal combination");
     }
 
     const data = await response.json();

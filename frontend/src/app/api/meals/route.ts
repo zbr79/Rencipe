@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
-    const backendUrl = new URL(`${BACKEND_URL}/meal-plans`);
+    const backendUrl = new URL(`${BACKEND_URL}/meals`);
     if (userId) backendUrl.searchParams.set("userId", userId);
     if (trash) backendUrl.searchParams.set("trash", trash);
     if (kind) backendUrl.searchParams.set("kind", kind);
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${BACKEND_URL}/meal-plans`, {
+    const response = await fetch(`${BACKEND_URL}/meals`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...forwardHeaders(request) },
       body: JSON.stringify({ userId, kind, numberOfPeople, numberOfDays, mealTypes, name, people, isPublic, recipes }),

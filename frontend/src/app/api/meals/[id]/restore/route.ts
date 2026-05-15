@@ -28,7 +28,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const response = await fetch(`${BACKEND_URL}/meal-plans/${id}/restore`, {
+    const response = await fetch(`${BACKEND_URL}/meals/${id}/restore`, {
       method: "PATCH",
       headers: forwardHeaders(request),
     });

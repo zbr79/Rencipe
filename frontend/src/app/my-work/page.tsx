@@ -153,7 +153,7 @@ export default function MyWorkPage() {
     try {
       const [recipeResponse, planResponse] = await Promise.all([
         authFetch("/api/recipes?limit=1000&trash=1"),
-        authFetch(`/api/meal-plans?userId=${accountId}&trash=1&kind=meal`),
+        authFetch(`/api/meals?userId=${accountId}&trash=1&kind=meal`),
       ]);
 
       if (!recipeResponse.ok) throw new Error("Failed to fetch trashed recipes");
@@ -177,7 +177,7 @@ export default function MyWorkPage() {
     try {
       const restorePath = item.kind === "recipes"
         ? `/api/recipes/${item.id}/restore`
-        : `/api/meal-plans/${item.id}/restore`;
+        : `/api/meals/${item.id}/restore`;
       const response = await authFetch(restorePath, { method: "PATCH" });
       if (!response.ok) throw new Error("Restore failed");
       await Promise.all([fetchRecipes(), fetchMealPlans(), fetchTrash(currentUser?.id || "")]);

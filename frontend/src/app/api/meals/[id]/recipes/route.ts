@@ -15,7 +15,7 @@ export async function POST(
       return NextResponse.json({ error: "recipeId is required" }, { status: 400 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/meal-plans/${id}/recipes`, {
+    const response = await fetch(`${BACKEND_URL}/meals/${id}/recipes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ recipeId }),

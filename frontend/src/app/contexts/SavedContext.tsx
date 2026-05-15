@@ -160,14 +160,15 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     setLoadingSaved(true);
     setErrorSaved(null);
     try {
-      const response = await authFetch(`/api/favorites?userId=${accountId}`);
+      const response = await authFetch(`/api/saved?userId=${accountId}`);
       if (!response.ok) {
         throw new Error("Failed to fetch favorites");
       }
       const data = await response.json();
-      const recipes = filterRecipesForUserLanguage((data.favorites.recipes || []) as SavedRecipe[], getCurrentUser());
+      const saved = data.saved || data.favorites || {};
+      const recipes = filterRecipesForUserLanguage((saved.recipes || []) as SavedRecipe[], getCurrentUser());
       setSavedRecipes(recipes);
-      setSavedMeals((data.favorites.meals || []) as MealPlan[]);
+      setSavedMeals((saved.meals || []) as MealPlan[]);
     } catch (err: any) {
       console.error("Error fetching favorites:", err);
       setErrorSaved(err.message);
@@ -186,7 +187,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const response = await authFetch(`/api/favorites/add`, {
+      const response = await authFetch(`/api/saved/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: accountId, recipeId }),
@@ -197,9 +198,10 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      const recipes = filterRecipesForUserLanguage((data.favorites.recipes || []) as SavedRecipe[], getCurrentUser());
+      const saved = data.saved || data.favorites || {};
+      const recipes = filterRecipesForUserLanguage((saved.recipes || []) as SavedRecipe[], getCurrentUser());
       setSavedRecipes(recipes);
-      setSavedMeals((data.favorites.meals || []) as MealPlan[]);
+      setSavedMeals((saved.meals || []) as MealPlan[]);
       toastSuccess("Saved recipe");
     } catch (err: any) {
       console.error("Error adding favorite:", err);
@@ -213,7 +215,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     if (!accountId) return;
 
     try {
-      const response = await authFetch(`/api/favorites/remove`, {
+      const response = await authFetch(`/api/saved/remove`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: accountId, recipeId }),
@@ -224,9 +226,10 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      const recipes = filterRecipesForUserLanguage((data.favorites.recipes || []) as SavedRecipe[], getCurrentUser());
+      const saved = data.saved || data.favorites || {};
+      const recipes = filterRecipesForUserLanguage((saved.recipes || []) as SavedRecipe[], getCurrentUser());
       setSavedRecipes(recipes);
-      setSavedMeals((data.favorites.meals || []) as MealPlan[]);
+      setSavedMeals((saved.meals || []) as MealPlan[]);
       toastSuccess("Unsaved recipe");
     } catch (err: any) {
       console.error("Error removing favorite:", err);
@@ -247,7 +250,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const response = await authFetch(`/api/favorites/meals/add`, {
+      const response = await authFetch(`/api/saved/meals/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: accountId, mealId }),
@@ -258,7 +261,8 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      setSavedMeals((data.favorites.meals || []) as MealPlan[]);
+      const saved = data.saved || data.favorites || {};
+      setSavedMeals((saved.meals || []) as MealPlan[]);
       toastSuccess("Saved meal");
     } catch (err: any) {
       console.error("Error saving meal:", err);
@@ -272,7 +276,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     if (!accountId) return;
 
     try {
-      const response = await authFetch(`/api/favorites/meals/remove`, {
+      const response = await authFetch(`/api/saved/meals/remove`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: accountId, mealId }),
@@ -283,7 +287,8 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      setSavedMeals((data.favorites.meals || []) as MealPlan[]);
+      const saved = data.saved || data.favorites || {};
+      setSavedMeals((saved.meals || []) as MealPlan[]);
       toastSuccess("Unsaved meal");
     } catch (err: any) {
       console.error("Error unsaving meal:", err);
@@ -309,7 +314,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     setLoadingPlans(true);
     setErrorPlans(null);
     try {
-      const response = await authFetch(`/api/meal-plans?userId=${accountId}&kind=meal`);
+      const response = await authFetch(`/api/meals?userId=${accountId}&kind=meal`);
       if (!response.ok) {
         throw new Error("Failed to fetch plans");
       }
@@ -333,7 +338,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     if (!accountId) throw new Error(kind === "meal" ? "Sign in before creating a meal" : "Sign in before creating a plan");
 
     try {
-      const response = await authFetch(`/api/meal-plans`, {
+      const response = await authFetch(`/api/meals`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: accountId, kind, numberOfPeople, numberOfDays, mealTypes, name, people, recipes, isPublic }),
@@ -356,7 +361,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
 
   const renameMealPlan = async (planId: string, newName: string): Promise<MealPlan> => {
     try {
-      const response = await authFetch(`/api/meal-plans/${planId}`, {
+      const response = await authFetch(`/api/meals/${planId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName }),
@@ -380,7 +385,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
 
   const deleteMealPlan = async (planId: string) => {
     try {
-      const response = await authFetch(`/api/meal-plans/${planId}`, {
+      const response = await authFetch(`/api/meals/${planId}`, {
         method: "DELETE",
       });
 
@@ -399,7 +404,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
 
   const addRecipeToMealPlan = async (planId: string, recipeId: string): Promise<MealPlan> => {
     try {
-      const response = await authFetch(`/api/meal-plans/${planId}/recipes`, {
+      const response = await authFetch(`/api/meals/${planId}/recipes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipeId }),
@@ -424,7 +429,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   const addMealCombination = async (planId: string, meatRecipeId: string, vegeRecipeId: string, sideRecipeId: string, portions: number): Promise<MealPlan> => {
     try {
       console.log("Adding combination with:", { meatRecipeId, vegeRecipeId, sideRecipeId, portions });
-      const response = await authFetch(`/api/meal-plans/${planId}/combinations`, {
+      const response = await authFetch(`/api/meals/${planId}/combinations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ meatRecipeId, vegeRecipeId, sideRecipeId, portions }),
@@ -451,7 +456,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
 
   const removeMealCombination = async (planId: string, index: number): Promise<MealPlan> => {
     try {
-      const response = await authFetch(`/api/meal-plans/${planId}/combinations/${index}`, {
+      const response = await authFetch(`/api/meals/${planId}/combinations/${index}`, {
         method: "DELETE",
       });
 

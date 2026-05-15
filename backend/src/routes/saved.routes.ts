@@ -3,10 +3,10 @@ import { getFavorites, addFavorite, removeFavorite, addFavoriteMeal, removeFavor
 
 const router = express.Router();
 
-router.get("/favorites", getFavorites);
-router.post("/favorites/add", addFavorite);
-router.post("/favorites/remove", removeFavorite);
-router.post("/favorites/meals/add", addFavoriteMeal);
-router.post("/favorites/meals/remove", removeFavoriteMeal);
+router.get("/saved", getFavorites);
+router.post("/saved/add", addFavorite);
+router.post("/saved/remove", removeFavorite);
+router.post("/saved/meals/add", addFavoriteMeal);
+router.post("/saved/meals/remove", removeFavoriteMeal);
 
 export default router;

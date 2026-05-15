@@ -16,7 +16,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const response = await fetch(`${BACKEND_URL}/meal-plans/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/meals/${id}`, {
       headers: forwardHeaders(request),
     });
 
@@ -40,7 +40,7 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
-    const response = await fetch(`${BACKEND_URL}/meal-plans/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/meals/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", ...forwardHeaders(request) },
       body: JSON.stringify(body),
@@ -65,7 +65,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    const response = await fetch(`${BACKEND_URL}/meal-plans/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/meals/${id}`, {
       method: "DELETE",
       headers: forwardHeaders(request),
     });

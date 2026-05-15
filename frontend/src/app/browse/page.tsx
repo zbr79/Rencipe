@@ -167,8 +167,8 @@ export default function BrowsePage() {
       const accountId = getCurrentUserId();
       const [recipeResponse, publicMealResponse, privateMealResponse] = await Promise.all([
         authFetch(`/api/recipes?limit=1000`),
-        authFetch(`/api/meal-plans?kind=meal&visibility=public`),
-        accountId ? authFetch(`/api/meal-plans?userId=${accountId}&kind=meal`) : Promise.resolve(null),
+        authFetch(`/api/meals?kind=meal&visibility=public`),
+        accountId ? authFetch(`/api/meals?userId=${accountId}&kind=meal`) : Promise.resolve(null),
       ]);
 
       if (!recipeResponse.ok) {

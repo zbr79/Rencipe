@@ -20,7 +20,7 @@ export async function POST(
       );
     }
 
-    const response = await fetch(`${BACKEND_URL}/meal-plans/${id}/combinations`, {
+    const response = await fetch(`${BACKEND_URL}/meals/${id}/combinations`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ meatRecipeId, vegeRecipeId, sideRecipeId, portions }),

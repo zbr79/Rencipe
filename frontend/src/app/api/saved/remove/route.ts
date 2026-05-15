@@ -5,20 +5,20 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:600
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, mealId } = body;
+    const { userId, recipeId } = body;
 
-    if (!userId || !mealId) {
-      return NextResponse.json({ error: "userId and mealId are required" }, { status: 400 });
+    if (!userId || !recipeId) {
+      return NextResponse.json({ error: "userId and recipeId are required" }, { status: 400 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/favorites/meals/remove`, {
+    const response = await fetch(`${BACKEND_URL}/saved/remove`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, mealId }),
+      body: JSON.stringify({ userId, recipeId }),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to unsave meal");
+      throw new Error("Failed to remove saved recipe");
     }
 
     const data = await response.json();

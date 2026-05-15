@@ -11,14 +11,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "userId and mealId are required" }, { status: 400 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/favorites/meals/add`, {
+    const response = await fetch(`${BACKEND_URL}/saved/meals/remove`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, mealId }),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to save meal");
+      throw new Error("Failed to unsave meal");
     }
 
     const data = await response.json();

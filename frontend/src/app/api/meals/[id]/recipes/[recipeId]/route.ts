@@ -2,22 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:6000";
 
-export async function PATCH(
+export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string; recipeId: string }> }
 ) {
   try {
-    const { id } = await params;
-    const body = await request.json();
+    const { id, recipeId } = await params;
 
-    const response = await fetch(`${BACKEND_URL}/meal-plans/${id}/ingredients`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+    const response = await fetch(`${BACKEND_URL}/meals/${id}/recipes/${recipeId}`, {
+      method: "DELETE",
     });
 
     if (!response.ok) {
-      throw new Error("Failed to update ingredient check status");
+      throw new Error("Failed to remove recipe from plan");
     }
 
     const data = await response.json();

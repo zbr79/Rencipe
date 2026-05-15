@@ -32,7 +32,7 @@ function removeTrashedFavoriteMeals(favorites: any) {
 }
 
 /**
- * Get user's favorites with full recipe details
+ * Get a user's saved recipes and meals with full details
  * query: { userId }
  */
 export const getFavorites = async (req: Request, res: Response) => {
@@ -76,7 +76,7 @@ export const getFavorites = async (req: Request, res: Response) => {
     removeTrashedFavoriteMeals(favorites);
 
     res.json({
-      favorites: {
+      saved: {
         userId: favorites.userId,
         recipes: favorites.recipes,
         meals: favorites.meals || [],
@@ -85,13 +85,13 @@ export const getFavorites = async (req: Request, res: Response) => {
       },
     });
   } catch (err: any) {
-    console.error("Error getting favorites:", err);
+    console.error("Error getting saved items:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
 /**
- * Add recipe to favorites
+ * Save a recipe
  * body: { userId, recipeId }
  */
 export const addFavorite = async (req: Request, res: Response) => {
@@ -147,8 +147,8 @@ export const addFavorite = async (req: Request, res: Response) => {
     removeTrashedFavoriteMeals(favorites);
 
     res.json({
-      message: "Recipe added to favorites",
-      favorites: {
+      message: "Recipe saved",
+      saved: {
         userId: favorites.userId,
         recipes: favorites.recipes,
         meals: favorites.meals || [],
@@ -163,7 +163,7 @@ export const addFavorite = async (req: Request, res: Response) => {
 };
 
 /**
- * Remove recipe from favorites
+ * Remove a saved recipe
  * body: { userId, recipeId }
  */
 export const removeFavorite = async (req: Request, res: Response) => {
@@ -183,7 +183,7 @@ export const removeFavorite = async (req: Request, res: Response) => {
     });
 
     if (!favorites) {
-      return res.status(404).json({ error: "Favorites not found" });
+      return res.status(404).json({ error: "Saved items not found" });
     }
 
     const recipeObjectId = new mongoose.Types.ObjectId(recipeId);
@@ -207,8 +207,8 @@ export const removeFavorite = async (req: Request, res: Response) => {
     removeTrashedFavoriteMeals(favorites);
 
     res.json({
-      message: "Recipe removed from favorites",
-      favorites: {
+      message: "Recipe removed from saved items",
+      saved: {
         userId: favorites.userId,
         recipes: favorites.recipes,
         meals: favorites.meals || [],
@@ -223,7 +223,7 @@ export const removeFavorite = async (req: Request, res: Response) => {
 };
 
 /**
- * Add meal to favorites
+ * Save a meal
  * body: { userId, mealId }
  */
 export const addFavoriteMeal = async (req: Request, res: Response) => {
@@ -274,8 +274,8 @@ export const addFavoriteMeal = async (req: Request, res: Response) => {
     removeTrashedFavoriteMeals(favorites);
 
     res.json({
-      message: "Meal added to favorites",
-      favorites: {
+      message: "Meal saved",
+      saved: {
         userId: favorites.userId,
         recipes: favorites.recipes,
         meals: favorites.meals || [],
@@ -290,7 +290,7 @@ export const addFavoriteMeal = async (req: Request, res: Response) => {
 };
 
 /**
- * Remove meal from favorites
+ * Remove a saved meal
  * body: { userId, mealId }
  */
 export const removeFavoriteMeal = async (req: Request, res: Response) => {
@@ -307,7 +307,7 @@ export const removeFavoriteMeal = async (req: Request, res: Response) => {
 
     const favorites = await Saved.findOne({ userId: new mongoose.Types.ObjectId(userId) });
     if (!favorites) {
-      return res.status(404).json({ error: "Favorites not found" });
+      return res.status(404).json({ error: "Saved items not found" });
     }
 
     const mealObjectId = new mongoose.Types.ObjectId(mealId);
@@ -331,8 +331,8 @@ export const removeFavoriteMeal = async (req: Request, res: Response) => {
     removeTrashedFavoriteMeals(favorites);
 
     res.json({
-      message: "Meal removed from favorites",
-      favorites: {
+      message: "Meal removed from saved items",
+      saved: {
         userId: favorites.userId,
         recipes: favorites.recipes,
         meals: favorites.meals || [],

@@ -422,7 +422,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
           return;
         }
 
-        const response = await authFetch(`/api/meal-plans/${planId}`);
+        const response = await authFetch(`/api/meals/${planId}`);
         if (!response.ok) throw new Error("Failed to fetch plan");
         const data = await response.json();
         setCurrentUser(activeUser);
@@ -549,7 +549,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
         modifier: 1,
       }));
 
-      const response = await authFetch("/api/meal-plans", {
+      const response = await authFetch("/api/meals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -695,7 +695,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
         ? { recipes: serializeRecipes(nextPlan.recipes || []) }
         : { days: serializeDays(nextPlan.days || []) };
 
-      const response = await authFetch(`/api/meal-plans/${nextPlan._id}`, {
+      const response = await authFetch(`/api/meals/${nextPlan._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -762,7 +762,7 @@ export default function MealPlanDetailPage({ params }: { params: Promise<{ id: s
 
     setSaving(true);
     try {
-      const response = await authFetch(`/api/meal-plans/${plan._id}`, {
+      const response = await authFetch(`/api/meals/${plan._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(

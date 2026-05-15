@@ -11,14 +11,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "userId and recipeId are required" }, { status: 400 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/favorites/add`, {
+    const response = await fetch(`${BACKEND_URL}/saved/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, recipeId }),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to add favorite");
+      throw new Error("Failed to save recipe");
     }
 
     const data = await response.json();
