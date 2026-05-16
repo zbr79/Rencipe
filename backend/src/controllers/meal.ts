@@ -6,6 +6,11 @@ import Recipe from "../models/Recipe";
 import { getAuthUser } from "../middleware/auth";
 
 const TRASH_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+const MEAL_POPULATE_PATHS = [
+  { path: "userId", select: "username displayName role avatarUrl" },
+  { path: "recipes", model: "Recipe", retainNullValues: true },
+  { path: "days.meals.recipes", model: "Recipe", retainNullValues: true },
+];
 
 function activeMealQuery() {
   return {
@@ -56,11 +61,7 @@ function normalizeRecipeIds(recipes: any) {
 }
 
 async function populateMeal(meal: any) {
-  return meal.populate([
-    { path: "userId", select: "username displayName role avatarUrl" },
-    { path: "recipes", model: "Recipe" },
-    { path: "days.meals.recipes", model: "Recipe" },
-  ]);
+  return meal.populate(MEAL_POPULATE_PATHS);
 }
 
 // Lists active or trashed meals for one user, or public meals when public visibility is requested.
@@ -88,11 +89,7 @@ export const getMeals = async (req: Request, res: Response) => {
     }
 
     const meals = await Meal.find(query)
-      .populate([
-        { path: "userId", select: "username displayName role avatarUrl" },
-        { path: "recipes", model: "Recipe" },
-        { path: "days.meals.recipes", model: "Recipe" },
-      ])
+      .populate(MEAL_POPULATE_PATHS)
       .sort(trashOnly ? { deletedAt: -1, updatedAt: -1 } : { createdAt: -1 });
 
     res.json({ meals });
@@ -112,11 +109,7 @@ export const getMealById = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid meal ID" });
     }
 
-    const meal = await Meal.findById(idStr).populate([
-      { path: "userId", select: "username displayName role avatarUrl" },
-      { path: "recipes", model: "Recipe" },
-      { path: "days.meals.recipes", model: "Recipe" },
-    ]);
+    const meal = await Meal.findById(idStr).populate(MEAL_POPULATE_PATHS);
 
     if (!meal) {
       return res.status(404).json({ error: "Meal not found" });

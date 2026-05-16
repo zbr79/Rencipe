@@ -12,6 +12,7 @@ export interface IUser extends Document {
   phone?: string;
   role: UserRole;
   language: UserLanguage;
+  languageLocked: boolean;
   projectMode: boolean;
   passwordHash: string;
   passwordSalt: string;
@@ -28,6 +29,7 @@ const UserSchema = new Schema<IUser>(
     phone: { type: String, trim: true, default: "" },
     role: { type: String, enum: ["admin", "user"], default: "user", required: true },
     language: { type: String, enum: ["en", "zh"], default: "en", required: true },
+    languageLocked: { type: Boolean, default: false, required: true },
     projectMode: { type: Boolean, default: true, required: true },
     passwordHash: { type: String, required: true },
     passwordSalt: { type: String, required: true },

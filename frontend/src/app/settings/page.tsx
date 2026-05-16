@@ -65,6 +65,8 @@ export default function SettingsPage() {
   };
 
   const selectedLanguage = session?.user.language === "zh" ? "zh" : "en";
+  const languageLocked = session?.user.languageLocked === true;
+  const availableLanguageOptions = languageLocked ? languageOptions.filter((option) => option.value === "en") : languageOptions;
   const selectedLanguageLabel = languageOptions.find((option) => option.value === selectedLanguage)?.label || "English";
   const projectModeOn = session?.user.projectMode !== false;
 
@@ -140,13 +142,22 @@ export default function SettingsPage() {
             <span>Language</span>
           </div>
           <div className={styles.customSelectWrap}>
-            <button type="button" className={styles.customSelectButton} onClick={() => setLanguageOpen((value) => !value)} aria-haspopup="listbox" aria-expanded={languageOpen} disabled={savingAccountSetting}>
+            <button
+              type="button"
+              className={styles.customSelectButton}
+              onClick={() => {
+                if (!languageLocked) setLanguageOpen((value) => !value);
+              }}
+              aria-haspopup="listbox"
+              aria-expanded={languageLocked ? false : languageOpen}
+              disabled={savingAccountSetting || languageLocked}
+            >
               <span>{selectedLanguageLabel}</span>
               <span className="material-symbols-outlined">expand_more</span>
             </button>
-            {languageOpen && (
+            {languageOpen && !languageLocked && (
               <div className={styles.customSelectMenu} role="listbox">
-                {languageOptions.map((option) => (
+                {availableLanguageOptions.map((option) => (
                   <button
                     key={option.value}
                     type="button"

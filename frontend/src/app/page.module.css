@@ -464,3 +464,38 @@
     height: 30px;
   }
 }
+
+@media (min-width: 900px) {
+  .container {
+    padding: 12px 12px 112px;
+  }
+
+  .dashboardContent {
+    --hero-height: 206px;
+  }
+
+  .slideCard,
+  .slideFallback {
+    padding: 14px;
+  }
+
+  .dashboardContent h1,
+  .slideFallback h1 {
+    font-size: 24px;
+    line-height: 1.04;
+  }
+
+  .slideDots {
+    left: 16px;
+    bottom: 12px;
+  }
+
+  .recipeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .cardTitle {
+    font-size: 15px;
+  }
+}

@@ -187,3 +187,34 @@
     justify-content: flex-start;
   }
 }
+
+@media (min-width: 900px) {
+  .container {
+    padding: 16px 12px 96px;
+  }
+
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .header h1 {
+    font-size: 30px;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .mealCard {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mealActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

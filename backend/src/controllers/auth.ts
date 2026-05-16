@@ -20,7 +20,8 @@ function pickUser(user: any): AuthUser {
     email: user.email || "",
     phone: user.phone || "",
     role: user.role === "admin" ? "admin" : "user",
-    language: normalizeLanguage(user.language),
+    language: user.languageLocked ? "en" : normalizeLanguage(user.language),
+    languageLocked: user.languageLocked === true,
     projectMode: user.projectMode !== false,
   };
 }
@@ -76,7 +77,7 @@ export async function updateProfile(req: Request, res: Response) {
     const avatarUrl = cleanText(req.body.avatarUrl, user.avatarUrl);
     const email = cleanText(req.body.email, user.email);
     const phone = cleanText(req.body.phone, user.phone);
-    const language = normalizeLanguage(req.body.language ?? user.language);
+    const language = user.languageLocked ? "en" : normalizeLanguage(req.body.language ?? user.language);
     const currentPassword = String(req.body.currentPassword || "");
     const newPassword = String(req.body.newPassword || "");
 

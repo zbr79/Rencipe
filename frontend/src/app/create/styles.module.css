@@ -220,3 +220,22 @@
     font-size: 20px;
   }
 }
+
+@media (min-width: 900px) {
+  .container {
+    padding: 16px 12px 96px;
+  }
+
+  .header {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+  }
+
+  .section {
+    padding: 18px;
+  }
+}

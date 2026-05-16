@@ -10,6 +10,7 @@ export interface AuthUser {
   phone?: string;
   role: "admin" | "user";
   language?: "en" | "zh";
+  languageLocked?: boolean;
   projectMode?: boolean;
 }
 

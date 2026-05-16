@@ -358,6 +358,21 @@
   white-space: nowrap;
 }
 
+.scheduledRecipeDeleted {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--hover-bg) 70%, var(--card-bg));
+}
+
+.deletedRecipeLabel {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .panelScrim {
   display: none;
 }
@@ -846,5 +861,58 @@
 
   .recipeResults {
     max-height: none;
+  }
+}
+
+@media (min-width: 900px) {
+  .page {
+    padding: 12px 12px calc(132px + env(safe-area-inset-bottom));
+  }
+
+  .header {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .settingsPanel {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+
+  .settingsPanelMeal {
+    grid-template-columns: minmax(0, 1fr) 64px 82px;
+    gap: 8px;
+  }
+
+  .settingsPanel > .field:first-child,
+  .inlineFields,
+  .saveButton {
+    grid-column: 1;
+  }
+
+  .settingsPanelMeal > .field:nth-child(2) {
+    grid-column: 2;
+  }
+
+  .publicToggle {
+    grid-column: 3;
+  }
+
+  .mealList {
+    grid-template-columns: 1fr;
+  }
+
+  .ingredientsHeader,
+  .editFooterButtons {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .editFooterButton {
+    width: 100%;
   }
 }

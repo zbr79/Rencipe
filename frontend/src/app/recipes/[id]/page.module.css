@@ -476,3 +476,29 @@
     font-size: 38px;
   }
 }
+
+@media (min-width: 900px) {
+  .container {
+    padding: 16px 12px 96px;
+  }
+
+  .backButtonContainer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .actionButtons {
+    justify-content: flex-start;
+  }
+
+  .recipeTitle {
+    font-size: 36px;
+  }
+
+  .ingredientsSection,
+  .directionsSection,
+  .tipsSection,
+  .submitRatingSection {
+    padding: 16px;
+  }
+}

@@ -134,8 +134,9 @@ export default function SavedPage() {
                     type="button"
                     className={styles.swipeDeleteButton}
                     onClick={() => handleRemoveSavedRecipe(recipeId)}
+                    aria-label={`Unsave ${recipe.title}`}
                   >
-                    Delete
+                    Unsave
                   </button>
                 </div>
               );
@@ -181,8 +182,9 @@ export default function SavedPage() {
                   type="button"
                   className={styles.swipeDeleteButton}
                   onClick={() => unsaveMeal(undefined, meal._id)}
+                  aria-label={`Unsave ${meal.name}`}
                 >
-                  Delete
+                  Unsave
                 </button>
               </div>
             ))}

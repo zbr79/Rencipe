@@ -18,7 +18,13 @@ export interface AuthUser {
   phone?: string;
   role: UserRole;
   language: UserLanguage;
+  languageLocked: boolean;
   projectMode: boolean;
+}
+
+function getEffectiveLanguage(user: { language?: UserLanguage; languageLocked?: boolean }) {
+  if (user.languageLocked) return "en";
+  return user.language === "zh" ? "zh" : "en";
 }
 
 export function signAuthToken(user: AuthUser) {
@@ -47,7 +53,8 @@ export async function authenticateOptional(req: Request, _res: Response, next: N
         email: user.email || "",
         phone: user.phone || "",
         role: user.role,
-        language: user.language === "zh" ? "zh" : "en",
+        language: getEffectiveLanguage(user),
+        languageLocked: user.languageLocked === true,
         projectMode: user.projectMode !== false,
       } satisfies AuthUser;
     }
@@ -75,7 +82,8 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       email: user.email || "",
       phone: user.phone || "",
       role: user.role,
-      language: user.language === "zh" ? "zh" : "en",
+      language: getEffectiveLanguage(user),
+      languageLocked: user.languageLocked === true,
       projectMode: user.projectMode !== false,
     } satisfies AuthUser;
     next();

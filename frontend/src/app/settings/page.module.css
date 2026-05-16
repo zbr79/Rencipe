@@ -983,3 +983,54 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+@media (min-width: 900px) {
+  .container {
+    padding: 16px 12px 96px;
+  }
+
+  .group {
+    padding: 14px;
+  }
+
+  .accountSummaryTitleButton {
+    font-size: 18px;
+  }
+
+  .accountSummaryRow {
+    grid-template-columns: auto minmax(0, 1fr) 22px;
+  }
+
+  .accountPageHeader h1 {
+    font-size: 24px;
+  }
+
+  .profileActionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .shortcutGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .shortcutButton {
+    min-height: 62px;
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .shortcutButton span:first-child {
+    font-size: 21px;
+  }
+
+  .shortcutButton span:last-child {
+    padding: 0 3px;
+    line-height: 1.05;
+    white-space: normal;
+  }
+
+  .settingItem,
+  .settingItemButton {
+    padding: 12px 0;
+  }
+}

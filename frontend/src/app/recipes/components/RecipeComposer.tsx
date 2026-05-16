@@ -1113,7 +1113,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
                 <span className={`material-symbols-outlined ${styles.editFooterIcon}`} aria-hidden="true">
                   {editReadyToLeave ? "exit_to_app" : "edit_note"}
                 </span>
-                <span>{editReadyToLeave ? "已保存" : "编辑中"}</span>
+                <span>{editReadyToLeave ? "Saved" : "Editing"}</span>
               </button>
             </div>
           </div>

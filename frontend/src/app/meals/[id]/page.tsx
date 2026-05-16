@@ -10,7 +10,7 @@ import { useConfirmDialog } from "../../components/ConfirmDialogProvider";
 import { useSaved } from "../../contexts/SavedContext";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { authFetch, getCurrentUser, getCurrentUserId, type AuthUser } from "../../utils/authSession";
-import { filterRecipesForUserLanguage, type RecipeLanguage } from "../../utils/recipeLanguage";
+import { filterRecipesForUserLanguage, isRecipeRelevantToUserLanguage, type RecipeLanguage } from "../../utils/recipeLanguage";
 import { matchesTextSearch } from "../../utils/textSearch";
 import { readRecentlyViewedRecipes, type RecentlyViewedRecipe } from "../../utils/recentlyViewedRecipes";
 import styles from "./page.module.css";
@@ -38,6 +38,8 @@ interface Recipe {
   seasonings?: Ingredient[];
 }
 
+type MealRecipe = Recipe | null;
+
 interface Person {
   name: string;
   modifier: number;
@@ -45,7 +47,7 @@ interface Person {
 
 interface MealScheduleSlot {
   mealType: MealType;
-  recipes: Recipe[];
+  recipes: MealRecipe[];
 }
 
 interface MealScheduleDay {
@@ -63,7 +65,7 @@ interface Meal {
   mealTypes?: MealType[];
   totalMealsNeeded?: number;
   days?: MealScheduleDay[];
-  recipes?: Recipe[];
+  recipes?: MealRecipe[];
   isPublic?: boolean;
   views?: number;
   createdAt: string;
@@ -98,8 +100,16 @@ const MEAL_SOURCE_TABS: { id: RecipeSource; label: string }[] = [
   { id: "recent", label: "Recent" },
 ];
 
-function getRecipeId(recipe: Recipe) {
-  return recipe._id || recipe.id;
+function isAvailableRecipe(recipe: MealRecipe | undefined): recipe is Recipe {
+  return Boolean(recipe && (recipe._id || recipe.id));
+}
+
+function getRecipeId(recipe: MealRecipe | undefined) {
+  return recipe?._id || recipe?.id || "";
+}
+
+function filterMealRecipesForUserLanguage(recipes: MealRecipe[], user?: AuthUser | null) {
+  return recipes.filter((recipe) => !recipe || isRecipeRelevantToUserLanguage(recipe, user));
 }
 
 function createEmptyMealDraft(userId: string): Meal {
@@ -144,9 +154,10 @@ function getMealEntryKind(meal?: { kind?: MealEntryKind }): MealEntryKind {
   return "meal";
 }
 
-function uniqueRecipes(recipes: Recipe[]) {
+function uniqueRecipes(recipes: MealRecipe[]) {
   const seen = new Set<string>();
   return recipes.filter((recipe) => {
+    if (!recipe) return true;
     const id = getRecipeId(recipe);
     if (!id || seen.has(id)) return false;
     seen.add(id);
@@ -175,7 +186,7 @@ function normalizeMealTypes(types?: MealType[]): MealType[] {
 
 function normalizeMeal(rawMeal: Meal, user?: AuthUser | null): Meal {
   const kind = getMealEntryKind(rawMeal);
-  const inboxRecipes = filterRecipesForUserLanguage((rawMeal.recipes || []) as Recipe[], user);
+  const inboxRecipes = filterMealRecipesForUserLanguage((rawMeal.recipes || []) as MealRecipe[], user);
 
   if (kind === "meal") {
     return {
@@ -203,7 +214,7 @@ function normalizeMeal(rawMeal: Meal, user?: AuthUser | null): Meal {
         const existingMeal = existingDay?.meals?.find((meal) => meal.mealType === mealType);
         return {
           mealType,
-          recipes: filterRecipesForUserLanguage((existingMeal?.recipes || []) as Recipe[], user),
+          recipes: filterMealRecipesForUserLanguage((existingMeal?.recipes || []) as MealRecipe[], user),
         };
       }),
     };
@@ -231,7 +242,7 @@ function serializeDays(days: MealScheduleDay[]) {
   }));
 }
 
-function serializeRecipes(recipes: Recipe[]) {
+function serializeRecipes(recipes: MealRecipe[]) {
   return recipes.map(getRecipeId).filter(Boolean);
 }
 
@@ -289,7 +300,7 @@ function getSettingsValidationMessage(
   return null;
 }
 
-function getMealCompletionMessage(settings: { name: string; peopleCount: number }, recipes: Recipe[]) {
+function getMealCompletionMessage(settings: { name: string; peopleCount: number }, recipes: MealRecipe[]) {
   if (!settings.name.trim()) {
     return "Add a meal name before creating this meal.";
   }
@@ -298,7 +309,7 @@ function getMealCompletionMessage(settings: { name: string; peopleCount: number 
     return "Add at least one person before creating this meal.";
   }
 
-  if (recipes.length === 0) {
+  if (!recipes.some(isAvailableRecipe)) {
     return "Add at least one recipe before creating this meal.";
   }
 
@@ -439,7 +450,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
     fetchMeal();
   }, [mealId]);
 
-  function getMealDraftSignature(nextSettings: typeof settings, recipes: Recipe[]) {
+  function getMealDraftSignature(nextSettings: typeof settings, recipes: MealRecipe[]) {
     return JSON.stringify({
       name: nextSettings.name.trim(),
       peopleCount: nextSettings.peopleCount,
@@ -448,7 +459,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
     });
   }
 
-  function getMealDraftPayload(nextSettings: typeof settings, recipes: Recipe[]) {
+  function getMealDraftPayload(nextSettings: typeof settings, recipes: MealRecipe[]) {
     const people = Array.from({ length: nextSettings.peopleCount }, (_, index) => ({
       name: meal?.people[index]?.name || `Person ${index + 1}`,
       modifier: 1,
@@ -469,7 +480,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
     };
   }
 
-  async function saveMealDraft(nextSettings: typeof settings, recipes: Recipe[]) {
+  async function saveMealDraft(nextSettings: typeof settings, recipes: MealRecipe[]) {
     const authorId = currentUser?.id || getCurrentUserId();
     if (!authorId) {
       setDraftSaveState("error");
@@ -620,10 +631,12 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
     return uniqueRecipes([...scheduledRecipes, ...(meal.recipes || [])]);
   }, [meal]);
 
+  const availableRecipesInMeal = useMemo(() => recipesInMeal.filter(isAvailableRecipe), [recipesInMeal]);
+
   const ingredientList = useMemo(() => {
     const ingredients = new Map<string, { name: string; quantities: string[]; sources: string[] }>();
 
-    recipesInMeal.forEach((recipe) => {
+    availableRecipesInMeal.forEach((recipe) => {
       [...(recipe.mainIngredients || []), ...(recipe.seasonings || [])].forEach((ingredient) => {
         const key = ingredient.name.toLowerCase();
         const current = ingredients.get(key) || { name: ingredient.name, quantities: [], sources: [] };
@@ -634,10 +647,10 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
     });
 
     return Array.from(ingredients.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [recipesInMeal]);
+  }, [availableRecipesInMeal]);
 
   const ingredientsByRecipe = useMemo(() => {
-    return recipesInMeal
+    return availableRecipesInMeal
       .map((recipe) => ({
         recipeId: getRecipeId(recipe),
         recipeTitle: recipe.title,
@@ -649,18 +662,18 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
           })),
       }))
       .filter((recipeGroup) => recipeGroup.ingredients.length > 0);
-  }, [recipesInMeal]);
+  }, [availableRecipesInMeal]);
 
   const canEditMeal = Boolean(meal && currentUser && (currentUser.role === "admin" || getMealOwnerId(meal) === currentUser.id));
   const isMealEntry = getMealEntryKind(meal || undefined) === "meal";
   const canEditCurrentView = canEditMeal && (!isMealEntry || mealEditMode);
 
   const sourceRecipes = useMemo(() => {
-    if (recipeSource === "meal") return recipesInMeal;
+    if (recipeSource === "meal") return availableRecipesInMeal;
     if (recipeSource === "recent") return recentRecipes;
     if (recipeSource === "saved") return savedRecipes as Recipe[];
     return allRecipes;
-  }, [allRecipes, recentRecipes, recipeSource, recipesInMeal, savedRecipes]);
+  }, [allRecipes, availableRecipesInMeal, recentRecipes, recipeSource, savedRecipes]);
 
   const filteredSourceRecipes = useMemo(() => {
     const query = recipeSearch.trim();
@@ -1200,17 +1213,23 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
               <h2>Meal Recipes</h2>
               {(meal.recipes || []).length > 0 && (
                 <div className={styles.scheduledRecipes}>
-                  {(meal.recipes || []).map((recipe) => {
+                  {(meal.recipes || []).map((recipe, index) => {
                     const recipeId = getRecipeId(recipe);
+                    const recipeAvailable = isAvailableRecipe(recipe);
+                    const readOnlyRecipe = !canEditCurrentView || !recipeId;
                     return (
-                      <div key={recipeId} className={`${styles.scheduledRecipe} ${styles.scheduledRecipeWithImage} ${!canEditCurrentView ? styles.scheduledRecipeReadOnly : ""}`}>
-                        {recipe.image ? (
+                      <div key={recipeId || `deleted-recipe-${index}`} className={`${styles.scheduledRecipe} ${styles.scheduledRecipeWithImage} ${readOnlyRecipe ? styles.scheduledRecipeReadOnly : ""} ${!recipeAvailable ? styles.scheduledRecipeDeleted : ""}`}>
+                        {recipeAvailable && recipe.image ? (
                           <img className={styles.scheduledRecipeImage} src={recipe.image} alt={recipe.title} />
                         ) : (
-                          <span className={`material-symbols-outlined ${styles.scheduledRecipeImage}`}>restaurant</span>
+                          <span className={`material-symbols-outlined ${styles.scheduledRecipeImage}`}>{recipeAvailable ? "restaurant" : "no_food"}</span>
                         )}
-                        <Link href={`/recipes/${recipeId}`}>{recipe.title}</Link>
-                        {canEditCurrentView && (
+                        {recipeAvailable ? (
+                          <Link href={`/recipes/${recipeId}`}>{recipe.title}</Link>
+                        ) : (
+                          <span className={styles.deletedRecipeLabel}>Recipe deleted</span>
+                        )}
+                        {canEditCurrentView && recipeId && (
                           <button type="button" onClick={() => removeRecipeFromMeal(recipeId)} aria-label="Remove recipe">
                             <span className="material-symbols-outlined">close</span>
                           </button>
@@ -1252,12 +1271,18 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
                           <p className={styles.emptyMeal}>No recipes yet</p>
                         ) : (
                           <div className={styles.scheduledRecipes}>
-                            {meal.recipes.map((recipe) => {
+                            {meal.recipes.map((recipe, index) => {
                               const recipeId = getRecipeId(recipe);
+                              const recipeAvailable = isAvailableRecipe(recipe);
+                              const readOnlyRecipe = !canEditCurrentView || !recipeId;
                               return (
-                                <div key={recipeId} className={`${styles.scheduledRecipe} ${!canEditCurrentView ? styles.scheduledRecipeReadOnly : ""}`}>
-                                  <Link href={`/recipes/${recipeId}`}>{recipe.title}</Link>
-                                  {canEditCurrentView && (
+                                <div key={recipeId || `deleted-recipe-${index}`} className={`${styles.scheduledRecipe} ${readOnlyRecipe ? styles.scheduledRecipeReadOnly : ""} ${!recipeAvailable ? styles.scheduledRecipeDeleted : ""}`}>
+                                  {recipeAvailable ? (
+                                    <Link href={`/recipes/${recipeId}`}>{recipe.title}</Link>
+                                  ) : (
+                                    <span className={styles.deletedRecipeLabel}>Recipe deleted</span>
+                                  )}
+                                  {canEditCurrentView && recipeId && (
                                     <button type="button" onClick={() => removeRecipeFromMeal(recipeId, day.dayNumber, meal.mealType)} aria-label="Remove recipe">
                                       <span className="material-symbols-outlined">close</span>
                                     </button>

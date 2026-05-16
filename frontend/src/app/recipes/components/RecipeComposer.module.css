@@ -8,7 +8,7 @@
 }
 
 .container {
-  max-width: 1280px;
+  max-width: var(--app-shell-width);
   margin: 0 auto;
   padding: 24px 18px 96px;
   background-color: var(--background);
@@ -486,5 +486,48 @@
 
   .title {
     font-size: 20px;
+  }
+}
+
+@media (min-width: 900px) {
+  .container {
+    padding: 16px 12px 96px;
+  }
+
+  .editorHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .headerText {
+    margin-left: 0;
+  }
+
+  .title,
+  .kicker {
+    text-align: left;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .coverImageSection,
+  .createCoverSection,
+  .uploadPrompt {
+    padding: 16px 0;
+  }
+
+  .createCoverBox {
+    width: 100%;
+    padding: 18px;
+  }
+
+  .editFooterButtons {
+    flex-direction: column;
+  }
+
+  .editFooterButton {
+    width: 100%;
   }
 }

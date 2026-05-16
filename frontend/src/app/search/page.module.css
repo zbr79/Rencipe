@@ -971,6 +971,70 @@
   }
 }
 
+@media (min-width: 900px) {
+  .page {
+    padding: 0 12px 96px;
+  }
+
+  .searchHeader {
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 8px;
+    min-height: 56px;
+    padding: 8px 0;
+  }
+
+  .categorySearchHeader {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .backButton,
+  .headerSpacer {
+    width: 40px;
+    height: 40px;
+  }
+
+  .searchBox,
+  .searchBoxButton {
+    min-height: 42px;
+  }
+
+  .featureRail {
+    grid-template-columns: repeat(5, minmax(68px, 1fr));
+    gap: 8px;
+  }
+
+  .featureIcon {
+    width: 52px;
+    height: 52px;
+    font-size: 23px;
+  }
+
+  .recipeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .resultList {
+    gap: 10px;
+  }
+
+  .resultCard {
+    min-height: 94px;
+  }
+
+  .resultCard .recipeImage {
+    width: 96px;
+  }
+
+  .recipeBody {
+    padding: 10px;
+  }
+
+  .recipeBody h3 {
+    font-size: 14px;
+  }
+}
+
 @media (max-width: 370px) {
   .recipeGrid {
     grid-template-columns: 1fr;

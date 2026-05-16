@@ -260,6 +260,27 @@
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
+@media (min-width: 900px) {
+  .container {
+    padding: 16px 12px 100px;
+  }
+
+  .editorHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .title,
+  .kicker {
+    text-align: left;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+}
+
 .submitBtn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
