@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { saveDraft, getDraft, updateDraft, deleteDraft } from "../controllers/draft.controller";
+import { saveDraft, getDraft, updateDraft, deleteDraft } from "../controllers/draft";
 
 const router = Router();
 

@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { createRecipe, getRecipeById, listRecipes, updateRecipe, rateRecipe, deleteRecipe, restoreRecipe, uploadRecipeImage, uploadStepImage } from "../controllers/recipe.controller";
+import { createRecipe, getRecipeById, listRecipes, updateRecipe, rateRecipe, deleteRecipe, restoreRecipe, uploadRecipeImage, uploadStepImage } from "../controllers/recipe";
 import { authenticateOptional, requireAuth } from "../middleware/auth";
 
 const router = express.Router();

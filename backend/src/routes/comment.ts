@@ -4,7 +4,7 @@ import {
   deleteComment,
   listComments,
   upvoteComment,
-} from "../controllers/comment.controller";
+} from "../controllers/comment";
 import { authenticateOptional, requireAuth } from "../middleware/auth";
 
 const router = express.Router();

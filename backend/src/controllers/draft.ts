@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Draft, { IDraft } from "../models/Draft";
+import Draft from "../models/Draft";
 import mongoose from "mongoose";
 
 function normalizeDraftType(value: any) {
@@ -26,10 +26,7 @@ function normalizeDraftRecipeIds(recipes: any) {
     .filter(Boolean);
 }
 
-/**
- * POST /drafts
- * Create a new recipe draft
- */
+// Saves a recipe or meal draft for one author, including draft fields and selected recipe ids.
 export async function saveDraft(req: Request, res: Response) {
   try {
     const {
@@ -62,7 +59,6 @@ export async function saveDraft(req: Request, res: Response) {
       return res.status(400).json({ error: "authorId must be a valid MongoDB ObjectId" });
     }
 
-    // Create a new draft
     const draft = new Draft({
       authorId: new mongoose.Types.ObjectId(authorId),
       draftType: normalizeDraftType(draftType),
@@ -93,10 +89,7 @@ export async function saveDraft(req: Request, res: Response) {
   }
 }
 
-/**
- * GET /drafts
- * Get all drafts for a user, or get a specific draft by ID
- */
+// Gets all drafts for an author, or one draft when a draft id is provided.
 export async function getDraft(req: Request, res: Response) {
   try {
     const { authorId, id } = req.query;
@@ -109,7 +102,6 @@ export async function getDraft(req: Request, res: Response) {
       return res.status(400).json({ error: "authorId must be a valid MongoDB ObjectId" });
     }
 
-    // If a specific draft ID is provided
     if (id) {
       if (!mongoose.Types.ObjectId.isValid(id as string)) {
         return res.status(400).json({ error: "draft id must be a valid MongoDB ObjectId" });
@@ -121,7 +113,6 @@ export async function getDraft(req: Request, res: Response) {
       return res.json({ draft });
     }
 
-    // Otherwise, get all drafts for the author
     const drafts = await Draft.find({
       authorId: new mongoose.Types.ObjectId(authorId as string),
     }).populate({ path: "recipes", model: "Recipe" }).sort({ updatedAt: -1 });
@@ -132,10 +123,7 @@ export async function getDraft(req: Request, res: Response) {
   }
 }
 
-/**
- * PUT /drafts/:id
- * Update a draft
- */
+// Updates an existing draft for its author and refreshes populated recipe details.
 export async function updateDraft(req: Request, res: Response) {
   try {
     const rawId = req.params.id || req.body.id;
@@ -212,10 +200,7 @@ export async function updateDraft(req: Request, res: Response) {
   }
 }
 
-/**
- * DELETE /drafts
- * Delete a draft by ID
- */
+// Deletes one draft for an author by draft id.
 export async function deleteDraft(req: Request, res: Response) {
   try {
     const { authorId, id } = req.query;

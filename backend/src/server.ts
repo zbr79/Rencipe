@@ -3,12 +3,12 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import multer from "multer";
-import recipeRoutes from "./routes/recipe.routes";
-import draftRoutes from "./routes/draft.routes";
-import savedRoutes from "./routes/saved.routes";
-import mealRoutes from "./routes/meal.routes";
-import authRoutes from "./routes/auth.routes";
-import commentRoutes from "./routes/comment.routes";
+import recipeRoutes from "./routes/recipe";
+import draftRoutes from "./routes/draft";
+import savedRoutes from "./routes/saved";
+import mealRoutes from "./routes/meal";
+import authRoutes from "./routes/auth";
+import commentRoutes from "./routes/comment";
 dotenv.config();
 
 const app = express();

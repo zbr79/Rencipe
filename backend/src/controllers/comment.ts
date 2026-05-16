@@ -87,6 +87,7 @@ async function userHasComment(entryType: CommentEntryType, entryId: string, user
   return Boolean(existing);
 }
 
+// Lists comments for a recipe or meal and tells the UI whether the current user can comment.
 export async function listComments(req: Request, res: Response) {
   try {
     const entryType = normalizeEntryType(String(req.params.entryType || ""));
@@ -110,6 +111,7 @@ export async function listComments(req: Request, res: Response) {
   }
 }
 
+// Creates one comment for the signed-in user on a recipe or meal.
 export async function createComment(req: Request, res: Response) {
   try {
     const user = getAuthUser(req);
@@ -146,6 +148,7 @@ export async function createComment(req: Request, res: Response) {
   }
 }
 
+// Deletes a comment when the signed-in user owns it or is an admin.
 export async function deleteComment(req: Request, res: Response) {
   try {
     const user = getAuthUser(req);
@@ -163,6 +166,7 @@ export async function deleteComment(req: Request, res: Response) {
   }
 }
 
+// Toggles the signed-in user's upvote on a comment.
 export async function upvoteComment(req: Request, res: Response) {
   try {
     const user = getAuthUser(req);
@@ -184,6 +188,7 @@ export async function upvoteComment(req: Request, res: Response) {
   }
 }
 
+// Rejects reply creation because nested replies are not part of the current product.
 export async function createReply(req: Request, res: Response) {
   try {
     return res.status(410).json({ error: "Replies are not supported" });
@@ -193,6 +198,7 @@ export async function createReply(req: Request, res: Response) {
   }
 }
 
+// Toggles an upvote on a legacy reply if reply data exists.
 export async function upvoteReply(req: Request, res: Response) {
   try {
     const user = getAuthUser(req);
@@ -217,6 +223,7 @@ export async function upvoteReply(req: Request, res: Response) {
   }
 }
 
+// Deletes a legacy reply when the signed-in user owns it or is an admin.
 export async function deleteReply(req: Request, res: Response) {
   try {
     const user = getAuthUser(req);

@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { login, me, updateProfile, uploadAvatar } from "../controllers/auth.controller";
+import { login, me, updateProfile, uploadAvatar } from "../controllers/auth";
 import { requireAuth } from "../middleware/auth";
 
 const router = express.Router();

@@ -32,6 +32,7 @@ function normalizeLanguage(value: unknown): UserLanguage {
   return value === "zh" ? "zh" : "en";
 }
 
+// Logs a user in, checks the password hash, and returns a signed auth token with safe user details.
 export async function login(req: Request, res: Response) {
   try {
     const username = String(req.body.username || "").trim().toLowerCase();
@@ -54,12 +55,14 @@ export async function login(req: Request, res: Response) {
   }
 }
 
+// Returns the current user from the verified JWT; this is used to confirm an active session.
 export async function me(req: Request, res: Response) {
   const user = getAuthUser(req);
   if (!user) return res.status(401).json({ error: "Authentication required" });
   res.json({ user });
 }
 
+// Updates profile fields and optionally changes the password after checking the current password.
 export async function updateProfile(req: Request, res: Response) {
   try {
     const authUser = getAuthUser(req);
@@ -109,6 +112,7 @@ export async function updateProfile(req: Request, res: Response) {
   }
 }
 
+// Uploads a new avatar image to Cloudinary, saves the URL, and refreshes the user's auth token.
 export async function uploadAvatar(req: Request, res: Response) {
   try {
     const authUser = getAuthUser(req);

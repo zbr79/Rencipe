@@ -31,10 +31,7 @@ function removeTrashedSavedMeals(savedItems: any) {
   savedItems.meals = (savedItems.meals || []).filter((meal: any) => meal && meal.kind === "meal" && !meal.deletedAt);
 }
 
-/**
- * Get a user's saved recipes and meals with full details
- * query: { userId }
- */
+// Gets a user's saved recipes and meals, creating an empty saved collection if needed.
 export const getSavedItems = async (req: Request, res: Response) => {
   try {
     const { userId } = req.query;
@@ -90,10 +87,7 @@ export const getSavedItems = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Save a recipe
- * body: { userId, recipeId }
- */
+// Saves a recipe for a user after confirming the recipe exists and is not trashed.
 export const saveRecipe = async (req: Request, res: Response) => {
   try {
     const { userId, recipeId } = req.body;
@@ -106,7 +100,6 @@ export const saveRecipe = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "userId and recipeId must be valid MongoDB ObjectIds" });
     }
 
-    // Check if recipe exists
     const recipe = await Recipe.findOne({ _id: recipeId, ...activeRecipeQuery() });
     if (!recipe) {
       return res.status(404).json({ error: "Recipe not found" });
@@ -162,10 +155,7 @@ export const saveRecipe = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Remove a saved recipe
- * body: { userId, recipeId }
- */
+// Removes one recipe from a user's saved collection.
 export const unsaveRecipe = async (req: Request, res: Response) => {
   try {
     const { userId, recipeId } = req.body;
@@ -222,10 +212,7 @@ export const unsaveRecipe = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Save a meal
- * body: { userId, mealId }
- */
+// Saves a meal for a user after confirming the meal exists and is active.
 export const saveMeal = async (req: Request, res: Response) => {
   try {
     const { userId, mealId } = req.body;
@@ -289,10 +276,7 @@ export const saveMeal = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Remove a saved meal
- * body: { userId, mealId }
- */
+// Removes one meal from a user's saved collection.
 export const unsaveMeal = async (req: Request, res: Response) => {
   try {
     const { userId, mealId } = req.body;

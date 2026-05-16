@@ -7,7 +7,7 @@ import {
   deleteMeal,
   restoreMeal,
   addRecipeToMeal,
-} from "../controllers/meal.controller";
+} from "../controllers/meal";
 import { authenticateOptional, requireAuth } from "../middleware/auth";
 
 const router = express.Router();
@@ -21,4 +21,3 @@ router.patch("/meals/:id/restore", requireAuth, restoreMeal);
 router.post("/meals/:id/recipes", requireAuth, addRecipeToMeal);
 
 export default router;
-

@@ -167,9 +167,7 @@ function normalizeOptionalText(value: unknown) {
   return value.trim();
 }
 
-/**
- * GET /recipes
- */
+// Lists visible active recipes, or the signed-in user's trashed recipes when trash mode is requested.
 export async function listRecipes(req: Request, res: Response) {
   try {
     const limit = Math.min(parseInt(String(req.query.limit || "200"), 10) || 200, 1000);
@@ -202,10 +200,7 @@ export async function listRecipes(req: Request, res: Response) {
   }
 }
 
-/**
- * POST /recipes
- * body: { title, description, tips, recipeOrigin, sharedSource, sharedSourceLink, mainIngredients, seasonings, steps, servings, tags, image, component, isPublic }
- */
+// Creates a recipe for the signed-in user and stores ingredients, steps, tags, visibility, and origin details.
 export async function createRecipe(req: Request, res: Response) {
   try {
     const {
@@ -226,15 +221,12 @@ export async function createRecipe(req: Request, res: Response) {
     } = req.body;
     const authUser = getAuthUser(req);
 
-    if (!authUser)
-      return res.status(401).json({ error: "Authentication required" });
-
+    if (!authUser) return res.status(401).json({ error: "Authentication required" });
     if (!title) return res.status(400).json({ error: "title is required" });
-    if (!description)
-      return res.status(400).json({ error: "description is required" });
+    if (!description) return res.status(400).json({ error: "description is required" });
 
     const recipeOrigin = normalizeRecipeOrigin(rawRecipeOrigin);
-  const tips = normalizeOptionalText(rawTips);
+    const tips = normalizeOptionalText(rawTips);
     const sharedSource = normalizeOptionalText(rawSharedSource);
     const sharedSourceLink = normalizeOptionalText(rawSharedSourceLink);
 
@@ -269,9 +261,7 @@ export async function createRecipe(req: Request, res: Response) {
   }
 }
 
-/**
- * GET /recipes/:id
- */
+// Gets one recipe by id, checks visibility/language access, and increments its view count.
 export async function getRecipeById(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -294,10 +284,7 @@ export async function getRecipeById(req: Request, res: Response) {
   }
 }
 
-/**
- * PUT /recipes/:id
- * Update a recipe
- */
+// Updates an existing recipe after confirming the signed-in user owns it or is an admin.
 export async function updateRecipe(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -365,9 +352,7 @@ export async function updateRecipe(req: Request, res: Response) {
   }
 }
 
-/**
- * POST /recipes/:id/rating
- */
+// Adds a 1-5 star rating and recalculates the recipe's average rating.
 export async function rateRecipe(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -398,10 +383,7 @@ export async function rateRecipe(req: Request, res: Response) {
   }
 }
 
-/**
- * DELETE /recipes/:id
- * Delete a recipe
- */
+// Soft-deletes a recipe by moving it to trash for seven days.
 export async function deleteRecipe(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -423,10 +405,7 @@ export async function deleteRecipe(req: Request, res: Response) {
   }
 }
 
-/**
- * PATCH /recipes/:id/restore
- * Restore a trashed recipe
- */
+// Restores a trashed recipe and clears its trash expiration timestamp.
 export async function restoreRecipe(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -447,10 +426,7 @@ export async function restoreRecipe(req: Request, res: Response) {
   }
 }
 
-/**
- * POST /recipes/:id/upload-image
- * Upload recipe image to Cloudinary
- */
+// Uploads and stores the main recipe image in Cloudinary after checking edit permission.
 export async function uploadRecipeImage(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -464,7 +440,6 @@ export async function uploadRecipeImage(req: Request, res: Response) {
     const file = (req as any).file;
     if (!file) return res.status(400).json({ error: "image file is required" });
 
-    // Upload buffer to Cloudinary
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: `rencipe/recipes/${id}`,
@@ -501,10 +476,7 @@ export async function uploadRecipeImage(req: Request, res: Response) {
   }
 }
 
-/**
- * POST /recipes/:id/steps/:stepNumber/upload-image
- * Upload step image to Cloudinary
- */
+// Uploads and stores an image for a specific recipe step.
 export async function uploadStepImage(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -523,7 +495,6 @@ export async function uploadStepImage(req: Request, res: Response) {
     const file = (req as any).file;
     if (!file) return res.status(400).json({ error: "image file is required" });
 
-    // Upload buffer to Cloudinary
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: `rencipe/recipes/${id}/steps`,

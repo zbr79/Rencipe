@@ -62,10 +62,7 @@ async function populateMeal(meal: any) {
   ]);
 }
 
-/**
- * Get all meals for a user
- * query: { userId }
- */
+// Lists active or trashed meals for one user, or public meals when public visibility is requested.
 export const getMeals = async (req: Request, res: Response) => {
   try {
     const { userId } = req.query;
@@ -104,10 +101,7 @@ export const getMeals = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Get a single meal with full recipe details
- * params: { id }
- */
+// Gets one meal, checks access, populates recipes, and increments view count.
 export const getMealById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -145,10 +139,7 @@ export const getMealById = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Create a new meal
- * body: { userId, numberOfPeople, numberOfDays, mealTypes: ['lunch', 'dinner'], name?, people?: [{name, modifier}, ...] }
- */
+// Creates a meal with people and selected recipe ids; at least one recipe is required.
 export const createMeal = async (req: Request, res: Response) => {
   try {
     const { userId, numberOfPeople, name, people, isPublic, recipes } = req.body;
@@ -176,16 +167,13 @@ export const createMeal = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Add at least one recipe before creating a meal" });
     }
 
-    // Create people array - either from provided data or default
     let peopleArray = [];
     if (people && Array.isArray(people) && people.length > 0) {
-      // Validate and use provided people data
       peopleArray = people.map((p: any, index: number) => ({
         name: p.name || `Person ${index + 1}`,
         modifier: Math.max(0.1, Math.min(5.0, p.modifier || 1.0)),
       }));
     } else {
-      // Create default people with 1.0 modifier
       for (let i = 0; i < numberOfPeople; i++) {
         peopleArray.push({
           name: `Person ${i + 1}`,
@@ -205,7 +193,6 @@ export const createMeal = async (req: Request, res: Response) => {
     });
 
     await meal.save();
-
     await populateMeal(meal);
 
     res.status(201).json({ meal });
@@ -215,11 +202,7 @@ export const createMeal = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Update a meal (name, people, numberOfDays, mealTypes)
- * params: { id }
- * body: { name?, people?: [{name, modifier}, ...], numberOfDays?, mealTypes? }
- */
+// Updates a meal's name, people, recipe list, and visibility after checking ownership.
 export const updateMeal = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -241,13 +224,12 @@ export const updateMeal = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "Not allowed to update this meal" });
     }
 
-    // Build update object with only provided fields
     const updateData: any = {};
-    
+
     if (name !== undefined) {
       updateData.name = name;
     }
-    
+
     if (people !== undefined && Array.isArray(people)) {
       if (people.length === 0) {
         return res.status(400).json({ error: "Meal must have at least one person" });
@@ -270,7 +252,6 @@ export const updateMeal = async (req: Request, res: Response) => {
     await meal.save();
 
     meal.days = [];
-
     await populateMeal(meal);
 
     res.json({ meal });
@@ -280,10 +261,7 @@ export const updateMeal = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Delete a meal
- * params: { id }
- */
+// Soft-deletes a meal by moving it to trash for seven days.
 export const deleteMeal = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -314,10 +292,7 @@ export const deleteMeal = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Restore a meal from trash
- * params: { id }
- */
+// Restores a trashed meal and clears its trash expiration timestamp.
 export const restoreMeal = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -347,11 +322,7 @@ export const restoreMeal = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Add a recipe directly to a meal
- * params: { id }
- * body: { recipeId }
- */
+// Adds a recipe to an existing meal without duplicating recipe ids.
 export const addRecipeToMeal = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -407,4 +378,3 @@ export const addRecipeToMeal = async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 };
-
