@@ -1,3 +1,4 @@
+// Registers comment list, create, delete, and upvote routes for recipes and meals.
 import express from "express";
 import {
   createComment,

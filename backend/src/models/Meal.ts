@@ -1,3 +1,4 @@
+// Defines meals, people portions, recipe links, visibility, views, and trash expiration.
 import mongoose, { Schema, Document } from "mongoose";
 
 export type MealType = "breakfast" | "lunch" | "dinner";

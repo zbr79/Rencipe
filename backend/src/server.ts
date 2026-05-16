@@ -1,3 +1,4 @@
+// Starts the Express API, connects MongoDB, and mounts all backend routes.
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";

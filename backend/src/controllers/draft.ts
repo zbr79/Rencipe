@@ -1,3 +1,4 @@
+// Handles draft creation, lookup, update, and deletion for recipes and meals.
 import { Request, Response } from "express";
 import Draft from "../models/Draft";
 import mongoose from "mongoose";

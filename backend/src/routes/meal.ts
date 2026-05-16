@@ -1,3 +1,4 @@
+// Registers meal list, detail, create, update, trash, restore, and recipe-link routes.
 import express from "express";
 import {
   getMeals,

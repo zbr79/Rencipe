@@ -1,3 +1,4 @@
+// Handles meal listing, details, creation, updates, trash, restore, and recipe additions.
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Meal from "../models/Meal";

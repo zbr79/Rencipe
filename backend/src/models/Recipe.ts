@@ -1,3 +1,4 @@
+// Defines recipes, ingredients, steps, visibility, ratings, and trash expiration.
 import mongoose, { Schema, Document } from "mongoose";
 
 export type RecipeLanguage = "en" | "zh";

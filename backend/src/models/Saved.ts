@@ -1,3 +1,4 @@
+// Defines each user's saved recipes and saved meals collection.
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface ISavedCollection extends Document {

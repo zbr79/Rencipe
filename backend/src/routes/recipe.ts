@@ -1,3 +1,4 @@
+// Registers recipe CRUD, rating, trash, restore, and image upload routes.
 import express from "express";
 import multer from "multer";
 import { createRecipe, getRecipeById, listRecipes, updateRecipe, rateRecipe, deleteRecipe, restoreRecipe, uploadRecipeImage, uploadStepImage } from "../controllers/recipe";

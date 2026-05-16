@@ -1,3 +1,4 @@
+// Handles comments and upvotes on recipe and meal pages.
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Comment, { CommentEntryType } from "../models/Comment";

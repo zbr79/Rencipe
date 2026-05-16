@@ -1,3 +1,4 @@
+// Defines users, profile fields, auth roles, language preference, and password storage.
 import mongoose, { Schema, Document } from "mongoose";
 
 export type UserRole = "admin" | "user";

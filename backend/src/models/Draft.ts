@@ -1,3 +1,4 @@
+// Defines saved drafts for unfinished recipes and meals.
 import mongoose, { Schema, Document } from "mongoose";
 
 export type DraftType = "recipe" | "meal";

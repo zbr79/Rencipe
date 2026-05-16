@@ -1,3 +1,4 @@
+// Handles recipe listing, details, creation, updates, ratings, trash, restore, and uploads.
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Recipe, { RecipeLanguage } from "../models/Recipe";

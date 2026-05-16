@@ -1,3 +1,4 @@
+// Handles login, current-user lookup, profile updates, and avatar uploads.
 import { Request, Response } from "express";
 import { v2 as cloudinary } from "cloudinary";
 import User, { UserLanguage } from "../models/User";

@@ -1,3 +1,4 @@
+// Registers authentication, profile, and avatar upload routes.
 import express from "express";
 import multer from "multer";
 import { login, me, updateProfile, uploadAvatar } from "../controllers/auth";

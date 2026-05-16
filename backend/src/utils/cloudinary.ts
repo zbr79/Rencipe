@@ -1,3 +1,4 @@
+// Configures Cloudinary helpers for image upload, deletion, and URL parsing.
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
 

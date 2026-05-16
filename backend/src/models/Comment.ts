@@ -1,3 +1,4 @@
+// Defines comments, legacy replies, and upvotes for recipes and meals.
 import mongoose, { Document, Schema } from "mongoose";
 
 export type CommentEntryType = "recipe" | "meal";

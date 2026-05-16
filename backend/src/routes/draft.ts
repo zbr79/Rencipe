@@ -1,3 +1,4 @@
+// Registers draft save, list, update, and delete routes.
 import { Router } from "express";
 import { saveDraft, getDraft, updateDraft, deleteDraft } from "../controllers/draft";
 

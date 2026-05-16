@@ -1,3 +1,4 @@
+// Handles saved recipe and saved meal collection actions.
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Saved from "../models/Saved";

@@ -1,3 +1,4 @@
+// Registers routes for saving and removing recipes or meals.
 import express from "express";
 import { getSavedItems, saveRecipe, unsaveRecipe, saveMeal, unsaveMeal } from "../controllers/saved";
 
