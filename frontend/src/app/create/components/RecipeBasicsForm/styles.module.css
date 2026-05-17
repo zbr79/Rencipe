@@ -1,4 +1,4 @@
-/* RecipeBasicsForm Component Styles */
+
 
 .section {
   background-color: var(--card-bg);
@@ -225,7 +225,7 @@
   margin-bottom: 28px;
 }
 
-/* Responsive */
+
 @media (max-width: 600px) {
   .section {
     padding: 16px 0;

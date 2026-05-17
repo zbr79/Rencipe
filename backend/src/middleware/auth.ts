@@ -1,4 +1,4 @@
-// Provides JWT signing and request authentication helpers for protected API routes.
+
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User, { UserLanguage, UserRole } from "../models/User";
@@ -59,7 +59,7 @@ export async function authenticateOptional(req: Request, _res: Response, next: N
       } satisfies AuthUser;
     }
   } catch {
-    // Optional auth intentionally falls back to public access.
+
   }
 
   next();

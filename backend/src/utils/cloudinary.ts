@@ -1,4 +1,4 @@
-// Configures Cloudinary helpers for image upload, deletion, and URL parsing.
+
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
 
@@ -35,16 +35,14 @@ export const deleteFromCloudinary = async (publicId: string) => {
 export const extractPublicIdFromUrl = (imageUrl: string): string | null => {
   try {
     if (!imageUrl || typeof imageUrl !== 'string') return null;
-    
-    // Extract public ID from Cloudinary URL
-    // URL format: https://res.cloudinary.com/[cloud_name]/image/upload/[version]/[folder]/[public_id].[ext]
+
     const match = imageUrl.match(/\/([^\/]+)\/image\/upload\/(?:v\d+\/)?(.+?)(?:\.[^.]+)?$/);
     if (match) {
       const folder = match[1];
       const publicId = match[2];
       return `${folder}/${publicId}`;
     }
-    
+
     return null;
   } catch (error) {
     console.error(`Failed to extract public ID: ${error}`);

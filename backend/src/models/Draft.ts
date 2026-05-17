@@ -1,4 +1,4 @@
-// Defines saved drafts for unfinished recipes and meals.
+
 import mongoose, { Schema, Document } from "mongoose";
 
 export type DraftType = "recipe" | "meal";
@@ -11,7 +11,7 @@ export interface IDraftPerson {
 export interface IDraft extends Document {
   authorId: mongoose.Types.ObjectId;
   draftType: DraftType;
-  name: string; // Draft name (e.g., "My First Recipe", "Pasta Ideas")
+  name: string;
   title: string;
   description: string;
   tips?: string;

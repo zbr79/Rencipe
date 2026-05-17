@@ -365,7 +365,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => {
     fetchSaved();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   useEffect(() => {

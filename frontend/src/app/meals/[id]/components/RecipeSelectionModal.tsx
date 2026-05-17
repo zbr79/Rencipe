@@ -35,14 +35,13 @@ export default function RecipeSelectionModal({
 }: RecipeSelectionModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Debug: Log when modal opens or recipes change
+
   useEffect(() => {
     if (isOpen) {
       console.log(`RecipeSelectionModal opened: ${title}, recipes: ${recipes.length}, loading: ${loading}`);
     }
   }, [isOpen, recipes.length, loading, title]);
 
-  // Filter recipes - only show components that match the search text
   const filteredRecipes = recipes.filter((recipe) => {
     if (!recipe.component) {
       return false;

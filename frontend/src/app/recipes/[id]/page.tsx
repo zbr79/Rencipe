@@ -198,7 +198,7 @@ export default function RecipeDetailPage() {
         ]}
       />
 
-      {/* Recipe Image */}
+
       {recipe.image && (
         <div className={styles.imageContainer}>
           <img
@@ -209,14 +209,14 @@ export default function RecipeDetailPage() {
         </div>
       )}
 
-      {/* Recipe Title */}
+
       <h1 className={styles.recipeTitle}>{recipe.title}</h1>
 
-      {/* Recipe Info */}
+
       <div className={styles.recipeInfo}>
-        {/* Rating and View Count Row */}
+
         <div className={styles.infoHeader}>
-          {/* Rating */}
+
           {recipe.ratingCount > 0 && (
             <div className={styles.ratingRow}>
               <span className={styles.stars} aria-hidden="true">
@@ -229,13 +229,13 @@ export default function RecipeDetailPage() {
               </span>
             </div>
           )}
-          {/* View Count - Right aligned */}
+
           <div className={styles.viewCount}>
             {recipe.views} views
           </div>
         </div>
 
-        {/* Tags */}
+
         {getVisibleTags(recipe.tags).length > 0 && (
           <div className={styles.tagsRow}>
             {getVisibleTags(recipe.tags).map((tag) => (
@@ -245,13 +245,13 @@ export default function RecipeDetailPage() {
         )}
       </div>
 
-      {/* Content */}
+
       <div className={styles.content}>
-        {/* Ingredients Section */}
+
         <div className={styles.ingredientsSection}>
           <h3 className={styles.sectionTitle}>Ingredients</h3>
-          
-          {/* Main Ingredients */}
+
+
           {recipe.mainIngredients && recipe.mainIngredients.length > 0 && (
             <div style={{ marginBottom: "16px" }}>
               <h4 style={{ fontSize: "13px", fontWeight: "600", color: "#666", marginBottom: "8px" }}>
@@ -269,7 +269,7 @@ export default function RecipeDetailPage() {
             </div>
           )}
 
-          {/* Seasonings */}
+
           {recipe.seasonings && recipe.seasonings.length > 0 && (
             <div>
               <h4 style={{ fontSize: "13px", fontWeight: "600", color: "#666", marginBottom: "8px" }}>
@@ -288,7 +288,7 @@ export default function RecipeDetailPage() {
           )}
         </div>
 
-        {/* Steps Section */}
+
         <div className={styles.directionsSection}>
           <h3 className={styles.sectionTitle}>Steps</h3>
           <ol className={styles.stepsList}>

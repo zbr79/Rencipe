@@ -129,12 +129,10 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchRecipes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     fetchSaved();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -318,7 +316,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Tab Navigation */}
+
       <div className={styles.tabs}>
         {tabs.map((tab) => (
           <button
@@ -331,14 +329,14 @@ export default function HomePage() {
         ))}
       </div>
 
-      {/* Error Message */}
+
       {error && (
         <div className={styles.errorBanner}>
           <span>⚠️ {error}</span>
         </div>
       )}
 
-      {/* Loading State */}
+
       {loading ? (
         <div className={styles.loadingState}>
           <div className={styles.loadingSpinner}></div>
@@ -373,7 +371,7 @@ export default function HomePage() {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className={styles.cardContent}>
                     <h3 className={styles.cardTitle}>{r.title}</h3>
                   </div>

@@ -72,7 +72,7 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
     setSearchTerm("");
 
     fetchSaved();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [open]);
 
   useEffect(() => {

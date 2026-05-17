@@ -1,4 +1,4 @@
-// Handles recipe listing, details, creation, updates, ratings, trash, restore, and uploads.
+
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Recipe, { RecipeLanguage } from "../models/Recipe";
@@ -168,7 +168,6 @@ function normalizeOptionalText(value: unknown) {
   return value.trim();
 }
 
-// Lists visible active recipes, or the signed-in user's trashed recipes when trash mode is requested.
 export async function listRecipes(req: Request, res: Response) {
   try {
     const limit = Math.min(parseInt(String(req.query.limit || "200"), 10) || 200, 1000);
@@ -201,7 +200,6 @@ export async function listRecipes(req: Request, res: Response) {
   }
 }
 
-// Creates a recipe for the signed-in user and stores ingredients, steps, tags, visibility, and origin details.
 export async function createRecipe(req: Request, res: Response) {
   try {
     const {
@@ -262,7 +260,6 @@ export async function createRecipe(req: Request, res: Response) {
   }
 }
 
-// Gets one recipe by id, checks visibility/language access, and increments its view count.
 export async function getRecipeById(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -285,7 +282,6 @@ export async function getRecipeById(req: Request, res: Response) {
   }
 }
 
-// Updates an existing recipe after confirming the signed-in user owns it or is an admin.
 export async function updateRecipe(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -353,7 +349,6 @@ export async function updateRecipe(req: Request, res: Response) {
   }
 }
 
-// Adds a 1-5 star rating and recalculates the recipe's average rating.
 export async function rateRecipe(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -384,7 +379,6 @@ export async function rateRecipe(req: Request, res: Response) {
   }
 }
 
-// Soft-deletes a recipe by moving it to trash for seven days.
 export async function deleteRecipe(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -406,7 +400,6 @@ export async function deleteRecipe(req: Request, res: Response) {
   }
 }
 
-// Restores a trashed recipe and clears its trash expiration timestamp.
 export async function restoreRecipe(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -427,7 +420,6 @@ export async function restoreRecipe(req: Request, res: Response) {
   }
 }
 
-// Uploads and stores the main recipe image in Cloudinary after checking edit permission.
 export async function uploadRecipeImage(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();
@@ -477,7 +469,6 @@ export async function uploadRecipeImage(req: Request, res: Response) {
   }
 }
 
-// Uploads and stores an image for a specific recipe step.
 export async function uploadStepImage(req: Request, res: Response) {
   try {
     const id = String(req.params.id || "").trim();

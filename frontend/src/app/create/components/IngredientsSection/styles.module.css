@@ -1,4 +1,4 @@
-/* IngredientsSection Component Styles */
+
 
 .section {
   background-color: var(--card-bg);
@@ -163,7 +163,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Responsive */
+
 @media (max-width: 600px) {
   .ingredientRow {
     grid-template-columns: 1fr 1fr auto;

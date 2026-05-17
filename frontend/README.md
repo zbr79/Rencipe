@@ -15,7 +15,7 @@ Development runs on `http://localhost:4000`.
 
 ## Environment
 
-Use `.env.example` as the template for local frontend configuration. Do not commit real `.env` files.
+Set `NEXT_PUBLIC_BACKEND_URL` in the process environment when it needs to point somewhere other than the local backend. Do not commit real `.env` files.
 
 ## Product Areas
 

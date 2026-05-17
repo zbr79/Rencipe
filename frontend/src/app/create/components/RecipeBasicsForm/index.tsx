@@ -29,7 +29,7 @@ export default function RecipeBasicsForm({
 }: RecipeBasicsFormProps) {
   return (
     <>
-      {/* Recipe Basics */}
+
       <section className={styles.section}>
         <div className={styles.titleRow}>
           <div className={`${styles.formGroup} ${styles.titleGroup}`}>

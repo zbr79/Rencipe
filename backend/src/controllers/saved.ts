@@ -1,4 +1,4 @@
-// Handles saved recipe and saved meal collection actions.
+
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Saved from "../models/Saved";
@@ -32,7 +32,7 @@ function removeTrashedSavedMeals(savedItems: any) {
   savedItems.meals = (savedItems.meals || []).filter((meal: any) => meal && meal.kind === "meal" && !meal.deletedAt);
 }
 
-// Gets a user's saved recipes and meals, creating an empty saved collection if needed.
+
 export const getSavedItems = async (req: Request, res: Response) => {
   try {
     const { userId } = req.query;
@@ -88,7 +88,7 @@ export const getSavedItems = async (req: Request, res: Response) => {
   }
 };
 
-// Saves a recipe for a user after confirming the recipe exists and is not trashed.
+
 export const saveRecipe = async (req: Request, res: Response) => {
   try {
     const { userId, recipeId } = req.body;
@@ -156,7 +156,7 @@ export const saveRecipe = async (req: Request, res: Response) => {
   }
 };
 
-// Removes one recipe from a user's saved collection.
+
 export const unsaveRecipe = async (req: Request, res: Response) => {
   try {
     const { userId, recipeId } = req.body;
@@ -213,7 +213,7 @@ export const unsaveRecipe = async (req: Request, res: Response) => {
   }
 };
 
-// Saves a meal for a user after confirming the meal exists and is active.
+
 export const saveMeal = async (req: Request, res: Response) => {
   try {
     const { userId, mealId } = req.body;
@@ -277,7 +277,7 @@ export const saveMeal = async (req: Request, res: Response) => {
   }
 };
 
-// Removes one meal from a user's saved collection.
+
 export const unsaveMeal = async (req: Request, res: Response) => {
   try {
     const { userId, mealId } = req.body;

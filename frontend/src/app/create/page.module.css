@@ -6,7 +6,7 @@
   transition: opacity 0.3s ease;
 }
 
-/* Image Display */
+
 .imageDisplay {
   position: relative;
   margin-bottom: 32px;
@@ -28,7 +28,7 @@
   filter: brightness(0.85);
 }
 
-/* Modal Overlay */
+
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -43,7 +43,7 @@
   animation: fadeIn 0.2s ease-out;
 }
 
-/* Header */
+
 .header {
   text-align: center;
   margin-bottom: 40px;
@@ -68,7 +68,7 @@
   margin: 0;
 }
 
-/* Upload Prompt */
+
 .uploadPrompt {
   background-color: var(--card-bg);
   border: 2px dashed var(--border);
@@ -138,14 +138,14 @@
   border-color: #fee2e2;
 }
 
-/* Form */
+
 .form {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-/* Base Section */
+
 .section {
   background-color: var(--card-bg);
   border-radius: 0;
@@ -167,7 +167,7 @@
   }
 }
 
-/* Submit Button */
+
 .submitBtn {
   padding: 12px 32px;
   background-color: var(--success);
@@ -195,7 +195,7 @@
   cursor: not-allowed;
 }
 
-/* Submit Container */
+
 .submitContainer {
   display: flex;
   justify-content: center;
@@ -203,7 +203,7 @@
   padding: 0 0 20px 0;
 }
 
-/* Responsive */
+
 @media (max-width: 600px) {
   .container {
     padding: 24px 16px 120px;

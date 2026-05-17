@@ -1,4 +1,4 @@
-// Starts the Express API, connects MongoDB, and mounts all backend routes.
+
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -14,7 +14,7 @@ dotenv.config();
 
 const app = express();
 
-// Multer setup for file uploads (store in memory)
+
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors({
@@ -26,7 +26,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 const PORT = process.env.PORT || 6000;
-// ...
+
 app.use(authRoutes);
 app.use(recipeRoutes);
 app.use("/drafts", draftRoutes);

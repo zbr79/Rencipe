@@ -17,7 +17,7 @@ export default function MealsPage() {
   } = useSaved();
   const { creatingMeal, createAndOpenMeal } = useQuickCreateMeal();
   const { confirm, notify } = useConfirmDialog();
-  
+
   useEffect(() => {
     fetchMeals();
   }, []);

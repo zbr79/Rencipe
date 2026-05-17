@@ -48,7 +48,7 @@ export default function IngredientsSection({
         <h2>Ingredients</h2>
       </div>
 
-      {/* Main Ingredients Section */}
+
       <div className={`${styles.subsection} ${invalidMainIngredients ? styles.subsectionInvalid : ""}`}>
         <h3 className={`${styles.subheading} ${invalidMainIngredients ? styles.subheadingInvalid : ""}`}>
           Main Ingredients
@@ -89,7 +89,7 @@ export default function IngredientsSection({
         </button>
       </div>
 
-      {/* Seasonings Section */}
+
       <div>
         <h3 className={styles.subheading}>
           Seasonings

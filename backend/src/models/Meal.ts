@@ -1,4 +1,4 @@
-// Defines meals, people portions, recipe links, visibility, views, and trash expiration.
+
 import mongoose, { Schema, Document } from "mongoose";
 
 export type MealType = "breakfast" | "lunch" | "dinner";
@@ -6,7 +6,7 @@ export type MealEntryKind = "meal";
 
 export interface IPerson {
   name: string;
-  modifier: number; // Individual eating modifier (0.5 = 50%, 1.0 = 100%, 1.8 = 180%)
+  modifier: number;
 }
 
 export interface IMealSlot {

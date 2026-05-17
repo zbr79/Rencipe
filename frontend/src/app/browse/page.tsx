@@ -157,7 +157,7 @@ export default function BrowsePage() {
 
   useEffect(() => {
     fetchSaved();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   const fetchBrowseData = async () => {

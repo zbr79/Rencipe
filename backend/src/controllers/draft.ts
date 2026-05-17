@@ -1,4 +1,4 @@
-// Handles draft creation, lookup, update, and deletion for recipes and meals.
+
 import { Request, Response } from "express";
 import Draft from "../models/Draft";
 import mongoose from "mongoose";
@@ -27,7 +27,6 @@ function normalizeDraftRecipeIds(recipes: any) {
     .filter(Boolean);
 }
 
-// Saves a recipe or meal draft for one author, including draft fields and selected recipe ids.
 export async function saveDraft(req: Request, res: Response) {
   try {
     const {
@@ -90,7 +89,6 @@ export async function saveDraft(req: Request, res: Response) {
   }
 }
 
-// Gets all drafts for an author, or one draft when a draft id is provided.
 export async function getDraft(req: Request, res: Response) {
   try {
     const { authorId, id } = req.query;
@@ -124,7 +122,6 @@ export async function getDraft(req: Request, res: Response) {
   }
 }
 
-// Updates an existing draft for its author and refreshes populated recipe details.
 export async function updateDraft(req: Request, res: Response) {
   try {
     const rawId = req.params.id || req.body.id;
@@ -201,7 +198,6 @@ export async function updateDraft(req: Request, res: Response) {
   }
 }
 
-// Deletes one draft for an author by draft id.
 export async function deleteDraft(req: Request, res: Response) {
   try {
     const { authorId, id } = req.query;

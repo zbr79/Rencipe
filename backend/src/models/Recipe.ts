@@ -1,4 +1,4 @@
-// Defines recipes, ingredients, steps, visibility, ratings, and trash expiration.
+
 import mongoose, { Schema, Document } from "mongoose";
 
 export type RecipeLanguage = "en" | "zh";
@@ -11,9 +11,9 @@ export interface IRecipe extends Document {
   sharedSource?: string;
   sharedSourceLink?: string;
   authorId: mongoose.Types.ObjectId;
-  image?: string; // Cloudinary image URL
+  image?: string;
   language: RecipeLanguage;
-  component: boolean; // Can be used as a component in meal prep
+  component: boolean;
   isPublic: boolean;
   deletedAt?: Date | null;
   trashExpiresAt?: Date | null;
@@ -31,7 +31,7 @@ export interface IRecipe extends Document {
   steps: {
     stepNumber: number;
     instruction: string;
-    image?: string; // Cloudinary image URL for step
+    image?: string;
   }[];
 
   servings: number;
@@ -71,7 +71,7 @@ const RecipeSchema = new Schema<IRecipe>(
     authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     image: String,
     language: { type: String, enum: ["en", "zh"], default: "en", index: true },
-    component: { type: Boolean, default: false }, // Can be used as a component in meal prep
+    component: { type: Boolean, default: false },
     isPublic: { type: Boolean, default: false },
     deletedAt: { type: Date, default: undefined, index: true },
     trashExpiresAt: { type: Date, default: undefined },

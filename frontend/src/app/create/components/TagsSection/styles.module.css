@@ -1,4 +1,4 @@
-/* TagsSection Component Styles */
+
 
 .section {
   background-color: var(--card-bg);
@@ -81,7 +81,7 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Removed - no longer using tagsForm wrapper */
+
 
 .tagsList {
   display: flex;
@@ -135,7 +135,7 @@
   opacity: 0.8;
 }
 
-/* Responsive */
+
 @media (max-width: 600px) {
   .tagsForm {
     flex-direction: column;

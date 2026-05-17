@@ -1,4 +1,4 @@
-// Handles meal listing, details, creation, updates, trash, restore, and recipe additions.
+
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Meal from "../models/Meal";
@@ -64,7 +64,7 @@ async function populateMeal(meal: any) {
   return meal.populate(MEAL_POPULATE_PATHS);
 }
 
-// Lists active or trashed meals for one user, or public meals when public visibility is requested.
+
 export const getMeals = async (req: Request, res: Response) => {
   try {
     const { userId } = req.query;
@@ -99,7 +99,7 @@ export const getMeals = async (req: Request, res: Response) => {
   }
 };
 
-// Gets one meal, checks access, populates recipes, and increments view count.
+
 export const getMealById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -133,7 +133,7 @@ export const getMealById = async (req: Request, res: Response) => {
   }
 };
 
-// Creates a meal with people and selected recipe ids; at least one recipe is required.
+
 export const createMeal = async (req: Request, res: Response) => {
   try {
     const { userId, numberOfPeople, name, people, isPublic, recipes } = req.body;
@@ -196,7 +196,6 @@ export const createMeal = async (req: Request, res: Response) => {
   }
 };
 
-// Updates a meal's name, people, recipe list, and visibility after checking ownership.
 export const updateMeal = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -255,7 +254,6 @@ export const updateMeal = async (req: Request, res: Response) => {
   }
 };
 
-// Soft-deletes a meal by moving it to trash for seven days.
 export const deleteMeal = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -286,7 +284,6 @@ export const deleteMeal = async (req: Request, res: Response) => {
   }
 };
 
-// Restores a trashed meal and clears its trash expiration timestamp.
 export const restoreMeal = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -316,7 +313,6 @@ export const restoreMeal = async (req: Request, res: Response) => {
   }
 };
 
-// Adds a recipe to an existing meal without duplicating recipe ids.
 export const addRecipeToMeal = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;

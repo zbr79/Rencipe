@@ -1,4 +1,4 @@
-// Hashes and verifies account passwords with PBKDF2.
+
 import crypto from "crypto";
 
 const ITERATIONS = 12000;

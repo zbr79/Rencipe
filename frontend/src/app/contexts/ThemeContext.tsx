@@ -16,7 +16,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
-  // Load theme from localStorage on mount
+
   useEffect(() => {
     setMounted(true);
     const savedTheme = localStorage.getItem("theme") as Theme | null;
@@ -37,7 +37,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(newTheme);
   };
 
-  // Prevent flash of unstyled content
+
   if (!mounted) {
     return null;
   }

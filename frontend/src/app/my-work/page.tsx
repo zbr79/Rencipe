@@ -113,7 +113,6 @@ export default function MyWorkPage() {
     fetchMeals();
     fetchRecipes();
     fetchTrash(account?.id || "");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

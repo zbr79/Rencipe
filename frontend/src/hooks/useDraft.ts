@@ -43,7 +43,7 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(draftId || null);
-  
+
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const currentDraftIdRef = useRef<string | null>(draftId || null);
   const initialDataRef = useRef<DraftData | null>(null);
@@ -53,7 +53,7 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
     setCurrentDraftId(draftId || null);
   }, [draftId]);
 
-  // Load draft on mount
+
   useEffect(() => {
     if (!enabled || !authorId) return;
 
@@ -71,7 +71,7 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
         }
         const res = await fetch(url);
         const data = await res.json();
-        
+
         const draftData = data.draft;
         if (draftData) {
           setDraft(draftData);
@@ -89,7 +89,6 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
     loadDraft();
   }, [authorId, draftId, enabled]);
 
-  // Auto-save draft (debounced every 2 seconds)
   const saveDraft = useCallback(
     async (data: DraftData, draftName?: string, options: SaveDraftOptions = {}) => {
       if (!enabled || !authorId) return null;
@@ -151,7 +150,6 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
     [authorId, enabled]
   );
 
-  // Delete draft
   const deleteDraft = useCallback(async () => {
     if (!enabled || !authorId) return;
     const idToDelete = currentDraftIdRef.current;
@@ -170,7 +168,6 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
     }
   }, [authorId, enabled]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {

@@ -56,7 +56,7 @@ export default function SavedPage() {
 
   return (
     <div className={styles.container}>
-      {/* Filters */}
+
       <div className={styles.filtersSection}>
         <input
           type="text"
@@ -71,7 +71,7 @@ export default function SavedPage() {
         />
       </div>
 
-      {/* Tabs */}
+
       <div className={styles.segmentedTabs}>
         <button
           onClick={() => setActiveTab("recipes")}
@@ -87,7 +87,7 @@ export default function SavedPage() {
         </button>
       </div>
 
-      {/* ===== Recipes Tab ===== */}
+
       {activeTab === "recipes" && (
         <>
           <div className={styles.count}>
@@ -145,7 +145,7 @@ export default function SavedPage() {
         </>
       )}
 
-      {/* ===== Meals Tab ===== */}
+
       {activeTab === "meals" && (
         <>
           <div className={styles.mealToolbar}>
