@@ -1,4 +1,6 @@
 
+
+
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Recipe, { RecipeLanguage } from "../models/Recipe";
@@ -6,16 +8,24 @@ import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
 import { getAuthUser } from "../middleware/auth";
 
+
+
 dotenv.config();
+
+
 
 const TRASH_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 const CHINESE_TEXT_PATTERN = /[\u3400-\u9fff]/;
+
+
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+
 
 function pickAuthor(author: any) {
   if (!author || !author.displayName) return null;
@@ -28,11 +38,15 @@ function pickAuthor(author: any) {
   };
 }
 
+
+
 function getAuthorId(doc: any) {
   if (!doc.authorId) return null;
   if (doc.authorId._id) return String(doc.authorId._id);
   return String(doc.authorId);
 }
+
+
 
 function pickRecipe(doc: any) {
   return {
@@ -66,9 +80,13 @@ function pickRecipe(doc: any) {
   };
 }
 
+
+
 function normalizeRecipeLanguage(value: unknown): RecipeLanguage {
   return value === "zh" ? "zh" : "en";
 }
+
+
 
 function joinRecipeParts(source: any) {
   const mainIngredients = (source.mainIngredients || []).map((ingredient: any) => `${ingredient?.name || ""} ${ingredient?.quantity || ""}`);

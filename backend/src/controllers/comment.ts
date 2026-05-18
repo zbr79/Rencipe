@@ -1,10 +1,13 @@
 
+
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Comment, { CommentEntryType } from "../models/Comment";
 import Meal from "../models/Meal";
 import Recipe from "../models/Recipe";
 import { getAuthUser } from "../middleware/auth";
+
+
 
 function activeQuery() {
   return {
@@ -15,23 +18,33 @@ function activeQuery() {
   };
 }
 
+
+
 function normalizeEntryType(value: string): CommentEntryType | null {
   return value === "recipe" || value === "meal" ? value : null;
 }
 
+
+
 function objectIdEquals(value: unknown, expected: string) {
   return String(value || "") === expected;
 }
+
+
 
 function hasUpvoted(upvotedBy: mongoose.Types.ObjectId[] = [], userId?: string) {
   if (!userId) return false;
   return upvotedBy.some((id) => objectIdEquals(id, userId));
 }
 
+
+
 function canDelete(user: ReturnType<typeof getAuthUser>, ownerId: unknown) {
   if (!user) return false;
   return user.role === "admin" || objectIdEquals(ownerId, user.id);
 }
+
+
 
 async function canAccessEntry(req: Request, entryType: CommentEntryType, entryId: string) {
   const user = getAuthUser(req);
@@ -50,6 +63,8 @@ async function canAccessEntry(req: Request, entryType: CommentEntryType, entryId
   if (!user) return false;
   return user.role === "admin" || objectIdEquals(meal.userId, user.id);
 }
+
+
 
 function serializeComment(comment: any, user: ReturnType<typeof getAuthUser> = null) {
   const userId = user?.id;
@@ -74,10 +89,14 @@ function serializeComment(comment: any, user: ReturnType<typeof getAuthUser> = n
   };
 }
 
+
+
 function serializeComments(comments: any[], req: Request) {
   const user = getAuthUser(req);
   return comments.map((comment) => serializeComment(comment, user));
 }
+
+
 
 async function userHasComment(entryType: CommentEntryType, entryId: string, userId: string) {
   const existing = await Comment.exists({
@@ -87,6 +106,7 @@ async function userHasComment(entryType: CommentEntryType, entryId: string, user
   });
   return Boolean(existing);
 }
+
 
 
 export async function listComments(req: Request, res: Response) {
@@ -111,6 +131,7 @@ export async function listComments(req: Request, res: Response) {
     res.status(500).json({ error: err.message });
   }
 }
+
 
 
 export async function createComment(req: Request, res: Response) {
@@ -150,6 +171,7 @@ export async function createComment(req: Request, res: Response) {
 }
 
 
+
 export async function deleteComment(req: Request, res: Response) {
   try {
     const user = getAuthUser(req);
@@ -166,6 +188,7 @@ export async function deleteComment(req: Request, res: Response) {
     res.status(500).json({ error: err.message });
   }
 }
+
 
 
 export async function upvoteComment(req: Request, res: Response) {
@@ -190,6 +213,7 @@ export async function upvoteComment(req: Request, res: Response) {
 }
 
 
+
 export async function createReply(req: Request, res: Response) {
   try {
     return res.status(410).json({ error: "Replies are not supported" });
@@ -198,6 +222,7 @@ export async function createReply(req: Request, res: Response) {
     res.status(500).json({ error: err.message });
   }
 }
+
 
 
 export async function upvoteReply(req: Request, res: Response) {
@@ -223,6 +248,7 @@ export async function upvoteReply(req: Request, res: Response) {
     res.status(500).json({ error: err.message });
   }
 }
+
 
 
 export async function deleteReply(req: Request, res: Response) {

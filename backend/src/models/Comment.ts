@@ -1,7 +1,13 @@
 
+
+
 import mongoose, { Document, Schema } from "mongoose";
 
+
+
 export type CommentEntryType = "recipe" | "meal";
+
+
 
 export interface ICommentReply {
   _id: mongoose.Types.ObjectId;
@@ -12,6 +18,8 @@ export interface ICommentReply {
   createdAt: Date;
   updatedAt: Date;
 }
+
+
 
 export interface IComment extends Document {
   entryType: CommentEntryType;
@@ -25,6 +33,8 @@ export interface IComment extends Document {
   updatedAt: Date;
 }
 
+
+
 const CommentReplySchema = new Schema<ICommentReply>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -34,6 +44,8 @@ const CommentReplySchema = new Schema<ICommentReply>(
   },
   { timestamps: true }
 );
+
+
 
 const CommentSchema = new Schema<IComment>(
   {
@@ -48,6 +60,10 @@ const CommentSchema = new Schema<IComment>(
   { timestamps: true }
 );
 
+
+
 CommentSchema.index({ entryType: 1, entryId: 1, createdAt: -1 });
+
+
 
 export default mongoose.model<IComment>("Comment", CommentSchema);

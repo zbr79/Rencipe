@@ -1,12 +1,20 @@
 
+
+
 import mongoose, { Schema, Document } from "mongoose";
 
+
+
 export type DraftType = "recipe" | "meal";
+
+
 
 export interface IDraftPerson {
   name: string;
   modifier: number;
 }
+
+
 
 export interface IDraft extends Document {
   authorId: mongoose.Types.ObjectId;
@@ -32,6 +40,8 @@ export interface IDraft extends Document {
   updatedAt: Date;
 }
 
+
+
 const draftPersonSchema = new Schema<IDraftPerson>(
   {
     name: { type: String, default: "" },
@@ -39,6 +49,8 @@ const draftPersonSchema = new Schema<IDraftPerson>(
   },
   { _id: false }
 );
+
+
 
 const DraftSchema = new Schema<IDraft>(
   {
@@ -80,5 +92,7 @@ const DraftSchema = new Schema<IDraft>(
   },
   { timestamps: true }
 );
+
+
 
 export default mongoose.model<IDraft>("Draft", DraftSchema);

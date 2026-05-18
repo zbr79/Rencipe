@@ -1,15 +1,21 @@
 
+
+
 import { Request, Response } from "express";
 import { v2 as cloudinary } from "cloudinary";
 import User, { UserLanguage } from "../models/User";
 import { hashPassword, verifyPassword } from "../utils/password";
 import { AuthUser, getAuthUser, signAuthToken } from "../middleware/auth";
 
+
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+
 
 function pickUser(user: any): AuthUser {
   return {
@@ -26,13 +32,18 @@ function pickUser(user: any): AuthUser {
   };
 }
 
+
+
 function cleanText(value: unknown, fallback = "") {
   return String(value ?? fallback).trim();
 }
 
+
+
 function normalizeLanguage(value: unknown): UserLanguage {
   return value === "zh" ? "zh" : "en";
 }
+
 
 
 export async function login(req: Request, res: Response) {
@@ -58,11 +69,13 @@ export async function login(req: Request, res: Response) {
 }
 
 
+
 export async function me(req: Request, res: Response) {
   const user = getAuthUser(req);
   if (!user) return res.status(401).json({ error: "Authentication required" });
   res.json({ user });
 }
+
 
 
 export async function updateProfile(req: Request, res: Response) {
@@ -113,6 +126,7 @@ export async function updateProfile(req: Request, res: Response) {
     res.status(500).json({ error: err?.message || "Failed to update profile" });
   }
 }
+
 
 
 export async function uploadAvatar(req: Request, res: Response) {

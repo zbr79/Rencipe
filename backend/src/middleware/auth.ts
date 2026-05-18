@@ -1,13 +1,21 @@
 
+
+
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User, { UserLanguage, UserRole } from "../models/User";
 
+
+
 const JWT_SECRET = process.env.JWT_SECRET || "rencipe-local-development-secret";
+
+
 
 if (!process.env.JWT_SECRET && process.env.NODE_ENV === "production") {
   throw new Error("JWT_SECRET is required in production.");
 }
+
+
 
 export interface AuthUser {
   id: string;
@@ -22,20 +30,28 @@ export interface AuthUser {
   projectMode: boolean;
 }
 
+
+
 function getEffectiveLanguage(user: { language?: UserLanguage; languageLocked?: boolean }) {
   if (user.languageLocked) return "en";
   return user.language === "zh" ? "zh" : "en";
 }
 
+
+
 export function signAuthToken(user: AuthUser) {
   return jwt.sign(user, JWT_SECRET, { expiresIn: "7d" });
 }
+
+
 
 function getBearerToken(req: Request) {
   const header = req.headers.authorization || "";
   const [scheme, token] = header.split(" ");
   return scheme?.toLowerCase() === "bearer" && token ? token : null;
 }
+
+
 
 export async function authenticateOptional(req: Request, _res: Response, next: NextFunction) {
   const token = getBearerToken(req);
@@ -65,6 +81,8 @@ export async function authenticateOptional(req: Request, _res: Response, next: N
   next();
 }
 
+
+
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const token = getBearerToken(req);
   if (!token) return res.status(401).json({ error: "Authentication required" });
@@ -91,6 +109,8 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     return res.status(401).json({ error: "Invalid session" });
   }
 }
+
+
 
 export function getAuthUser(req: Request): AuthUser | null {
   return ((req as any).authUser as AuthUser | undefined) || null;

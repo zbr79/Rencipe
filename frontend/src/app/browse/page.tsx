@@ -33,7 +33,7 @@ interface Meal {
   id?: string;
   kind?: "meal";
   name: string;
-  recipes?: Recipe[];
+  recipes?: Array<Recipe | null>;
   userId?: string | AccountIdentity | null;
   isPublic?: boolean;
   views?: number;
@@ -110,6 +110,10 @@ function matchesVisibility(recipe: Recipe, visibility: VisibilityTab) {
 
 function matchesMealVisibility(meal: Meal, visibility: VisibilityTab) {
   return visibility === "public" ? meal.isPublic === true : meal.isPublic !== true;
+}
+
+function hasAvailableMealRecipes(meal: Meal) {
+  return (meal.recipes || []).some((recipe) => Boolean(recipe && (recipe._id || recipe.id)));
 }
 
 function getMealId(meal: Meal) {
@@ -204,7 +208,10 @@ export default function BrowsePage() {
   };
 
   const visibleRecipes = useMemo(() => allRecipes.filter((recipe) => matchesVisibility(recipe, visibilityTab)), [allRecipes, visibilityTab]);
-  const visibleMeals = useMemo(() => allMeals.filter((meal) => matchesMealVisibility(meal, visibilityTab)), [allMeals, visibilityTab]);
+  const visibleMeals = useMemo(
+    () => allMeals.filter((meal) => matchesMealVisibility(meal, visibilityTab)).filter((meal) => visibilityTab === "private" || hasAvailableMealRecipes(meal)),
+    [allMeals, visibilityTab]
+  );
   const filteredRecipes = contentFilter === "meals" ? [] : visibleRecipes.filter((recipe) => matchesCategory(recipe, selectedCategory));
   const filteredMeals = contentFilter === "recipes" || selectedCategory !== "all" ? [] : visibleMeals;
   const browseItems = useMemo<BrowseItem[]>(() => {

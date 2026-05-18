@@ -1,9 +1,13 @@
 
+
+
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Meal from "../models/Meal";
 import Recipe from "../models/Recipe";
 import { getAuthUser } from "../middleware/auth";
+
+
 
 const TRASH_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 const MEAL_POPULATE_PATHS = [
@@ -11,6 +15,8 @@ const MEAL_POPULATE_PATHS = [
   { path: "recipes", model: "Recipe", retainNullValues: true },
   { path: "days.meals.recipes", model: "Recipe", retainNullValues: true },
 ];
+
+
 
 function activeMealQuery() {
   return {
@@ -21,6 +27,8 @@ function activeMealQuery() {
   };
 }
 
+
+
 function trashedMealQuery() {
   return {
     deletedAt: { $exists: true, $ne: null },
@@ -28,13 +36,19 @@ function trashedMealQuery() {
   };
 }
 
+
+
 function isMealTrashed(meal: any) {
   return Boolean(meal?.deletedAt);
 }
 
+
+
 function getMealOwnerId(meal: any) {
   return String(meal?.userId?._id || meal?.userId || "");
 }
+
+
 
 function canAccessMeal(req: Request, meal: any) {
   const user = getAuthUser(req);
@@ -43,11 +57,15 @@ function canAccessMeal(req: Request, meal: any) {
   return user.role === "admin" || getMealOwnerId(meal) === user.id;
 }
 
+
+
 function canMutateMeal(req: Request, meal: any) {
   const user = getAuthUser(req);
   if (!user) return false;
   return user.role === "admin" || getMealOwnerId(meal) === user.id;
 }
+
+
 
 function normalizeRecipeIds(recipes: any) {
   if (!Array.isArray(recipes)) return [];
@@ -60,9 +78,12 @@ function normalizeRecipeIds(recipes: any) {
     .filter(Boolean);
 }
 
+
+
 async function populateMeal(meal: any) {
   return meal.populate(MEAL_POPULATE_PATHS);
 }
+
 
 
 export const getMeals = async (req: Request, res: Response) => {
@@ -100,6 +121,7 @@ export const getMeals = async (req: Request, res: Response) => {
 };
 
 
+
 export const getMealById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -132,6 +154,7 @@ export const getMealById = async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 export const createMeal = async (req: Request, res: Response) => {

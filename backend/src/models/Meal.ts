@@ -1,23 +1,35 @@
 
+
+
 import mongoose, { Schema, Document } from "mongoose";
+
+
 
 export type MealType = "breakfast" | "lunch" | "dinner";
 export type MealEntryKind = "meal";
+
+
 
 export interface IPerson {
   name: string;
   modifier: number;
 }
 
+
+
 export interface IMealSlot {
   mealType: MealType;
   recipes: mongoose.Types.ObjectId[];
 }
 
+
+
 export interface IMealDay {
   dayNumber: number;
   meals: IMealSlot[];
 }
+
+
 
 export interface IMeal extends Document {
   kind: MealEntryKind;
@@ -37,6 +49,8 @@ export interface IMeal extends Document {
   updatedAt: Date;
 }
 
+
+
 const personSchema = new Schema<IPerson>(
   {
     name: {
@@ -54,6 +68,8 @@ const personSchema = new Schema<IPerson>(
   { _id: false }
 );
 
+
+
 const mealSlotSchema = new Schema<IMealSlot>(
   {
     mealType: {
@@ -69,6 +85,8 @@ const mealSlotSchema = new Schema<IMealSlot>(
   { _id: false }
 );
 
+
+
 const mealDaySchema = new Schema<IMealDay>(
   {
     dayNumber: {
@@ -83,6 +101,8 @@ const mealDaySchema = new Schema<IMealDay>(
   },
   { _id: false }
 );
+
+
 
 const mealSchema = new Schema<IMeal>(
   {
@@ -157,11 +177,15 @@ const mealSchema = new Schema<IMeal>(
   { timestamps: true }
 );
 
+
+
 mealSchema.index({ userId: 1, createdAt: -1 });
 mealSchema.index({ kind: 1, isPublic: 1, createdAt: -1 });
 mealSchema.index(
   { trashExpiresAt: 1 },
   { expireAfterSeconds: 0, partialFilterExpression: { trashExpiresAt: { $type: "date" } } }
 );
+
+
 
 export default mongoose.model<IMeal>("MealPlan", mealSchema);
