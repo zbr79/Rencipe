@@ -1,9 +1,4 @@
-
-
-
 import mongoose, { Schema, Document } from "mongoose";
-
-
 
 export interface ISavedCollection extends Document {
   userId: mongoose.Types.ObjectId;
@@ -12,8 +7,6 @@ export interface ISavedCollection extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
-
-
 
 const savedSchema = new Schema<ISavedCollection>(
   {
@@ -41,10 +34,6 @@ const savedSchema = new Schema<ISavedCollection>(
   }
 );
 
-
-
 const Saved = mongoose.model<ISavedCollection>("Favorite", savedSchema);
-
-
 
 export default Saved;

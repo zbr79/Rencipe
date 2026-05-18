@@ -71,7 +71,6 @@ export default function SavedPage() {
         />
       </div>
 
-
       <div className={styles.segmentedTabs}>
         <button
           onClick={() => setActiveTab("recipes")}
@@ -86,7 +85,6 @@ export default function SavedPage() {
           Meals ({savedMeals.length})
         </button>
       </div>
-
 
       {activeTab === "recipes" && (
         <>
@@ -144,7 +142,6 @@ export default function SavedPage() {
           </div>
         </>
       )}
-
 
       {activeTab === "meals" && (
         <>

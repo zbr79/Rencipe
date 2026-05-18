@@ -53,7 +53,6 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
     setCurrentDraftId(draftId || null);
   }, [draftId]);
 
-
   useEffect(() => {
     if (!enabled || !authorId) return;
 

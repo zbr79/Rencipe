@@ -1,13 +1,6 @@
-
-
-
 import mongoose, { Schema, Document } from "mongoose";
 
-
-
 export type RecipeLanguage = "en" | "zh";
-
-
 
 export interface IRecipe extends Document {
   title: string;
@@ -52,8 +45,6 @@ export interface IRecipe extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
-
-
 
 const RecipeSchema = new Schema<IRecipe>(
   {
@@ -118,13 +109,9 @@ const RecipeSchema = new Schema<IRecipe>(
   { timestamps: true }
 );
 
-
-
 RecipeSchema.index(
   { trashExpiresAt: 1 },
   { expireAfterSeconds: 0, partialFilterExpression: { trashExpiresAt: { $type: "date" } } }
 );
-
-
 
 export default mongoose.models.Recipe || mongoose.model<IRecipe>("Recipe", RecipeSchema);

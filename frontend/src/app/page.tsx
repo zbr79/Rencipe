@@ -316,7 +316,6 @@ export default function HomePage() {
         </div>
       </section>
 
-
       <div className={styles.tabs}>
         {tabs.map((tab) => (
           <button
@@ -329,13 +328,11 @@ export default function HomePage() {
         ))}
       </div>
 
-
       {error && (
         <div className={styles.errorBanner}>
           <span>⚠️ {error}</span>
         </div>
       )}
-
 
       {loading ? (
         <div className={styles.loadingState}>

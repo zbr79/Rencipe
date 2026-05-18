@@ -1,14 +1,7 @@
-
-
-
 import mongoose, { Schema, Document } from "mongoose";
-
-
 
 export type UserRole = "admin" | "user";
 export type UserLanguage = "en" | "zh";
-
-
 
 export interface IUser extends Document {
   username: string;
@@ -26,8 +19,6 @@ export interface IUser extends Document {
   updatedAt: Date;
 }
 
-
-
 const UserSchema = new Schema<IUser>(
   {
     username: { type: String, required: true, unique: true, trim: true, lowercase: true },
@@ -44,7 +35,5 @@ const UserSchema = new Schema<IUser>(
   },
   { timestamps: true }
 );
-
-
 
 export default mongoose.models.User || mongoose.model<IUser>("User", UserSchema);

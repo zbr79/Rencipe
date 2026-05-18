@@ -6,7 +6,6 @@
   transition: opacity 0.3s ease;
 }
 
-
 .imageDisplay {
   position: relative;
   margin-bottom: 32px;
@@ -28,7 +27,6 @@
   filter: brightness(0.85);
 }
 
-
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -42,7 +40,6 @@
   z-index: 1000;
   animation: fadeIn 0.2s ease-out;
 }
-
 
 .header {
   text-align: center;
@@ -67,7 +64,6 @@
   color: var(--text-secondary);
   margin: 0;
 }
-
 
 .uploadPrompt {
   background-color: var(--card-bg);
@@ -138,13 +134,11 @@
   border-color: #fee2e2;
 }
 
-
 .form {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
-
 
 .section {
   background-color: var(--card-bg);
@@ -166,7 +160,6 @@
     transform: translateY(0);
   }
 }
-
 
 .submitBtn {
   padding: 12px 32px;
@@ -195,14 +188,12 @@
   cursor: not-allowed;
 }
 
-
 .submitContainer {
   display: flex;
   justify-content: center;
   margin-top: 16px;
   padding: 0 0 20px 0;
 }
-
 
 @media (max-width: 600px) {
   .container {

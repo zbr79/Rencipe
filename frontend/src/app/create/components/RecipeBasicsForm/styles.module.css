@@ -1,5 +1,3 @@
-
-
 .section {
   background-color: var(--card-bg);
   border-radius: 0;
@@ -224,7 +222,6 @@
   gap: 20px;
   margin-bottom: 28px;
 }
-
 
 @media (max-width: 600px) {
   .section {

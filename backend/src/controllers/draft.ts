@@ -1,17 +1,10 @@
-
-
-
 import { Request, Response } from "express";
 import Draft from "../models/Draft";
 import mongoose from "mongoose";
 
-
-
 function normalizeDraftType(value: any) {
   return value === "meal" ? "meal" : "recipe";
 }
-
-
 
 function normalizeDraftPeople(people: any) {
   if (!Array.isArray(people)) return [];

@@ -66,7 +66,6 @@
   transform: scale(1.1);
 }
 
-
 .menuContainer {
   padding: 40px 32px;
   text-align: center;
@@ -116,7 +115,6 @@
 .menuLabel {
   display: block;
 }
-
 
 .uploadContainer {
   padding: 40px 32px;
@@ -260,7 +258,6 @@
   color: var(--foreground);
 }
 
-
 .uploadPrompt {
   background-color: var(--background);
   border: 2px dashed var(--border);
@@ -297,7 +294,6 @@
   transform: scale(0.98);
 }
 
-
 .message {
   padding: 12px 14px;
   margin-bottom: 16px;
@@ -332,13 +328,11 @@
   }
 }
 
-
 .form {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
-
 
 .section {
   background-color: transparent;
@@ -349,7 +343,6 @@
   border-bottom: 1px solid var(--border);
   margin-bottom: 0;
 }
-
 
 .submitBtn {
   padding: 10px 24px;
@@ -377,14 +370,12 @@
   cursor: not-allowed;
 }
 
-
 .submitContainer {
   display: flex;
   justify-content: center;
   margin-top: 12px;
   padding: 12px 0 0;
 }
-
 
 @media (max-width: 600px) {
   .modalContent {

@@ -1,13 +1,8 @@
-
-
-
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Saved from "../models/Saved";
 import Recipe from "../models/Recipe";
 import Meal from "../models/Meal";
-
-
 
 function activeRecipeQuery() {
   return {
@@ -18,13 +13,9 @@ function activeRecipeQuery() {
   };
 }
 
-
-
 function removeTrashedSavedRecipes(savedItems: any) {
   savedItems.recipes = (savedItems.recipes || []).filter((recipe: any) => recipe && !recipe.deletedAt);
 }
-
-
 
 function activeMealQuery() {
   return {
@@ -36,13 +27,9 @@ function activeMealQuery() {
   };
 }
 
-
-
 function removeTrashedSavedMeals(savedItems: any) {
   savedItems.meals = (savedItems.meals || []).filter((meal: any) => meal && meal.kind === "meal" && !meal.deletedAt);
 }
-
-
 
 export const getSavedItems = async (req: Request, res: Response) => {
   try {
@@ -98,8 +85,6 @@ export const getSavedItems = async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-
 
 export const saveRecipe = async (req: Request, res: Response) => {
   try {
@@ -168,8 +153,6 @@ export const saveRecipe = async (req: Request, res: Response) => {
   }
 };
 
-
-
 export const unsaveRecipe = async (req: Request, res: Response) => {
   try {
     const { userId, recipeId } = req.body;
@@ -225,8 +208,6 @@ export const unsaveRecipe = async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-
 
 export const saveMeal = async (req: Request, res: Response) => {
   try {
@@ -290,8 +271,6 @@ export const saveMeal = async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-
 
 export const unsaveMeal = async (req: Request, res: Response) => {
   try {

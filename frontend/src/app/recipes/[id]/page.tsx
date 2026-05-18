@@ -198,7 +198,6 @@ export default function RecipeDetailPage() {
         ]}
       />
 
-
       {recipe.image && (
         <div className={styles.imageContainer}>
           <img
@@ -209,9 +208,7 @@ export default function RecipeDetailPage() {
         </div>
       )}
 
-
       <h1 className={styles.recipeTitle}>{recipe.title}</h1>
-
 
       <div className={styles.recipeInfo}>
 
@@ -235,7 +232,6 @@ export default function RecipeDetailPage() {
           </div>
         </div>
 
-
         {getVisibleTags(recipe.tags).length > 0 && (
           <div className={styles.tagsRow}>
             {getVisibleTags(recipe.tags).map((tag) => (
@@ -245,12 +241,10 @@ export default function RecipeDetailPage() {
         )}
       </div>
 
-
       <div className={styles.content}>
 
         <div className={styles.ingredientsSection}>
           <h3 className={styles.sectionTitle}>Ingredients</h3>
-
 
           {recipe.mainIngredients && recipe.mainIngredients.length > 0 && (
             <div style={{ marginBottom: "16px" }}>
@@ -269,7 +263,6 @@ export default function RecipeDetailPage() {
             </div>
           )}
 
-
           {recipe.seasonings && recipe.seasonings.length > 0 && (
             <div>
               <h4 style={{ fontSize: "13px", fontWeight: "600", color: "#666", marginBottom: "8px" }}>
@@ -287,7 +280,6 @@ export default function RecipeDetailPage() {
             </div>
           )}
         </div>
-
 
         <div className={styles.directionsSection}>
           <h3 className={styles.sectionTitle}>Steps</h3>

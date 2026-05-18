@@ -35,7 +35,6 @@ export default function RecipeSelectionModal({
 }: RecipeSelectionModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-
   useEffect(() => {
     if (isOpen) {
       console.log(`RecipeSelectionModal opened: ${title}, recipes: ${recipes.length}, loading: ${loading}`);
