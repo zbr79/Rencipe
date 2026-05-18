@@ -11,7 +11,6 @@ import IngredientsSection from "../../create/components/IngredientsSection";
 import StepsSection from "../../create/components/StepsSection";
 import TagsSection from "../../create/components/TagsSection";
 import RecipeOriginSection from "../../create/components/RecipeOriginSection";
-import TipsSection from "../../create/components/TipsSection";
 import { useConfirmDialog } from "../../components/ConfirmDialogProvider";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { useDraft } from "../../../hooks/useDraft";
@@ -1025,14 +1024,12 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
           <RecipeBasicsForm
             title={formData.title}
             description={formData.description}
-            servings={formData.servings}
             isPublic={formData.isPublic}
             publishDisabled={publishBusy}
             invalidTitle={activeCreateValidation.title}
             invalidDescription={activeCreateValidation.description}
             onTitleChange={(title) => setFormData((prev) => ({ ...prev, title }))}
             onDescriptionChange={(description) => setFormData((prev) => ({ ...prev, description }))}
-            onServingsChange={(servings) => setFormData((prev) => ({ ...prev, servings }))}
             onPublishChange={handlePublishChange}
           />
 
@@ -1089,7 +1086,20 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
             />
           )}
 
-          <TipsSection tips={formData.tips} onTipsChange={(tips) => setFormData((prev) => ({ ...prev, tips }))} />
+          <section className={styles.tipsSection}>
+            <div className={styles.tipsSectionHeader}>
+              <h2>Tips</h2>
+            </div>
+
+            <textarea
+              id="recipe-tips"
+              placeholder="Add extra cooking tips, substitutions, serving notes, or anything helpful."
+              value={formData.tips}
+              onChange={(event) => setFormData((prev) => ({ ...prev, tips: event.target.value }))}
+              className={styles.tipsTextarea}
+              rows={4}
+            />
+          </section>
         </form>
 
         {isEditMode && recipeId && (

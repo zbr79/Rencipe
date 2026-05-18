@@ -384,6 +384,82 @@
   gap: 0;
 }
 
+.tipsSection {
+  background-color: var(--card-bg);
+  border-radius: 0;
+  padding: 18px 0;
+  box-shadow: none;
+  animation: tipsFadeIn 0.4s ease-out;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+
+@keyframes tipsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tipsSectionHeader {
+  margin-bottom: 14px;
+}
+
+.tipsSectionHeader h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.tipsTextarea {
+  width: 100%;
+  min-height: 112px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+  background: var(--card-bg);
+  color: var(--foreground);
+  resize: vertical;
+}
+
+.tipsTextarea::placeholder {
+  color: var(--text-muted);
+}
+
+.tipsTextarea:hover {
+  border-color: var(--text-secondary);
+}
+
+.tipsTextarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+@media (max-width: 600px) {
+  .tipsSection {
+    padding: 16px 0;
+  }
+
+  .tipsSectionHeader h2 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tipsTextarea {
+    font-size: 16px;
+  }
+}
+
 .editFooterBar {
   display: flex;
   flex-direction: column;
