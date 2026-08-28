@@ -258,22 +258,40 @@
 
 @media (min-width: 900px) {
   .section {
-    padding: 16px 0;
+    padding: 20px 0;
+  }
+
+  .sectionHeader h2 {
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .label {
+    font-size: 13px;
   }
 
   .titleRow {
-    grid-template-columns: minmax(0, 1fr) 136px;
-    gap: 10px;
-    align-items: end;
+    grid-template-columns: minmax(0, 1fr) 160px;
+    gap: 16px;
   }
 
   .publishToggle {
-    min-height: 44px;
-    height: 44px;
-    padding: 0 12px;
+    min-height: 42px;
+    height: 42px;
+  }
+
+  .publishLabel {
+    font-weight: 600;
   }
 
   .detailsGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .input,
+  .textarea {
+    font-size: 14px;
+    padding: 11px 13px;
   }
 }

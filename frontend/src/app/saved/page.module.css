@@ -260,3 +260,10 @@
     font-size: 15px;
   }
 }
+
+@media (min-width: 900px) {
+  .container {
+    max-width: 1000px;
+    padding: 16px 24px 32px;
+  }
+}

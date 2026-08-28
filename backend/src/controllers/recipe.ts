@@ -220,6 +220,9 @@ export async function createRecipe(req: Request, res: Response) {
     const authUser = getAuthUser(req);
 
     if (!authUser) return res.status(401).json({ error: "Authentication required" });
+    if (isPublic && authUser.role === "guest") {
+      return res.status(403).json({ error: "Create an account to publish recipes", code: "ACCOUNT_REQUIRED" });
+    }
     if (!title) return res.status(400).json({ error: "title is required" });
     if (!description) return res.status(400).json({ error: "description is required" });
 
@@ -307,6 +310,11 @@ export async function updateRecipe(req: Request, res: Response) {
     if (!existing) return res.status(404).json({ error: "recipe not found" });
     if (isRecipeTrashed(existing)) return res.status(404).json({ error: "recipe not found" });
     if (!canMutateRecipe(req, existing)) return res.status(403).json({ error: "Not allowed to update this recipe" });
+
+    const authUser = getAuthUser(req);
+    if (isPublic && (!authUser || authUser.role === "guest")) {
+      return res.status(403).json({ error: "Create an account to publish recipes", code: "ACCOUNT_REQUIRED" });
+    }
 
     const recipeOrigin = normalizeRecipeOrigin(rawRecipeOrigin);
     const tips = normalizeOptionalText(rawTips);

@@ -198,16 +198,6 @@ export default function RecipeDetailPage() {
         ]}
       />
 
-      {recipe.image && (
-        <div className={styles.imageContainer}>
-          <img
-            src={recipe.image}
-            alt={recipe.title}
-            className={styles.recipeImage}
-          />
-        </div>
-      )}
-
       <h1 className={styles.recipeTitle}>{recipe.title}</h1>
 
       <div className={styles.recipeInfo}>
@@ -241,7 +231,17 @@ export default function RecipeDetailPage() {
         )}
       </div>
 
-      <div className={styles.content}>
+      <div className={styles.layout}>
+
+        {recipe.image && (
+          <div className={styles.imageContainer}>
+            <img
+              src={recipe.image}
+              alt={recipe.title}
+              className={styles.recipeImage}
+            />
+          </div>
+        )}
 
         <div className={styles.ingredientsSection}>
           <h3 className={styles.sectionTitle}>Ingredients</h3>
@@ -301,39 +301,39 @@ export default function RecipeDetailPage() {
             ))}
           </ol>
         </div>
-      </div>
 
-      {recipe.tips?.trim() && (
-        <section className={styles.tipsSection}>
-          <h3 className={styles.sectionTitle}>Tips</h3>
-          <p className={styles.tipsText}>{recipe.tips}</p>
+        {recipe.tips?.trim() && (
+          <section className={styles.tipsSection}>
+            <h3 className={styles.sectionTitle}>Tips</h3>
+            <p className={styles.tipsText}>{recipe.tips}</p>
+          </section>
+        )}
+
+        <section className={styles.submitRatingSection} aria-label="Rate this recipe">
+          <div className={styles.ratingHeader}>
+            <h3 className={styles.sectionTitle}>Rate this recipe</h3>
+            {ratingSubmitting ? <span className={styles.ratingMessage}>Submitting...</span> : ratingSubmitted && <span className={styles.ratingMessage}>Thank you for rating</span>}
+          </div>
+          <div className={styles.ratingButtons}>
+            {Array.from({ length: 5 }, (_, index) => {
+              const rating = index + 1;
+              return (
+                <button
+                  key={rating}
+                  type="button"
+                  className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""} ${ratingSubmitted ? styles.starButtonDone : ""}`}
+                  onClick={() => handleRatingSubmit(rating)}
+                  disabled={ratingSubmitting || ratingSubmitted}
+                  aria-label={`Rate ${rating} star${rating === 1 ? "" : "s"}`}
+                >
+                  <span className="material-symbols-outlined">star</span>
+                </button>
+              );
+            })}
+          </div>
+          {!ratingSubmitting && ratingMessage && !ratingSubmitted && <span className={styles.ratingMessage}>{ratingMessage}</span>}
         </section>
-      )}
-
-      <section className={styles.submitRatingSection} aria-label="Rate this recipe">
-        <div className={styles.ratingHeader}>
-          <h3 className={styles.sectionTitle}>Rate this recipe</h3>
-          {ratingSubmitting ? <span className={styles.ratingMessage}>Submitting...</span> : ratingSubmitted && <span className={styles.ratingMessage}>Thank you for rating</span>}
-        </div>
-        <div className={styles.ratingButtons}>
-          {Array.from({ length: 5 }, (_, index) => {
-            const rating = index + 1;
-            return (
-              <button
-                key={rating}
-                type="button"
-                className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""} ${ratingSubmitted ? styles.starButtonDone : ""}`}
-                onClick={() => handleRatingSubmit(rating)}
-                disabled={ratingSubmitting || ratingSubmitted}
-                aria-label={`Rate ${rating} star${rating === 1 ? "" : "s"}`}
-              >
-                <span className="material-symbols-outlined">star</span>
-              </button>
-            );
-          })}
-        </div>
-        {!ratingSubmitting && ratingMessage && !ratingSubmitted && <span className={styles.ratingMessage}>{ratingMessage}</span>}
-      </section>
+      </div>
 
       <CommentSection entryType="recipe" entryId={recipeId} />
     </div>

@@ -96,6 +96,12 @@
   font-size: 26px;
 }
 
+@media (min-width: 900px) {
+  .topBar {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 0 12px;

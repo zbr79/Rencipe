@@ -467,35 +467,102 @@
 
 @media (min-width: 900px) {
   .container {
-    padding: 12px 12px 112px;
+    max-width: 1240px;
+    padding: 16px 24px 32px;
+  }
+
+  .dashboard {
+    margin-bottom: 14px;
   }
 
   .dashboardContent {
-    --hero-height: 206px;
+    --hero-height: 230px;
+    border-radius: 12px;
   }
 
   .slideCard,
   .slideFallback {
-    padding: 14px;
+    padding: 20px 28px;
   }
 
   .dashboardContent h1,
   .slideFallback h1 {
-    font-size: 24px;
-    line-height: 1.04;
+    font-size: clamp(20px, 1.7vw, 26px);
+    line-height: 1.1;
+    max-width: 620px;
+    font-weight: 600;
+  }
+
+  .slideContent {
+    max-width: 620px;
+    padding-bottom: 12px;
+  }
+
+  .slideShade {
+    background:
+      linear-gradient(90deg, rgba(15, 23, 42, 0.74), rgba(15, 23, 42, 0.3) 52%, rgba(15, 23, 42, 0.52)),
+      linear-gradient(180deg, rgba(15, 23, 42, 0.08), rgba(15, 23, 42, 0.52));
   }
 
   .slideDots {
-    left: 16px;
-    bottom: 12px;
+    left: 28px;
+    bottom: 14px;
+    gap: 6px;
+  }
+
+  .slideDots button {
+    width: 12px;
+    height: 3px;
+  }
+
+  .kicker {
+    font-weight: 600;
+  }
+
+  .tabs {
+    padding: 2px 0 12px;
+    gap: 6px;
+  }
+
+  .tab {
+    min-height: 30px;
+    padding: 0 12px;
+    font-size: 13px;
+    border-radius: 7px;
   }
 
   .recipeGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 14px;
+  }
+
+  @media (min-width: 1200px) {
+    .recipeGrid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
   }
 
   .cardTitle {
-    font-size: 15px;
+    font-size: 14px;
+    font-weight: 600;
+    min-height: 34px;
+  }
+
+  .cardContent {
+    padding: 10px 12px 10px;
+    min-height: 54px;
+  }
+
+  .cardFooter {
+    padding: 0 12px 10px;
+    min-height: 30px;
+  }
+
+  .recipeCard {
+    border-radius: 10px;
+  }
+
+  .recipeCard:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
   }
 }

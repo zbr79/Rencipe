@@ -124,8 +124,8 @@
 
 @media (min-width: 900px) {
   .floatingPanel {
-    right: calc((100vw - var(--app-shell-width)) / 2 + 12px);
-    bottom: calc(70px + env(safe-area-inset-bottom));
+    right: 24px;
+    bottom: 28px;
   }
 
   .panelActions {

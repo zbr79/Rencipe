@@ -190,31 +190,64 @@
 
 @media (min-width: 900px) {
   .container {
-    padding: 16px 12px 96px;
+    max-width: 1240px;
+    padding: 16px 24px 32px;
   }
 
   .header {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 20px;
+    align-items: center;
+    flex-direction: row;
+    padding: 16px 20px;
+    border-radius: 10px;
   }
 
   .header h1 {
-    font-size: 30px;
+    font-size: clamp(22px, 2vw, 28px);
+    font-weight: 650;
+  }
+
+  .kicker {
+    font-weight: 600;
+  }
+
+  .headerMeta {
+    font-weight: 600;
   }
 
   .headerActions {
-    width: 100%;
-    justify-content: flex-start;
+    width: auto;
+    justify-content: flex-end;
+  }
+
+  .mealList {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
   }
 
   .mealCard {
-    align-items: flex-start;
+    align-items: stretch;
     flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .mealCard h3 {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .mealCard p {
+    font-size: 13px;
+    font-weight: 600;
   }
 
   .mealActions {
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
   }
 }

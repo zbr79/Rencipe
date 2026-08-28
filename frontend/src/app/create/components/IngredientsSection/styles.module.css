@@ -181,3 +181,9 @@
     font-size: 13px;
   }
 }
+
+@media (min-width: 900px) {
+  .sectionHeader h2 {
+    font-weight: 600;
+  }
+}

@@ -192,3 +192,62 @@
     font-size: 14px;
   }
 }
+
+@media (min-width: 900px) {
+  .page {
+    min-height: 100vh;
+    padding: 48px 16px;
+  }
+
+  .formPanel {
+    min-height: auto;
+    width: min(100%, 400px);
+    margin: 0 auto;
+    padding: 32px 28px 28px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .brandLockup {
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 650;
+  }
+
+  .formHeader {
+    margin-bottom: 20px;
+  }
+
+  .formHeader h2 {
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .form {
+    gap: 14px;
+  }
+
+  .field input {
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .primaryButton {
+    min-height: 42px;
+    margin-top: 6px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .formFooter {
+    margin-top: 16px;
+  }
+
+  .formFooter button {
+    font-size: 13px;
+  }
+}

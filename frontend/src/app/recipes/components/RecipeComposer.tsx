@@ -498,16 +498,25 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
   };
 
   const handlePublishChange = async (checked: boolean) => {
-    if (checked && !formData.isPublic) {
-      const approved = await confirm({
-        title: "Publish recipe",
-        message: "This will make everyone see this recipe. Are you sure?",
-        intent: "warning",
-        confirmText: "Publish",
-      });
-
-      if (!approved) {
+    if (checked) {
+      const user = getCurrentUser();
+      if (user?.role === "guest") {
+        toastError("Create an account to publish recipes.");
+        router.push("/settings/account");
         return;
+      }
+
+      if (!formData.isPublic) {
+        const approved = await confirm({
+          title: "Publish recipe",
+          message: "This will make everyone see this recipe. Are you sure?",
+          intent: "warning",
+          confirmText: "Publish",
+        });
+
+        if (!approved) {
+          return;
+        }
       }
     }
 

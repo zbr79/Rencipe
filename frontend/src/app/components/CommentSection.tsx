@@ -1,8 +1,9 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { toastError } from "./toast/toast";
-import { authFetch } from "../utils/authSession";
+import { authFetch, getCurrentUser } from "../utils/authSession";
 import styles from "./comment-section.module.css";
 
 type CommentEntryType = "recipe" | "meal";
@@ -32,6 +33,7 @@ function formatCommentDate(value: string) {
 export default function CommentSection({ entryType, entryId }: CommentSectionProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [canComment, setCanComment] = useState(false);
+  const isGuest = getCurrentUser()?.role === "guest";
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -110,7 +112,11 @@ export default function CommentSection({ entryType, entryId }: CommentSectionPro
         <span>{comments.length}</span>
       </div>
 
-      {canComment ? (
+      {canComment && isGuest ? (
+        <p className={styles.statusText}>
+          <Link href="/settings/account" className={styles.signupLink}>Create an account</Link> to post comments.
+        </p>
+      ) : canComment ? (
         <form className={styles.commentForm} onSubmit={handleSubmitComment}>
           <textarea value={commentText} onChange={(event) => setCommentText(event.target.value)} placeholder="Add a comment" rows={3} />
           <button type="submit" disabled={submitting || !commentText.trim()}>{submitting ? "Posting" : "Post"}</button>

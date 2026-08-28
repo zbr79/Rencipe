@@ -972,13 +972,14 @@
 
 @media (min-width: 900px) {
   .page {
-    padding: 0 12px 96px;
+    width: min(100%, 1240px);
+    padding: 16px 24px 32px;
   }
 
   .searchHeader {
     grid-template-columns: 40px minmax(0, 1fr);
     gap: 8px;
-    min-height: 56px;
+    min-height: 48px;
     padding: 8px 0;
   }
 
@@ -988,29 +989,30 @@
 
   .backButton,
   .headerSpacer {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
   }
 
   .searchBox,
   .searchBoxButton {
-    min-height: 42px;
+    min-height: 38px;
+    border-radius: 10px;
   }
 
   .featureRail {
-    grid-template-columns: repeat(5, minmax(68px, 1fr));
+    grid-template-columns: repeat(5, minmax(64px, 1fr));
     gap: 8px;
   }
 
   .featureIcon {
-    width: 52px;
-    height: 52px;
-    font-size: 23px;
+    width: 50px;
+    height: 50px;
+    font-size: 22px;
   }
 
   .recipeGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
   }
 
   .resultList {
@@ -1018,11 +1020,12 @@
   }
 
   .resultCard {
-    min-height: 94px;
+    min-height: 96px;
+    border-radius: 10px;
   }
 
   .resultCard .recipeImage {
-    width: 96px;
+    width: 100px;
   }
 
   .recipeBody {
@@ -1031,6 +1034,22 @@
 
   .recipeBody h3 {
     font-size: 14px;
+    font-weight: 600;
+  }
+
+  .resultsHeader h2 {
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .sectionHeader h2 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .visibilityTab,
+  .categoryTab {
+    font-weight: 600;
   }
 }
 

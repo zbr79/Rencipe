@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import BackButton from "../components/BackButton";
+import EmptyState from "../components/EmptyState";
 import styles from "./drafts.module.css";
 import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import { getCurrentUserId } from "../utils/authSession";
@@ -116,10 +117,13 @@ export default function DraftsPage() {
       {error && <p className={styles.errorText}>Error: {error}</p>}
 
       {!loading && filteredDrafts.length === 0 ? (
-        <div className={styles.emptyState}>
-          <p className={styles.emptyMessage}>{drafts.length === 0 ? "No drafts yet" : "No matching drafts found"}</p>
-          <Link href="/create" className={styles.newRecipeButton}>New Recipe</Link>
-        </div>
+        <EmptyState
+          icon="draft"
+          title={drafts.length === 0 ? "No drafts yet" : "No matching drafts"}
+          subtitle={drafts.length === 0 ? "Start a recipe and save it to finish later." : "Try a different filter."}
+          actionLabel="New Recipe"
+          actionHref="/create"
+        />
       ) : (
         <div className={styles.draftsList}>
           {filteredDrafts.map((draft) => (

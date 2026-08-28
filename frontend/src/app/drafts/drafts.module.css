@@ -239,3 +239,23 @@
     height: 54px;
   }
 }
+
+@media (min-width: 900px) {
+  .container {
+    max-width: 1100px;
+    padding: 16px 24px 32px;
+  }
+
+  .pageHeader h1 {
+    font-weight: 650;
+    font-size: 24px;
+  }
+
+  .kicker {
+    font-weight: 600;
+  }
+
+  .newRecipeButton {
+    font-weight: 600;
+  }
+}

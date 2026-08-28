@@ -22,9 +22,19 @@
 
 .sectionHeader span,
 .statusText {
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: 13px;
   font-weight: 600;
+}
+
+.signupLink {
+  color: var(--primary);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.signupLink:hover {
+  text-decoration: underline;
 }
 
 .commentForm {

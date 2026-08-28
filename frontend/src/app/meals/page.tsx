@@ -6,6 +6,7 @@ import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import { useSaved } from "../contexts/SavedContext";
 import { useQuickCreateMeal } from "../hooks/useQuickCreateMeal";
 import { getMealDisplayName } from "../utils/mealDisplay";
+import EmptyState from "../components/EmptyState";
 import styles from "./page.module.css";
 
 export default function MealsPage() {
@@ -71,9 +72,11 @@ export default function MealsPage() {
       {loading ? (
         <p className={styles.loading}>Loading...</p>
       ) : !hasMeals ? (
-        <div className={styles.empty}>
-          <p>No meals yet</p>
-        </div>
+        <EmptyState
+          icon="restaurant_menu"
+          title="No meals yet"
+          subtitle="Collect recipes into meal sets you can reuse."
+        />
       ) : (
         <>
           {visibleMeals.length > 0 && (

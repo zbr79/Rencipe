@@ -194,21 +194,45 @@ button:disabled {
   box-shadow: var(--shadow-sm);
 }
 
+:root {
+  --sidebar-w: 220px;
+  --desktop-topbar-h: 52px;
+}
+
 @media (min-width: 900px) {
   html {
-    background: color-mix(in srgb, var(--hover-bg) 76%, var(--background));
+    background: color-mix(in srgb, var(--hover-bg) 62%, var(--background));
   }
 
   body {
-    max-width: var(--app-shell-width);
-    margin: 0 auto;
-    padding-bottom: 72px;
+    max-width: none;
+    margin: 0;
+    padding-bottom: 0;
     background: var(--background);
-    box-shadow: 0 0 0 1px var(--border), 0 24px 70px rgba(15, 23, 42, 0.12);
+    font-size: 15px;
   }
 
   body.loginScreen {
     padding-bottom: 0;
+  }
+
+  .desktop-main {
+    margin-left: var(--sidebar-w);
+    padding-top: var(--desktop-topbar-h);
+    min-height: 100vh;
+  }
+
+  body.loginScreen .desktop-main {
+    margin-left: 0;
+    padding-top: 0;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 15px;
   }
 }
 

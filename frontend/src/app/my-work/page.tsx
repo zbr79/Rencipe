@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import BackButton from "../components/BackButton";
+import EmptyState from "../components/EmptyState";
 import { toastError, toastSuccess } from "../components/toast/toast";
 import { useSaved, type Meal } from "../contexts/SavedContext";
 import { authFetch, getCurrentUser, type AuthUser } from "../utils/authSession";
@@ -290,7 +291,11 @@ export default function MyWorkPage() {
       {loading && <p className={styles.statusText}>Loading...</p>}
 
       {!loading && workItems.length === 0 ? (
-        <div className={styles.emptyState}>No work found for this filter</div>
+        <EmptyState
+          icon="work"
+          title="Nothing here"
+          subtitle="No work found for this filter."
+        />
       ) : (
         <div className={styles.workList}>
           {workItems.map((item) => (

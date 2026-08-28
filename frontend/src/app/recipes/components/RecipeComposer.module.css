@@ -567,12 +567,14 @@
 
 @media (min-width: 900px) {
   .container {
-    padding: 16px 12px 96px;
+    max-width: 900px;
+    padding: 16px 24px 32px;
   }
 
   .editorHeader {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
+    gap: 18px;
   }
 
   .headerText {
@@ -585,7 +587,12 @@
   }
 
   .title {
-    font-size: 28px;
+    font-size: clamp(22px, 2.4vw, 28px);
+    font-weight: 650;
+  }
+
+  .kicker {
+    font-weight: 600;
   }
 
   .coverImageSection,
@@ -600,10 +607,19 @@
   }
 
   .editFooterButtons {
-    flex-direction: column;
+    flex-direction: row;
   }
 
   .editFooterButton {
-    width: 100%;
+    width: auto;
+  }
+
+  .createCoverHeader h2 {
+    font-weight: 600;
+  }
+
+  .coverHint,
+  .createCoverRequired {
+    font-weight: 600;
   }
 }

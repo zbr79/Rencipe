@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AccountAvatar from "../../components/AccountAvatar";
 import BackButton from "../../components/BackButton";
+import ClaimAccountForm from "./components/ClaimAccountForm";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { authFetch, removeSignedInAccount, readAuthSession, writeAuthSession, type AuthSession } from "../../utils/authSession";
 import styles from "../page.module.css";
@@ -179,6 +180,12 @@ export default function AccountSettingsPage() {
         <h1>Account</h1>
       </div>
 
+      {session?.user.role === "guest" && (
+        <div style={{ marginBottom: "16px" }}>
+          <ClaimAccountForm onClaimed={setSession} />
+        </div>
+      )}
+
       <div className={styles.accountDetailGroup}>
         <input
           ref={avatarInputRef}
@@ -223,16 +230,18 @@ export default function AccountSettingsPage() {
           </span>
         </Link>
 
-        <button
-          type="button"
-          className={`${styles.settingItemButton} ${styles.accountRowButton} ${styles.accountCompactRow}`}
-          onClick={() => setPasswordModalOpen(true)}
-        >
-          <span className={styles.accountRowLabel}>Change Password</span>
-          <span className={styles.accountRowValueWrap}>
-            <span className={`material-symbols-outlined ${styles.accountListChevron}`}>chevron_right</span>
-          </span>
-        </button>
+        {session?.user.role !== "guest" && (
+          <button
+            type="button"
+            className={`${styles.settingItemButton} ${styles.accountRowButton} ${styles.accountCompactRow}`}
+            onClick={() => setPasswordModalOpen(true)}
+          >
+            <span className={styles.accountRowLabel}>Change Password</span>
+            <span className={styles.accountRowValueWrap}>
+              <span className={`material-symbols-outlined ${styles.accountListChevron}`}>chevron_right</span>
+            </span>
+          </button>
+        )}
       </div>
 
       <div className={styles.accountDangerGroup}>

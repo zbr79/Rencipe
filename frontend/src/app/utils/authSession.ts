@@ -8,7 +8,7 @@ export interface AuthUser {
   avatarUrl?: string;
   email?: string;
   phone?: string;
-  role: "admin" | "user";
+  role: "admin" | "user" | "guest";
   language?: "en" | "zh";
   languageLocked?: boolean;
   projectMode?: boolean;
@@ -154,6 +154,10 @@ export function getCurrentUser() {
 
 export function getCurrentUserId() {
   return getCurrentUser()?.id || "";
+}
+
+export function isGuestUser() {
+  return getCurrentUser()?.role === "guest";
 }
 
 export function authHeaders(existingHeaders?: HeadersInit) {

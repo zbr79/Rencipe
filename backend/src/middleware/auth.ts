@@ -94,3 +94,13 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 export function getAuthUser(req: Request): AuthUser | null {
   return ((req as any).authUser as AuthUser | undefined) || null;
 }
+
+export async function requireAccount(req: Request, res: Response, next: NextFunction) {
+  await requireAuth(req, res, () => {
+    const user = getAuthUser(req);
+    if (!user || user.role === "guest") {
+      return res.status(403).json({ error: "Create an account to do this", code: "ACCOUNT_REQUIRED" });
+    }
+    next();
+  });
+}

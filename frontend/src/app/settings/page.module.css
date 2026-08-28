@@ -986,15 +986,17 @@
 
 @media (min-width: 900px) {
   .container {
-    padding: 16px 12px 96px;
+    padding: 16px 24px 32px;
   }
 
   .group {
     padding: 14px;
+    border-radius: 10px;
   }
 
   .accountSummaryTitleButton {
-    font-size: 18px;
+    font-size: 16px;
+    font-weight: 600;
   }
 
   .accountSummaryRow {
@@ -1002,7 +1004,24 @@
   }
 
   .accountPageHeader h1 {
-    font-size: 24px;
+    font-size: 22px;
+    font-weight: 650;
+  }
+
+  .accountPageHeader p {
+    font-weight: 600;
+  }
+
+  .settingLabel > span:last-child {
+    font-weight: 600;
+  }
+
+  .shortcutButton,
+  .customSelectButton,
+  .customSelectOption,
+  .projectModeToggle,
+  .toggle {
+    font-weight: 600;
   }
 
   .profileActionGrid {

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSaved } from "../contexts/SavedContext";
 import AccountAvatar from "../components/AccountAvatar";
+import EmptyState from "../components/EmptyState";
 import styles from "./page.module.css";
 import { getAccountDisplayName } from "../utils/accountAvatar";
 import { getRecipeAuthor } from "../utils/recipeAuthor";
@@ -95,16 +96,13 @@ export default function SavedPage() {
           {loadingSaved && <p className={styles.loading}>Loading...</p>}
 
           {!loadingSaved && filteredRecipes.length === 0 && (
-            <div className={styles.empty}>
-              <p>
-                {savedRecipes.length === 0
-                  ? "You have not saved any recipes yet"
-                  : "No matching recipes found"}
-              </p>
-              <Link href="/" className={styles.createLink}>
-                Back to Home
-              </Link>
-            </div>
+            <EmptyState
+              icon="favorite_border"
+              title={savedRecipes.length === 0 ? "No saved recipes yet" : "No matching recipes"}
+              subtitle={savedRecipes.length === 0 ? "Save recipes you like and find them here." : "Try a different filter."}
+              actionLabel="Browse recipes"
+              actionHref={savedRecipes.length === 0 ? "/browse" : undefined}
+            />
           )}
 
           <div className={styles.savedList}>
@@ -154,14 +152,13 @@ export default function SavedPage() {
           {loadingSaved && <p className={styles.loading}>Loading...</p>}
 
           {!loadingSaved && filteredMeals.length === 0 && (
-            <div className={styles.empty}>
-              <p>
-                {savedMeals.length === 0
-                  ? "You have not saved any meals yet"
-                  : "No matching meals found"}
-              </p>
-              <Link href="/browse" className={styles.createLink}>Browse</Link>
-            </div>
+            <EmptyState
+              icon="restaurant_menu"
+              title={savedMeals.length === 0 ? "No saved meals yet" : "No matching meals"}
+              subtitle={savedMeals.length === 0 ? "Save meal sets you like and find them here." : "Try a different filter."}
+              actionLabel="Browse meals"
+              actionHref={savedMeals.length === 0 ? "/browse" : undefined}
+            />
           )}
 
           <div className={styles.savedList}>

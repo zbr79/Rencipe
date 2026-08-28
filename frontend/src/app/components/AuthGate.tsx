@@ -2,7 +2,16 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { authFetch, clearAuthSession, readAuthSession, readSignedInAccounts } from "../utils/authSession";
+import { authFetch, clearAuthSession, readAuthSession, readSignedInAccounts, writeAuthSession } from "../utils/authSession";
+
+async function startGuestSession() {
+  const response = await fetch("/api/auth/guest", { method: "POST" });
+  const data = await response.json().catch(() => null);
+  if (!response.ok || !data?.token || !data?.user?.id) {
+    throw new Error(data?.error || "Failed to start guest session");
+  }
+  writeAuthSession({ token: data.token, user: data.user, signedInAt: new Date().toISOString() });
+}
 
 export default function AuthGate({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -21,15 +30,28 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     async function verifySession() {
       if (!session) {
         if (!active) return;
+
         if (isAccountSwitcher && readSignedInAccounts().length > 0) {
           setAuthenticated(true);
           setChecking(false);
           return;
         }
 
-        setAuthenticated(false);
-        setChecking(false);
-        if (!isLoginPage) {
+        if (isLoginPage) {
+          setAuthenticated(false);
+          setChecking(false);
+          return;
+        }
+
+        try {
+          await startGuestSession();
+          if (!active) return;
+          setAuthenticated(true);
+          setChecking(false);
+        } catch {
+          if (!active) return;
+          setAuthenticated(false);
+          setChecking(false);
           router.replace("/login");
         }
         return;
@@ -57,12 +79,14 @@ export default function AuthGate({ children }: { children: ReactNode }) {
 
         setAuthenticated(true);
         setChecking(false);
-        if (isLoginPage && !isAddAccountLogin) router.replace("/");
+        const isGuest = session.user?.role === "guest";
+        if (isLoginPage && !isAddAccountLogin && !isGuest) router.replace("/");
       } catch {
         if (!active) return;
         setAuthenticated(true);
         setChecking(false);
-        if (isLoginPage && !isAddAccountLogin) router.replace("/");
+        const isGuest = session.user?.role === "guest";
+        if (isLoginPage && !isAddAccountLogin && !isGuest) router.replace("/");
       }
     }
 

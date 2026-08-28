@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import crypto from "crypto";
 import { v2 as cloudinary } from "cloudinary";
 import User, { UserLanguage } from "../models/User";
 import { hashPassword, verifyPassword } from "../utils/password";
@@ -18,7 +19,7 @@ function pickUser(user: any): AuthUser {
     avatarUrl: user.avatarUrl || "",
     email: user.email || "",
     phone: user.phone || "",
-    role: user.role === "admin" ? "admin" : "user",
+    role: user.role === "admin" ? "admin" : user.role === "guest" ? "guest" : "user",
     language: user.languageLocked ? "en" : normalizeLanguage(user.language),
     languageLocked: user.languageLocked === true,
     projectMode: user.projectMode !== false,
@@ -61,6 +62,65 @@ export async function me(req: Request, res: Response) {
   res.json({ user });
 }
 
+export async function guestLogin(_req: Request, res: Response) {
+  try {
+    const { salt, hash } = hashPassword(crypto.randomBytes(24).toString("hex"));
+    const username = `guest-${crypto.randomBytes(5).toString("hex")}`;
+    const user = await User.create({
+      username,
+      displayName: "Guest",
+      role: "guest",
+      passwordSalt: salt,
+      passwordHash: hash,
+      projectMode: true,
+    });
+    const authUser = pickUser(user);
+    res.json({ token: signAuthToken(authUser), user: authUser });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || "Failed to create guest session" });
+  }
+}
+
+export async function claimAccount(req: Request, res: Response) {
+  try {
+    const authUser = getAuthUser(req);
+    if (!authUser) return res.status(401).json({ error: "Authentication required" });
+
+    const user = await User.findById(authUser.id);
+    if (!user) return res.status(401).json({ error: "Invalid session" });
+    if (user.role !== "guest") return res.status(400).json({ error: "This session is already an account" });
+
+    const username = String(req.body.username || "").trim().toLowerCase();
+    const password = String(req.body.password || "");
+    const displayName = cleanText(req.body.displayName, user.displayName || "Guest");
+
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+      return res.status(400).json({ error: "Username must be 3-20 characters (letters, numbers, underscore)" });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+
+    const existing = await User.findOne({ username });
+    if (existing && String(existing._id) !== String(user._id)) {
+      return res.status(409).json({ error: "Username is already taken" });
+    }
+
+    const { salt, hash } = hashPassword(password);
+    user.username = username;
+    user.displayName = displayName;
+    user.passwordSalt = salt;
+    user.passwordHash = hash;
+    user.role = "user";
+    await user.save();
+
+    const nextUser = pickUser(user);
+    res.json({ token: signAuthToken(nextUser), user: nextUser });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || "Failed to create account" });
+  }
+}
+
 export async function updateProfile(req: Request, res: Response) {
   try {
     const authUser = getAuthUser(req);
@@ -87,6 +147,10 @@ export async function updateProfile(req: Request, res: Response) {
 
     if (authUser.role === "admin" && typeof req.body.projectMode === "boolean") {
       user.projectMode = req.body.projectMode;
+    }
+
+    if (authUser.role === "guest" && (newPassword || currentPassword)) {
+      return res.status(403).json({ error: "Create an account to set a password", code: "ACCOUNT_REQUIRED" });
     }
 
     if (newPassword) {
