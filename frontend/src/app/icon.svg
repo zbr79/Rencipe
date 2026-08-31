@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Rencipe">
-  <rect width="512" height="512" rx="96" fill="#eef4ff"/>
-  <path fill="#4f7cff" fill-rule="evenodd" d="M154 360V152h116c49 0 80 28 80 72 0 34-18 58-47 70l62 66h-57l-56-60h-47v60h-51Zm51-103h61c20 0 32-12 32-32 0-21-13-34-34-34h-59v66Z"/>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d4a017"/>
+      <stop offset="1" stop-color="#b8860b"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#g)"/>
+  <path fill="#fffdf7" fill-rule="evenodd" d="M154 360V152h116c49 0 80 28 80 72 0 34-18 58-47 70l62 66h-57l-56-60h-47v60h-51Zm51-103h61c20 0 32-12 32-32 0-21-13-34-34-34h-59v66Z"/>
 </svg>
