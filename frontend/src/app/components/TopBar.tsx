@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SearchOverlay from "./SearchOverlay";
@@ -9,10 +9,7 @@ import styles from "./top-bar.module.css";
 export default function TopBar() {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
-
-  useEffect(() => {
-    setSearchOpen(false);
-  }, [pathname]);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
 
   if (pathname === "/login") return null;
 
@@ -54,7 +51,7 @@ export default function TopBar() {
         </div>
       </header>
 
-      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchOverlay open={searchOpen} onClose={closeSearch} />
     </>
   );
 }

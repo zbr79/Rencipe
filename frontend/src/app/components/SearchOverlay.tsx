@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import searchStyles from "../search/page.module.css";
 import { useSaved } from "../contexts/SavedContext";
 import { getVisibleTags } from "../utils/recipeTags";
@@ -38,6 +39,7 @@ function matchesRecipeSearch(recipe: Recipe, query: string) {
 }
 
 export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
+  const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
   const { isSaved, saveRecipe, unsaveRecipe, fetchSaved } = useSaved();
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
@@ -46,6 +48,10 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [history, setHistory] = useState<string[]>([]);
+
+  useEffect(() => {
+    onClose();
+  }, [pathname, onClose]);
 
   useEffect(() => {
     if (!open) return;

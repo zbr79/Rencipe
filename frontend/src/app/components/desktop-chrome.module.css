@@ -21,6 +21,8 @@
     background: var(--card-bg);
     border-right: 1px solid var(--border);
     box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .brand {
@@ -83,8 +85,7 @@
     display: flex;
     flex-direction: column;
     gap: 1px;
-    flex: 1;
-    overflow-y: auto;
+    flex: 0 0 auto;
   }
 
   .navItem {
@@ -124,6 +125,136 @@
 
   .navItemActive span:first-child {
     color: var(--primary-text);
+  }
+
+  .sidebarSection {
+    margin: 12px 2px 0;
+  }
+
+  .sidebarSectionLabel {
+    margin: 0 0 6px;
+    padding: 0 12px;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .sidebarSubNav {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .sidebarSubLink {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .sidebarSubLink:hover {
+    background: var(--hover-bg);
+    color: var(--foreground);
+  }
+
+  .sidebarSubLink span:first-child {
+    font-size: 17px;
+    color: var(--text-muted);
+    transition: color var(--transition-fast);
+  }
+
+  .sidebarSubLink:hover span:first-child {
+    color: var(--text-secondary);
+  }
+
+  .sidebarSubLinkTitle {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sidebarSubLinkCount {
+    flex: none;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .surpriseButton {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-height: 36px;
+    margin: 12px 2px 0;
+    padding: 0 12px;
+    border: 1px solid color-mix(in srgb, var(--primary) 26%, var(--border));
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--primary-soft) 45%, var(--card-bg));
+    color: var(--primary-text);
+    font-size: 12.5px;
+    font-weight: 600;
+    transition: all var(--transition-fast);
+  }
+
+  .surpriseButton:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--primary-soft) 75%, var(--card-bg));
+    border-color: var(--primary);
+  }
+
+  .surpriseButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .surpriseButton span:first-child {
+    font-size: 17px;
+  }
+
+  .themeToggle {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-height: 34px;
+    margin: 0 2px 8px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+  }
+
+  .themeToggle:hover {
+    background: var(--hover-bg);
+    color: var(--foreground);
+    border-color: var(--text-secondary);
+  }
+
+  .themeToggle span:first-child {
+    font-size: 17px;
+    color: var(--text-muted);
+  }
+
+  .themeToggle:hover span:first-child {
+    color: var(--text-secondary);
+  }
+
+  .sidebarSpacer {
+    flex: 1 1 auto;
+    min-height: 10px;
   }
 
   .account {
