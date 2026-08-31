@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(84, 61, 20, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -147,7 +147,7 @@
 
 .confirmBtn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 6px 14px rgba(84, 61, 20, 0.18);
 }
 
 .confirmBtn.danger {

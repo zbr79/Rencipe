@@ -92,7 +92,7 @@
 }
 
 .searchIcon {
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 24px;
 }
 
@@ -258,7 +258,7 @@
 }
 
 .contentFilterOptionCheck {
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 16px;
 }
 
@@ -278,7 +278,7 @@
   border: 0;
   border-bottom: 2px solid transparent;
   background: transparent;
-  color: var(--primary);
+  color: var(--primary-text);
   cursor: pointer;
   font-size: 13px;
   font-weight: 700;
@@ -292,7 +292,7 @@
 }
 
 .sortButtonActive {
-  color: var(--primary);
+  color: var(--primary-text);
   opacity: 1;
   border-bottom-color: currentColor;
 }
@@ -400,7 +400,7 @@
 .historyChip span:last-child,
 .recommendChip span:first-child {
   font-size: 15px;
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .historyChip span:last-child {
@@ -434,9 +434,9 @@
 }
 
 .featureItemActive .featureIcon {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
+  background: var(--primary-strong);
+  color: var(--on-strong);
+  border-color: var(--primary-text);
 }
 
 .featureIcon {
@@ -448,7 +448,7 @@
   justify-content: center;
   border-radius: 50%;
   background: color-mix(in srgb, var(--primary) 12%, var(--card-bg));
-  color: var(--primary);
+  color: var(--primary-text);
   border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border));
   box-shadow: var(--shadow-sm);
   font-size: 24px;
@@ -507,7 +507,7 @@
 
 .visibilityTabActive {
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .categoryTab {
@@ -531,9 +531,9 @@
 }
 
 .categoryTabActive {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: white;
+  background: var(--primary-strong);
+  border-color: var(--primary-text);
+  color: var(--on-strong);
 }
 
 .recipeGrid {
@@ -785,8 +785,8 @@
   align-items: center;
   justify-content: center;
   background: white;
-  color: var(--primary);
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+  color: var(--primary-text);
+  box-shadow: 0 10px 22px rgba(84, 61, 20, 0.08);
   transition:
     transform 0.2s ease,
     background-color 0.2s ease,
@@ -802,9 +802,9 @@
 
 .browseSaveButton:hover {
   transform: translateY(-1px);
-  border-color: var(--primary);
+  border-color: var(--primary-text);
   background: white;
-  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 14px 26px rgba(84, 61, 20, 0.12);
 }
 
 .browseSaveButtonActive {
@@ -826,7 +826,7 @@
   align-items: center;
   justify-content: center;
   background: transparent;
-  color: var(--primary);
+  color: var(--primary-text);
   filter: drop-shadow(0 1px 4px rgba(255, 255, 255, 0.9));
 }
 
@@ -836,7 +836,7 @@
 }
 
 .saveButtonActive {
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .loading,
@@ -970,7 +970,7 @@
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .page {
     width: min(100%, 1240px);
     padding: 16px 24px 32px;

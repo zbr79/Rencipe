@@ -33,7 +33,7 @@
 
 .kicker {
   margin: 0 0 6px;
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -113,7 +113,7 @@
 .visibilityTabActive,
 .kindTabActive {
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .workList {
@@ -155,7 +155,7 @@
   align-items: center;
   justify-content: center;
   background: color-mix(in srgb, var(--primary) 10%, var(--hover-bg));
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .workImage span {
@@ -190,7 +190,7 @@
   border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
   border-radius: 8px;
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 12px;
   font-weight: 700;
 }
@@ -259,7 +259,7 @@
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .container {
     max-width: 1100px;
     padding: 16px 24px 32px;

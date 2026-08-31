@@ -27,7 +27,7 @@
 
 .segmentedTabActive {
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .filtersSection {
@@ -231,8 +231,8 @@
   margin-top: 12px;
   padding: 0 14px;
   border-radius: 8px;
-  background: var(--primary);
-  color: white;
+  background: var(--primary-strong);
+  color: var(--on-strong);
   font-weight: 600;
   text-decoration: none;
   user-select: none;
@@ -261,7 +261,7 @@
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .container {
     max-width: 1000px;
     padding: 16px 24px 32px;

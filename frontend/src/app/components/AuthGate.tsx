@@ -13,6 +13,23 @@ async function startGuestSession() {
   writeAuthSession({ token: data.token, user: data.user, signedInAt: new Date().toISOString() });
 }
 
+const GUEST_BLOCKED_PREFIXES = [
+  "/create",
+  "/edit",
+  "/drafts",
+  "/my-work",
+  "/saved",
+  "/meals",
+  "/settings",
+  "/profile",
+];
+
+function isGuestBlockedPath(pathname: string) {
+  return GUEST_BLOCKED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
 export default function AuthGate({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -46,6 +63,11 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         try {
           await startGuestSession();
           if (!active) return;
+          if (isGuestBlockedPath(pathname)) {
+            setChecking(false);
+            router.replace("/login");
+            return;
+          }
           setAuthenticated(true);
           setChecking(false);
         } catch {
@@ -77,15 +99,26 @@ export default function AuthGate({ children }: { children: ReactNode }) {
           return;
         }
 
+        const isGuest = session.user?.role === "guest";
+        if (isGuest && isGuestBlockedPath(pathname)) {
+          setChecking(false);
+          router.replace("/login");
+          return;
+        }
+
         setAuthenticated(true);
         setChecking(false);
-        const isGuest = session.user?.role === "guest";
         if (isLoginPage && !isAddAccountLogin && !isGuest) router.replace("/");
       } catch {
         if (!active) return;
+        const isGuest = session.user?.role === "guest";
+        if (isGuest && isGuestBlockedPath(pathname)) {
+          setChecking(false);
+          router.replace("/login");
+          return;
+        }
         setAuthenticated(true);
         setChecking(false);
-        const isGuest = session.user?.role === "guest";
         if (isLoginPage && !isAddAccountLogin && !isGuest) router.replace("/");
       }
     }

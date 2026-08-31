@@ -132,9 +132,9 @@
   justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.66);
+  background: rgba(84, 61, 20, 0.66);
   color: #ffffff;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.28);
+  box-shadow: 0 10px 22px rgba(84, 61, 20, 0.28);
   pointer-events: none;
   transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -145,8 +145,8 @@
 
 .imageDisplayButton:hover .replaceImageIconButton {
   transform: translateY(-1px);
-  background: rgba(15, 23, 42, 0.78);
-  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.34);
+  background: rgba(84, 61, 20, 0.78);
+  box-shadow: 0 12px 26px rgba(84, 61, 20, 0.34);
 }
 
 .imageSavingBadge {
@@ -276,7 +276,7 @@
 
 .createCoverIcon {
   font-size: 32px;
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .createCoverBoxTitle {
@@ -312,7 +312,7 @@
 }
 
 .createCoverPreviewMeta span:last-child {
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .uploadPrompt {
@@ -340,7 +340,7 @@
   border: none;
   border-radius: 8px;
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 13px;
   font-weight: 600;
 }
@@ -440,8 +440,8 @@
 
 .tipsTextarea:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--primary-text);
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1);
 }
 
 @media (max-width: 600px) {
@@ -565,7 +565,7 @@
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .container {
     max-width: 900px;
     padding: 16px 24px 32px;

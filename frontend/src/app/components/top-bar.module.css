@@ -34,7 +34,7 @@
   justify-content: center;
   border-radius: 8px;
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 23px;
   font-weight: 750;
   line-height: 1;
@@ -96,7 +96,7 @@
   font-size: 26px;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .topBar {
     display: none;
   }

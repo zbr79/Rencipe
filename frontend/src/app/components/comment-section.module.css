@@ -28,7 +28,7 @@
 }
 
 .signupLink {
-  color: var(--primary);
+  color: var(--primary-text);
   font-weight: 650;
   text-decoration: none;
 }
@@ -61,8 +61,8 @@
   padding: 0 14px;
   border: 1px solid var(--primary);
   border-radius: 8px;
-  background: var(--primary);
-  color: white;
+  background: var(--primary-strong);
+  color: var(--on-strong);
   cursor: pointer;
   font-size: 13px;
   font-weight: 700;
@@ -143,7 +143,7 @@
 }
 
 .commentActions .actionActive {
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 @media (max-width: 640px) {

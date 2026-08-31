@@ -96,7 +96,7 @@
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--hover-bg);
-  color: var(--primary);
+  color: var(--primary-text);
   box-shadow: var(--shadow-sm);
 }
 
@@ -175,7 +175,7 @@
 
 .profileActionButton span:first-child {
   flex: none;
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 20px;
 }
 
@@ -189,7 +189,7 @@
 .profileActionButtonActive {
   background: var(--primary-soft);
   border-color: color-mix(in srgb, var(--primary) 24%, var(--border));
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .signOutActionButton {
@@ -282,7 +282,7 @@
 }
 
 .settingLabel > span:first-child {
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 21px;
 }
 
@@ -333,12 +333,12 @@
 }
 
 .accountRowButtonSelected {
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .accountRowButtonSelected .accountSwitchText span:first-child,
 .accountRowButtonSelected .accountRowValueWrap > span:last-child {
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .accountRowLabel {
@@ -368,7 +368,7 @@
 }
 
 .accountRowAvatar {
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06), var(--shadow-sm);
+  box-shadow: inset 0 0 0 1px rgba(84, 61, 20, 0.06), var(--shadow-sm);
 }
 
 .accountSwitchIdentity {
@@ -646,8 +646,8 @@
 
 .primaryButton {
   border: 1px solid var(--primary);
-  background: var(--primary);
-  color: white;
+  background: var(--primary-strong);
+  color: var(--on-strong);
 }
 
 .primaryButton:disabled {
@@ -692,7 +692,7 @@
 }
 
 .shortcutButton span:first-child {
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 24px;
 }
 
@@ -772,7 +772,7 @@
 }
 
 .customSelectCheck {
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 16px;
 }
 
@@ -799,7 +799,7 @@
 
 .projectModeToggle input {
   width: auto;
-  accent-color: var(--primary);
+  accent-color: var(--primary-text);
 }
 
 .projectModeToggle span {
@@ -809,7 +809,7 @@
 
 .toggle.active {
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
   border-color: color-mix(in srgb, var(--primary) 22%, var(--border));
 }
 
@@ -821,7 +821,7 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(84, 61, 20, 0.45);
   animation: settingsModalFadeIn 160ms ease-out;
 }
 
@@ -984,7 +984,7 @@
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .container {
     padding: 16px 24px 32px;
   }

@@ -6,7 +6,6 @@ import { SavedProvider } from './contexts/SavedContext';
 import TopBar from './components/TopBar';
 import BottomNav from './components/BottomNav';
 import DesktopChrome from './components/DesktopChrome';
-import Footer from './components/Footer';
 import CreateFormModal from './components/CreateFormModal';
 import AuthGate from './components/AuthGate';
 import ConfirmDialogProvider from './components/ConfirmDialogProvider';
@@ -47,7 +46,6 @@ export default function RootLayout({
                     {children}
                   </div>
                   <BottomNav />
-                  <Footer />
                   <CreateFormModal />
                 </AuthGate>
               </CreateFormProvider>

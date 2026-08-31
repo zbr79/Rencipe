@@ -108,7 +108,7 @@
 }
 
 .menuIcon {
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 32px;
 }
 
@@ -142,7 +142,7 @@
 
 .selectPhotoBtn {
   padding: 12px 32px;
-  background-color: var(--primary);
+  background-color: var(--primary-text);
   color: white;
   border: none;
   border-radius: 6px;
@@ -178,7 +178,7 @@
   display: inline-block;
   background: none;
   border: none;
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -244,7 +244,7 @@
   top: 0;
   background: none;
   border: none;
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -276,7 +276,7 @@
 
 .uploadPromptBtn {
   padding: 8px 20px;
-  background-color: var(--primary);
+  background-color: var(--primary-text);
   color: white;
   border: none;
   border-radius: 6px;

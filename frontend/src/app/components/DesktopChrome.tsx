@@ -20,11 +20,13 @@ const NAV_ITEMS = [
   { href: "/settings", label: "Settings", icon: "settings" },
 ];
 
+const GUEST_NAV_HREFS = ["/", "/browse"];
+
 export default function DesktopChrome() {
   const pathname = usePathname();
   const { openCreateForm } = useCreateForm();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() => getCurrentUser());
 
   useEffect(() => {
     setUser(getCurrentUser());
@@ -32,6 +34,9 @@ export default function DesktopChrome() {
   }, [pathname]);
 
   if (pathname === "/login") return null;
+
+  const isGuest = user?.role === "guest";
+  const navItems = isGuest ? NAV_ITEMS.filter((item) => GUEST_NAV_HREFS.includes(item.href)) : NAV_ITEMS;
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
@@ -44,13 +49,20 @@ export default function DesktopChrome() {
           <span className={styles.brandText}>Rencipe</span>
         </Link>
 
-        <button type="button" className={styles.createButton} onClick={openCreateForm}>
-          <span className="material-symbols-rounded">add</span>
-          New Recipe
-        </button>
+        {isGuest ? (
+          <Link href="/login" className={styles.createButton}>
+            <span className="material-symbols-rounded">login</span>
+            Sign in
+          </Link>
+        ) : (
+          <button type="button" className={styles.createButton} onClick={openCreateForm}>
+            <span className="material-symbols-rounded">add</span>
+            New Recipe
+          </button>
+        )}
 
         <nav className={styles.nav}>
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -62,10 +74,12 @@ export default function DesktopChrome() {
           ))}
         </nav>
 
-        <Link href="/settings/account" className={styles.account}>
+        <Link href={isGuest ? "/login" : "/settings/account"} className={styles.account}>
           <AccountAvatar account={user} size={32} />
           <span className={styles.accountName}>
-            {user?.role === "guest" ? "Guest — Create account" : getAccountDisplayName(user) || "Account"}
+            {isGuest
+              ? "Sign in — create recipes"
+              : getAccountDisplayName(user) || "Account"}
           </span>
         </Link>
       </aside>

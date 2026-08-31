@@ -74,8 +74,8 @@
 
 .input:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--primary-text);
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1);
 }
 
 .originToggle {
@@ -108,14 +108,14 @@
 .originOptionActive {
   border-color: color-mix(in srgb, var(--primary) 26%, var(--border));
   background: var(--primary-soft);
-  color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+  color: var(--primary-text);
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.08);
 }
 
 .originOption:focus-visible {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  border-color: var(--primary-text);
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.12);
 }
 
 .input::placeholder {
@@ -148,7 +148,7 @@
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .sectionHeader h2 {
     font-weight: 600;
   }

@@ -19,7 +19,7 @@
 
 .brandLockup {
   margin-bottom: 38px;
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 25px;
   font-weight: 750;
   line-height: 1.1;
@@ -99,8 +99,8 @@
 
 .field input:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.14);
+  border-color: var(--primary-text);
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.14);
 }
 
 .checkRow {
@@ -113,7 +113,7 @@
 .checkRow input {
   width: 18px;
   height: 18px;
-  accent-color: var(--primary);
+  accent-color: var(--primary-text);
 }
 
 .error {
@@ -137,8 +137,8 @@
 .primaryButton {
   margin-top: 14px;
   border: 1px solid var(--primary);
-  background: var(--primary);
-  color: white;
+  background: var(--primary-strong);
+  color: var(--on-strong);
 }
 
 .primaryButton:disabled {
@@ -159,7 +159,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--primary);
+  color: var(--primary-text);
   cursor: pointer;
   font-size: 15px;
   font-weight: 700;
@@ -193,7 +193,7 @@
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .page {
     min-height: 100vh;
     padding: 48px 16px;

@@ -52,7 +52,7 @@
 
 .searchBar > span {
   flex: none;
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 20px;
 }
 
@@ -216,7 +216,7 @@
 }
 
 .emptyState span {
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 27px;
 }
 
@@ -236,7 +236,7 @@
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .container {
     max-width: 1100px;
     padding: 16px 24px 32px;

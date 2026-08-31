@@ -31,7 +31,7 @@
 
 .kicker {
   margin: 0 0 6px;
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -141,7 +141,7 @@
 
 .mealTypeOption input {
   width: auto;
-  accent-color: var(--primary);
+  accent-color: var(--primary-text);
 }
 
 .mealTypeOption span {
@@ -179,8 +179,8 @@
   cursor: pointer;
   border-radius: 8px;
   padding: 0 16px;
-  background: var(--primary);
-  color: white;
+  background: var(--primary-strong);
+  color: var(--on-strong);
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
@@ -262,7 +262,7 @@
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--card-bg);
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .mealActionButton {
@@ -383,7 +383,7 @@
   z-index: 9980;
   display: block;
   border: 0;
-  background: rgba(15, 23, 42, 0.34);
+  background: rgba(84, 61, 20, 0.34);
 }
 
 .recipePanel {
@@ -455,7 +455,7 @@
 
 .sourceTabs .sourceTabActive {
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .recipeSearch {
@@ -496,7 +496,7 @@
 }
 
 .recipeResult span:last-child {
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .ingredientsPanel {
@@ -591,7 +591,7 @@
 
 .ingredientModeTabActive {
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .ingredientList {
@@ -864,7 +864,7 @@
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .page {
     padding: 12px 12px calc(132px + env(safe-area-inset-bottom));
   }

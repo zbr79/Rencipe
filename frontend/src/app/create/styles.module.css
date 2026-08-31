@@ -113,7 +113,7 @@
   border: none;
   border-radius: 8px;
   background: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 13px;
   font-weight: 600;
 }
@@ -216,7 +216,7 @@
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .container {
     padding: 16px 12px 96px;
   }
