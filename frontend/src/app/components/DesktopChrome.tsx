@@ -17,13 +17,12 @@ const NAV_ITEMS = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/browse", label: "Browse", icon: "category" },
   { href: "/saved", label: "Saved", icon: "favorite_border" },
-  { href: "/meals", label: "Meals", icon: "restaurant_menu" },
   { href: "/my-work", label: "My Work", icon: "work" },
   { href: "/drafts", label: "Drafts", icon: "draft" },
   { href: "/settings", label: "Settings", icon: "settings" },
 ];
 
-const GUEST_NAV_HREFS = ["/", "/browse"];
+const GUEST_NAV_HREFS = ["/", "/browse", "/saved"];
 
 const MAX_EXPLORE_CATEGORIES = 8;
 

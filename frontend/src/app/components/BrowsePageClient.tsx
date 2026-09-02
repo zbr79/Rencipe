@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSaved } from "../contexts/SavedContext";
 import AccountAvatar from "./AccountAvatar";
 import styles from "../search/page.module.css";
 import { getVisibleTags } from "../utils/recipeTags";
-import { authFetch, getCurrentUserId } from "../utils/authSession";
+import { authFetch, getCurrentUser } from "../utils/authSession";
 import { getAccountDisplayName, type AccountIdentity } from "../utils/accountAvatar";
 import { getRecipeAuthor } from "../utils/recipeAuthor";
 
@@ -48,13 +48,12 @@ type BrowseItem =
 
 type VisibilityTab = "public" | "private";
 type SortMode = "popular" | "newest";
-type ContentFilter = "all" | "recipes" | "meals";
+type ContentFilter = "all" | "recipes";
 
 const BROWSE_CONTENT_FILTER_KEY = "rencipe-browse-content-filter";
 const contentFilterOptions: { value: ContentFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "recipes", label: "Recipes" },
-  { value: "meals", label: "Meals" },
 ];
 
 function getRecipeTimestamp(recipe: Recipe) {
@@ -125,20 +124,11 @@ function getMealAuthor(meal: Meal) {
   return typeof meal.userId === "object" ? meal.userId : null;
 }
 
-function iconForTag(tag: string) {
-  const normalized = tag.toLowerCase();
-  if (normalized.includes("spicy") || normalized.includes("sichuan")) return "local_fire_department";
-  if (normalized.includes("seafood") || normalized.includes("fish") || normalized.includes("shrimp")) return "set_meal";
-  if (normalized.includes("korean")) return "rice_bowl";
-  if (normalized.includes("cantonese") || normalized.includes("chinese")) return "restaurant";
-  if (normalized.includes("quick")) return "bolt";
-  if (normalized.includes("vegetable")) return "eco";
-  return "local_offer";
-}
-
 export default function BrowsePage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
+  const isGuest = getCurrentUser()?.role === "guest";
   const { isSaved, saveRecipe, unsaveRecipe, fetchSaved, isMealSaved, saveMeal, unsaveMeal } = useSaved();
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [allMeals, setAllMeals] = useState<Meal[]>([]);
@@ -153,7 +143,7 @@ export default function BrowsePage() {
 
   useEffect(() => {
     const storedFilter = window.localStorage.getItem(BROWSE_CONTENT_FILTER_KEY);
-    if (storedFilter === "all" || storedFilter === "recipes" || storedFilter === "meals") {
+    if (storedFilter === "all" || storedFilter === "recipes") {
       setContentFilter(storedFilter);
     }
 
@@ -179,37 +169,16 @@ export default function BrowsePage() {
     setLoading(true);
     setError("");
     try {
-      const accountId = getCurrentUserId();
-      const [recipeResponse, publicMealResponse, privateMealResponse] = await Promise.all([
-        authFetch(`/api/recipes?limit=1000`),
-        authFetch(`/api/meals?kind=meal&visibility=public`),
-        accountId ? authFetch(`/api/meals?userId=${accountId}&kind=meal`) : Promise.resolve(null),
-      ]);
+      const recipeResponse = await authFetch(`/api/recipes?limit=1000`);
 
       if (!recipeResponse.ok) {
         throw new Error("Failed to fetch recipes");
       }
 
-      if (!publicMealResponse.ok) {
-        throw new Error("Failed to fetch meals");
-      }
-
-      if (privateMealResponse && !privateMealResponse.ok) {
-        throw new Error("Failed to fetch your meals");
-      }
-
       const recipeData = await recipeResponse.json();
-      const publicMealData = await publicMealResponse.json();
-      const privateMealData = privateMealResponse ? await privateMealResponse.json() : { meals: [] };
-      const mealsById = new Map<string, Meal>();
-
-      [...(publicMealData.meals || []), ...(privateMealData.meals || [])].forEach((meal: Meal) => {
-        const mealId = getMealId(meal);
-        if (mealId && meal.kind === "meal") mealsById.set(mealId, meal);
-      });
 
       setAllRecipes((recipeData.recipes || []) as Recipe[]);
-      setAllMeals(Array.from(mealsById.values()));
+      setAllMeals([]);
     } catch (err: any) {
       setError(err.message);
       console.error(err);
@@ -223,7 +192,7 @@ export default function BrowsePage() {
     () => allMeals.filter((meal) => matchesMealVisibility(meal, visibilityTab)).filter((meal) => visibilityTab === "private" || hasAvailableMealRecipes(meal)),
     [allMeals, visibilityTab]
   );
-  const filteredRecipes = contentFilter === "meals" ? [] : visibleRecipes.filter((recipe) => matchesCategory(recipe, selectedCategory));
+  const filteredRecipes = visibleRecipes.filter((recipe) => matchesCategory(recipe, selectedCategory));
   const filteredMeals = contentFilter === "recipes" || selectedCategory !== "all" ? [] : visibleMeals;
   const browseItems = useMemo<BrowseItem[]>(() => {
     const recipeItems = filteredRecipes.map((recipe) => {
@@ -258,16 +227,8 @@ export default function BrowsePage() {
 
     return Array.from(counts.entries())
       .sort((first, second) => second[1] - first[1] || first[0].localeCompare(second[0]))
-      .map(([tag]) => ({ id: tag, label: tag, icon: iconForTag(tag) }));
+      .map(([tag]) => ({ id: tag, label: tag }));
   }, [visibleRecipes]);
-  const topCategories = tagCategories.slice(0, 4);
-  const featureCategories = [
-    { id: "all", label: "All", icon: "restaurant_menu" },
-    ...topCategories,
-    ...(selectedCategory !== "all" && !topCategories.some((category) => category.id === selectedCategory)
-      ? [{ id: selectedCategory, label: selectedCategory, icon: iconForTag(selectedCategory) }]
-      : []),
-  ];
   const contentFilterLabel = contentFilterOptions.find((option) => option.value === contentFilter)?.label || "All";
 
   useEffect(() => {
@@ -281,46 +242,48 @@ export default function BrowsePage() {
     }
   }, [tagCategories, requestedCategory]);
 
-  return (
+   return (
     <main className={styles.page}>
       {error && <div className={styles.error}>Error: {error}</div>}
 
-      <section className={styles.featureRail} aria-label="Browse categories">
-        {featureCategories.map((category) => (
-          <button
-            key={category.id}
-            type="button"
-            className={`${styles.featureItem} ${selectedCategory === category.id ? styles.featureItemActive : ""}`}
-            onClick={() => setSelectedCategory(category.id)}
-          >
-            <span className={`material-symbols-rounded ${styles.featureIcon}`}>{category.icon}</span>
-            <span>{category.label}</span>
-          </button>
-        ))}
-      </section>
-
-      <div className={styles.visibilityTabs} role="tablist" aria-label="Recipe visibility">
-        {(["public", "private"] as const).map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            role="tab"
-            aria-selected={visibilityTab === tab}
-            className={`${styles.visibilityTab} ${visibilityTab === tab ? styles.visibilityTabActive : ""}`}
-            onClick={() => {
-              setVisibilityTab(tab);
-              setSelectedCategory("all");
-            }}
-          >
-            <span className="material-symbols-rounded" aria-hidden="true">{tab === "public" ? "public" : "lock"}</span>
-            {tab === "public" ? "Public" : "Private"}
-          </button>
-        ))}
-      </div>
+      {!isGuest && (
+        <div className={styles.visibilityTabs} role="tablist" aria-label="Recipe visibility">
+          {(["public", "private"] as const).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              role="tab"
+              aria-selected={visibilityTab === tab}
+              className={`${styles.visibilityTab} ${visibilityTab === tab ? styles.visibilityTabActive : ""}`}
+              onClick={() => {
+                setVisibilityTab(tab);
+                setSelectedCategory("all");
+              }}
+            >
+              <span className="material-symbols-rounded" aria-hidden="true">{tab === "public" ? "public" : "lock"}</span>
+              {tab === "public" ? "Public" : "Private"}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className={styles.resultsHeader}>
         <div className={styles.resultsTitleGroup}>
           <h2>Browse</h2>
+          {selectedCategory !== "all" && (
+            <button
+              type="button"
+              className={styles.activeFilterChip}
+              onClick={() => {
+                setSelectedCategory("all");
+                router.replace("/browse");
+              }}
+              aria-label={`Clear ${selectedCategory} filter`}
+            >
+              <span>{selectedCategory}</span>
+              <span className="material-symbols-rounded" aria-hidden="true">close</span>
+            </button>
+          )}
           <div className={styles.contentFilterWrap}>
             <button
               type="button"

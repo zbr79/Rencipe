@@ -18,7 +18,6 @@ const GUEST_BLOCKED_PREFIXES = [
   "/edit",
   "/drafts",
   "/my-work",
-  "/saved",
   "/meals",
   "/settings",
   "/profile",
@@ -28,6 +27,10 @@ function isGuestBlockedPath(pathname: string) {
   return GUEST_BLOCKED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
   );
+}
+
+function isMealsPath(pathname: string) {
+  return pathname === "/meals" || pathname.startsWith("/meals/");
 }
 
 export default function AuthGate({ children }: { children: ReactNode }) {
@@ -106,6 +109,12 @@ export default function AuthGate({ children }: { children: ReactNode }) {
           return;
         }
 
+        if (isMealsPath(pathname) && session.user?.role !== "admin") {
+          setChecking(false);
+          router.replace("/");
+          return;
+        }
+
         setAuthenticated(true);
         setChecking(false);
         if (isLoginPage && !isAddAccountLogin && !isGuest) router.replace("/");
@@ -115,6 +124,11 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         if (isGuest && isGuestBlockedPath(pathname)) {
           setChecking(false);
           router.replace("/login");
+          return;
+        }
+        if (isMealsPath(pathname) && session.user?.role !== "admin") {
+          setChecking(false);
+          router.replace("/");
           return;
         }
         setAuthenticated(true);

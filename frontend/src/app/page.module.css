@@ -37,7 +37,7 @@
 
 .slideCard {
   position: absolute;
-  inset: 0;
+  inset: 0 0 30px 0;
   z-index: 0;
   display: flex;
   align-items: flex-end;
@@ -138,11 +138,13 @@
 .slideDots {
   position: absolute;
   z-index: 2;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 16px;
+  left: 18px;
+  right: auto;
+  transform: none;
+  bottom: 7px;
   display: flex;
   gap: 8px;
+  align-items: center;
 }
 
 .slideDots button {
@@ -151,13 +153,13 @@
   padding: 0;
   border: none;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.46);
+  background: color-mix(in srgb, var(--foreground) 26%, transparent);
   transition: width 0.3s ease, background-color 0.2s ease, opacity 0.2s ease;
 }
 
 .slideDots .slideDotActive {
   width: 26px;
-  background: white;
+  background: var(--primary-strong);
   opacity: 1;
 }
 
@@ -514,8 +516,7 @@
 
   .slideDots {
     left: 16px;
-    bottom: 12px;
-    transform: none;
+    bottom: 7px;
   }
 
   .recipeGrid {
@@ -684,6 +685,10 @@
     min-height: var(--hero-height);
   }
 
+  .slideCard {
+    inset: 0;
+  }
+
   .slideImage {
     position: absolute;
     top: 0;
@@ -691,7 +696,7 @@
     right: 0;
     left: auto;
     width: clamp(260px, 32%, 420px);
-    height: auto;
+    height: 100%;
     z-index: 0;
     border-radius: 0;
   }
@@ -706,10 +711,11 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    max-width: 62%;
+    max-width: calc(100% - clamp(260px, 32%, 420px));
     padding: 22px 28px;
     color: var(--foreground);
   }
+
 
   .slideKicker {
     display: block;
@@ -778,9 +784,10 @@
   }
 
   .slideDots {
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 14px;
+    left: 28px;
+    right: auto;
+    transform: none;
+    bottom: 16px;
     gap: 6px;
   }
 
@@ -795,9 +802,6 @@
     background: var(--foreground);
   }
 
-  .slideArrow {
-    display: inline-flex;
-  }
 
   .kicker {
     font-weight: 600;

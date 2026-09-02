@@ -24,6 +24,7 @@ const FULL_NAV_ITEMS: NavItem[] = [
 const GUEST_NAV_ITEMS: NavItem[] = [
   { href: `/`, icon: "home", label: "Home" },
   { href: `/browse`, icon: "category", label: "Browse" },
+  { href: `/saved`, icon: "favorite_border", label: "Saved" },
   { href: `/login`, icon: "login", label: "Sign in" },
 ];
 

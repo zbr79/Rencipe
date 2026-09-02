@@ -17,12 +17,9 @@ export default function SavedPage() {
     loadingSaved,
     fetchSaved,
     unsaveRecipe,
-    savedMeals,
-    unsaveMeal,
   } = useSaved();
   const swipeRowDrag = useSwipeRowDrag();
 
-  const [activeTab, setActiveTab] = useState<"recipes" | "meals">("recipes");
   const [filters, setFilters] = useState({
     searchTerm: "",
   });
@@ -39,18 +36,6 @@ export default function SavedPage() {
     return matchesSearch;
   });
 
-  const filteredMeals = savedMeals.filter((meal) => {
-    const matchesSearch =
-      !filters.searchTerm ||
-      matchesTextSearch(filters.searchTerm, meal.name);
-
-    return matchesSearch;
-  });
-
-  const getMealRecipeCount = (meal: any) => {
-    return meal.recipes?.length || 0;
-  };
-
   const handleRemoveSavedRecipe = async (recipeId: string) => {
     await unsaveRecipe(undefined, recipeId);
   };
@@ -61,9 +46,7 @@ export default function SavedPage() {
       <div className={styles.filtersSection}>
         <input
           type="text"
-          placeholder={
-            activeTab === "recipes" ? "Search saved recipes" : "Search saved meals"
-          }
+          placeholder="Search saved recipes"
           value={filters.searchTerm}
           onChange={(e) =>
             setFilters({ ...filters, searchTerm: e.target.value })
@@ -72,23 +55,7 @@ export default function SavedPage() {
         />
       </div>
 
-      <div className={styles.segmentedTabs}>
-        <button
-          onClick={() => setActiveTab("recipes")}
-          className={`${styles.segmentedTab} ${activeTab === "recipes" ? styles.segmentedTabActive : ""}`}
-        >
-          Recipes ({savedRecipes.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("meals")}
-          className={`${styles.segmentedTab} ${activeTab === "meals" ? styles.segmentedTabActive : ""}`}
-        >
-          Meals ({savedMeals.length})
-        </button>
-      </div>
-
-      {activeTab === "recipes" && (
-        <>
+      <>
           <div className={styles.count}>
             Saved {filteredRecipes.length} recipes
           </div>
@@ -138,53 +105,7 @@ export default function SavedPage() {
               );
             })}
           </div>
-        </>
-      )}
-
-      {activeTab === "meals" && (
-        <>
-          <div className={styles.mealToolbar}>
-            <div className={styles.count}>
-              Saved {filteredMeals.length} meals
-            </div>
-          </div>
-
-          {loadingSaved && <p className={styles.loading}>Loading...</p>}
-
-          {!loadingSaved && filteredMeals.length === 0 && (
-            <EmptyState
-              icon="restaurant_menu"
-              title={savedMeals.length === 0 ? "No saved meals yet" : "No matching meals"}
-              subtitle={savedMeals.length === 0 ? "Save meal sets you like and find them here." : "Try a different filter."}
-              actionLabel="Browse meals"
-              actionHref={savedMeals.length === 0 ? "/browse" : undefined}
-            />
-          )}
-
-          <div className={styles.savedList}>
-            {filteredMeals.map((meal) => (
-              <div key={meal._id} className={styles.swipeRow} {...swipeRowDrag}>
-                <Link href={`/meals/${meal._id}`} className={styles.savedMealRow}>
-                  <h3>{meal.name}</h3>
-                  <span>{getMealRecipeCount(meal)} recipes</span>
-                  <div className={styles.uploaderLine}>
-                    <AccountAvatar account={meal.userId as any} size={18} />
-                    <span>{getAccountDisplayName(meal.userId as any)}</span>
-                  </div>
-                </Link>
-                <button
-                  type="button"
-                  className={styles.swipeDeleteButton}
-                  onClick={() => unsaveMeal(undefined, meal._id)}
-                  aria-label={`Unsave ${meal.name}`}
-                >
-                  Unsave
-                </button>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+      </>
     </div>
   );
 }

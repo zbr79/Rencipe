@@ -12,7 +12,7 @@
 .page {
   width: min(100%, 860px);
   margin: 0 auto;
-  padding: 0 18px 104px;
+  padding: 14px 18px 96px;
 }
 
 .searchHeader {
@@ -155,7 +155,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .resultsTitleGroup {
@@ -178,6 +178,37 @@
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 600;
+}
+
+.activeFilterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 6px 0 12px;
+  border: 1px solid color-mix(in srgb, var(--primary) 34%, var(--border));
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  font-size: 13px;
+  font-weight: 700;
+  transition: all var(--transition-fast);
+}
+
+.activeFilterChip:hover {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary-soft) 70%, var(--card-bg));
+}
+
+.activeFilterChip span:last-child {
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary-text) 12%, transparent);
 }
 
 .contentFilterWrap {
@@ -220,30 +251,35 @@
   top: calc(100% + 6px);
   left: 0;
   z-index: 60;
-  width: 124px;
+  width: 180px;
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--card-bg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
 }
 
 .contentFilterOption {
   width: 100%;
-  min-height: 38px;
+  min-height: 42px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 1px 10px 2px;
+  padding: 2px 14px;
   border: 0;
   border-radius: 0;
   background: transparent;
   color: var(--foreground);
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
   line-height: 1.2;
   text-align: left;
+  transition: background-color var(--transition-fast);
+}
+
+.contentFilterOption:hover {
+  background: var(--hover-bg);
 }
 
 .contentFilterOptionLabel {
@@ -407,60 +443,6 @@
   color: var(--text-muted);
 }
 
-.featureRail {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(68px, 1fr));
-  gap: 12px;
-  margin: 10px 0 12px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.featureRail::-webkit-scrollbar {
-  display: none;
-}
-
-.featureItem {
-  min-width: 72px;
-  border: 0;
-  background: transparent;
-  color: var(--text-primary);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.featureItemActive .featureIcon {
-  background: var(--primary-strong);
-  color: var(--on-strong);
-  border-color: var(--primary-text);
-}
-
-.featureIcon {
-  width: 58px;
-  height: 58px;
-  display: inline-grid !important;
-  place-items: center;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--primary) 12%, var(--card-bg));
-  color: var(--primary-text);
-  border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border));
-  box-shadow: var(--shadow-sm);
-  font-size: 24px;
-  line-height: 1 !important;
-  text-align: center;
-  vertical-align: middle;
-}
-
-.featureIcon::before {
-  display: block;
-  line-height: 1;
-}
 
 .categoryTabs {
   display: flex;
@@ -879,7 +861,7 @@
 
 @media (max-width: 768px) {
   .page {
-    padding: 0 12px 96px;
+    padding: 14px 14px 96px;
   }
 
   .cardFooter {
@@ -913,11 +895,6 @@
     min-height: 42px;
   }
 
-  .featureRail {
-    grid-template-columns: repeat(5, minmax(68px, 1fr));
-    gap: 8px;
-  }
-
   .historyRow {
     min-height: 52px;
     padding: 7px 8px 7px 12px;
@@ -926,12 +903,6 @@
   .historyPreview {
     width: 40px;
     height: 40px;
-  }
-
-  .featureIcon {
-    width: 52px;
-    height: 52px;
-    font-size: 23px;
   }
 
   .recipeGrid {
@@ -973,7 +944,7 @@
 @media (min-width: 768px) {
   .page {
     width: min(100%, 1240px);
-    padding: 16px 24px 32px;
+    padding: 24px 32px 72px;
   }
 
   .searchHeader {
@@ -997,17 +968,6 @@
   .searchBoxButton {
     min-height: 38px;
     border-radius: 10px;
-  }
-
-  .featureRail {
-    grid-template-columns: repeat(5, minmax(64px, 1fr));
-    gap: 8px;
-  }
-
-  .featureIcon {
-    width: 50px;
-    height: 50px;
-    font-size: 22px;
   }
 
   .recipeGrid {
@@ -1050,6 +1010,12 @@
   .visibilityTab,
   .categoryTab {
     font-weight: 600;
+  }
+}
+
+@media (min-width: 1200px) {
+  .recipeGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
