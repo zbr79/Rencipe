@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type TransitionEvent as ReactTransitionEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../page.module.css";
@@ -40,7 +40,10 @@ type Recipe = {
 type ListRes = { recipes: Recipe[] };
 
 const AUTO_SCROLL_DELAY_MS = 4200;
-const SWIPE_THRESHOLD_PX = 48;
+const DRAG_START_THRESHOLD_PX = 10;
+const FLICK_MAX_DURATION_MS = 350;
+const FLICK_MIN_DISTANCE_PX = 40;
+const FLICK_MIN_VELOCITY = 0.3;
 
 function safeJson(text: string) {
   try {
@@ -83,10 +86,17 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("recommended");
-  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [slidePosition, setSlidePosition] = useState(0);
+  const [skipTransition, setSkipTransition] = useState(false);
   const [paused, setPaused] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const swipeStartXRef = useRef<number | null>(null);
+  const swipeStartYRef = useRef<number | null>(null);
+  const dragStartTimeRef = useRef(0);
+  const draggingRef = useRef(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const dashboardRef = useRef<HTMLDivElement | null>(null);
   const suppressSlideClickUntilRef = useRef(0);
   const { isSaved, saveRecipe, unsaveRecipe, fetchSaved } = useSaved();
   const publicRecipes = recipes.filter((recipe) => recipe.isPublic !== false);
@@ -97,6 +107,11 @@ export default function HomePage() {
   });
   const newestPublicRecipes = [...publicRecipes].sort(compareNewestRecipes);
   const featuredRecipes = newestPublicRecipes.filter((recipe) => recipe.image).slice(0, 10);
+  const slideCount = featuredRecipes.length;
+  const activeSlideIndex = slideCount > 0 ? ((slidePosition % slideCount) + slideCount) % slideCount : 0;
+  const trackSlides =
+    slideCount > 1 ? [featuredRecipes[slideCount - 1], ...featuredRecipes, featuredRecipes[0]] : featuredRecipes;
+  const trackBasePercent = slideCount > 1 ? (slidePosition + 1) * 100 : 0;
 
   async function fetchRecipes() {
     setLoading(true);
@@ -141,14 +156,14 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (featuredRecipes.length <= 1 || paused) return;
+    if (slideCount <= 1 || paused) return;
 
     const timeoutId = window.setTimeout(() => {
-      setActiveSlideIndex((current) => (current + 1) % featuredRecipes.length);
+      setSlidePosition((current) => current + 1);
     }, AUTO_SCROLL_DELAY_MS);
 
     return () => window.clearTimeout(timeoutId);
-  }, [activeSlideIndex, paused, featuredRecipes.length]);
+  }, [slidePosition, paused, slideCount]);
 
   const tabs = TABS;
 
@@ -173,33 +188,95 @@ export default function HomePage() {
   });
 
   function showSlide(index: number) {
-    if (featuredRecipes.length <= 1) return;
-    setActiveSlideIndex(index);
+    if (slideCount <= 1) return;
+    setSlidePosition((current) => {
+      const normalized = ((current % slideCount) + slideCount) % slideCount;
+      const forward = (index - normalized + slideCount) % slideCount;
+      const backward = forward - slideCount;
+      return current + (forward <= -backward ? forward : backward);
+    });
   }
 
   function handleSlidePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     swipeStartXRef.current = event.clientX;
+    swipeStartYRef.current = event.clientY;
+    dragStartTimeRef.current = Date.now();
     setPaused(true);
   }
 
+  function handleSlidePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const startX = swipeStartXRef.current;
+    if (startX === null) return;
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - (swipeStartYRef.current ?? startX);
+
+    if (
+      !draggingRef.current &&
+      Math.abs(deltaX) > DRAG_START_THRESHOLD_PX &&
+      Math.abs(deltaX) > Math.abs(deltaY)
+    ) {
+      draggingRef.current = true;
+      setDragging(true);
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+    }
+
+    if (draggingRef.current) {
+      setDragOffset(deltaX);
+    }
+  }
+
   function handleSlidePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
-    if (swipeStartXRef.current === null) return;
-    const deltaX = event.clientX - swipeStartXRef.current;
+    const startX = swipeStartXRef.current;
     swipeStartXRef.current = null;
+    swipeStartYRef.current = null;
     setPaused(false);
 
-    if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX) return;
+    if (startX === null) return;
 
-    suppressSlideClickUntilRef.current = Date.now() + 400;
-    setActiveSlideIndex((current) => {
-      if (featuredRecipes.length <= 1) return current;
-      return (current + (deltaX < 0 ? 1 : -1) + featuredRecipes.length) % featuredRecipes.length;
-    });
+    const deltaX = event.clientX - startX;
+    const wasDragging = draggingRef.current;
+    draggingRef.current = false;
+    setDragging(false);
+    setDragOffset(0);
+
+    if (wasDragging) {
+      suppressSlideClickUntilRef.current = Date.now() + 400;
+    }
+
+    if (!wasDragging || slideCount <= 1) return;
+
+    const width = dashboardRef.current?.clientWidth ?? 0;
+    if (width <= 0) return;
+
+    const elapsed = Date.now() - dragStartTimeRef.current;
+    const distance = Math.abs(deltaX);
+    const flicked =
+      elapsed > 0 &&
+      elapsed < FLICK_MAX_DURATION_MS &&
+      distance >= FLICK_MIN_DISTANCE_PX &&
+      distance / elapsed >= FLICK_MIN_VELOCITY;
+
+    if (distance > width / 2 || flicked) {
+      setSlidePosition((current) => current + (deltaX < 0 ? 1 : -1));
+    }
+  }
+
+  function handleTrackTransitionEnd(event: ReactTransitionEvent<HTMLDivElement>) {
+    if (event.propertyName !== "transform" || draggingRef.current || slideCount <= 1) return;
+    const normalized = ((slidePosition % slideCount) + slideCount) % slideCount;
+    if (normalized === slidePosition) return;
+    setSkipTransition(true);
+    setSlidePosition(normalized);
+    requestAnimationFrame(() => requestAnimationFrame(() => setSkipTransition(false)));
   }
 
   function handleSlidePointerCancel() {
     swipeStartXRef.current = null;
+    swipeStartYRef.current = null;
+    draggingRef.current = false;
+    setDragging(false);
+    setDragOffset(0);
     setPaused(false);
   }
 
@@ -213,8 +290,10 @@ export default function HomePage() {
     <main className={styles.container}>
       <section className={styles.dashboard}>
         <div
+          ref={dashboardRef}
           className={styles.dashboardContent}
           onPointerDown={handleSlidePointerDown}
+          onPointerMove={handleSlidePointerMove}
           onPointerUp={handleSlidePointerUp}
           onPointerCancel={handleSlidePointerCancel}
           onMouseEnter={() => setPaused(true)}
@@ -226,12 +305,24 @@ export default function HomePage() {
             </div>
           ) : featuredRecipes.length > 0 ? (
             <>
-              <div className={styles.carouselTrack}>
-                {featuredRecipes.map((recipe, index) => {
-                  const active = index === activeSlideIndex % featuredRecipes.length;
+              <div
+                className={`${styles.carouselTrack}${dragging ? ` ${styles.carouselTrackDragging}` : ""}${skipTransition ? ` ${styles.carouselTrackNoTransition}` : ""}`}
+                onTransitionEnd={handleTrackTransitionEnd}
+                style={{
+                  transform: `translateX(calc(-${trackBasePercent}% + ${dragOffset}px))`,
+                }}
+              >
+                {trackSlides.map((recipe, trackIndex) => {
+                  const visibleIndex =
+                    trackIndex === 0
+                      ? slideCount - 1
+                      : trackIndex === slideCount + 1
+                        ? 0
+                        : trackIndex - 1;
+                  const active = visibleIndex === activeSlideIndex;
                   return (
                     <Link
-                      key={recipe._id || recipe.id}
+                      key={`slide-${trackIndex}`}
                       href={`/recipes/${recipe._id || recipe.id}`}
                       className={`${styles.slideCard} ${active ? styles.slideCardActive : ""}`}
                       onClick={handleSlideClick}
@@ -259,17 +350,17 @@ export default function HomePage() {
 
               {featuredRecipes.length > 1 && (
                 <div className={styles.slideDots} aria-label="Newest recipes">
-                  {featuredRecipes.map((recipe, index) => (
-                    <button
-                      key={recipe._id || recipe.id}
-                      type="button"
-                      aria-label={`Show ${recipe.title}`}
-                      aria-current={index === activeSlideIndex % featuredRecipes.length ? "true" : undefined}
-                      className={index === activeSlideIndex % featuredRecipes.length ? styles.slideDotActive : ""}
-                      onClick={() => showSlide(index)}
-                    />
-                  ))}
-                </div>
+                    {featuredRecipes.map((recipe, index) => (
+                      <button
+                        key={recipe._id || recipe.id}
+                        type="button"
+                        aria-label={`Show ${recipe.title}`}
+                        aria-current={index === activeSlideIndex ? "true" : undefined}
+                        className={index === activeSlideIndex ? styles.slideDotActive : ""}
+                        onClick={() => showSlide(index)}
+                      />
+                    ))}
+                  </div>
               )}
             </>
           ) : (
