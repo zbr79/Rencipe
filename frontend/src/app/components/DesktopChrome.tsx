@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCreateForm } from "../contexts/CreateFormContext";
-import { useTheme } from "../contexts/ThemeContext";
+import { useSettings } from "../contexts/SettingsContext";
 import AccountAvatar from "./AccountAvatar";
 import SearchOverlay from "./SearchOverlay";
 import { authFetch, getCurrentUser } from "../utils/authSession";
@@ -85,7 +85,7 @@ export default function DesktopChrome() {
   const pathname = usePathname();
   const router = useRouter();
   const { openCreateForm } = useCreateForm();
-  const { theme, toggleTheme } = useTheme();
+  const { openSettings } = useSettings();
   const [searchOpen, setSearchOpen] = useState(false);
   const closeSearch = useCallback(() => setSearchOpen(false), []);
   const user = getCurrentUser();
@@ -177,16 +177,31 @@ export default function DesktopChrome() {
         )}
 
         <nav className={styles.nav}>
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.navItem} ${isActive(item.href) ? styles.navItemActive : ""}`}
-            >
-              <span className="material-symbols-rounded">{item.icon}</span>
-              <span>{item.label}</span>
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            if (item.href === "/settings") {
+              return (
+                <button
+                  key={item.href}
+                  type="button"
+                  className={`${styles.navItem} ${isActive(item.href) ? styles.navItemActive : ""}`}
+                  onClick={openSettings}
+                >
+                  <span className="material-symbols-rounded">{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              );
+            }
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`${styles.navItem} ${isActive(item.href) ? styles.navItemActive : ""}`}
+              >
+                <span className="material-symbols-rounded">{item.icon}</span>
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className={styles.sidebarSection}>
@@ -240,16 +255,6 @@ export default function DesktopChrome() {
           </div>
         )}
 
-        <button
-          type="button"
-          className={styles.themeToggle}
-          onClick={toggleTheme}
-          aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-        >
-          <span className="material-symbols-rounded">{theme === "dark" ? "light_mode" : "dark_mode"}</span>
-          <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
-        </button>
-
         {isGuest ? (
           <div className={styles.accountRow}>
             <div className={styles.account}>
@@ -259,7 +264,7 @@ export default function DesktopChrome() {
             <button
               type="button"
               className={styles.accountSettings}
-              onClick={() => router.push("/settings")}
+              onClick={openSettings}
               aria-label="Settings"
               title="Settings"
             >
@@ -277,7 +282,7 @@ export default function DesktopChrome() {
             <button
               type="button"
               className={styles.accountSettings}
-              onClick={() => router.push("/settings")}
+              onClick={openSettings}
               aria-label="Settings"
               title="Settings"
             >

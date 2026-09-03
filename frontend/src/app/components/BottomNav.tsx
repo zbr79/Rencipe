@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCreateForm } from "../contexts/CreateFormContext";
+import { useSettings } from "../contexts/SettingsContext";
 import { getCurrentUser } from "../utils/authSession";
 import styles from "./bottom-nav.module.css";
 
@@ -18,7 +19,7 @@ const FULL_NAV_ITEMS: NavItem[] = [
   { href: `/browse`, icon: "category", label: "Browse" },
   { href: null, icon: "add_circle", label: "Create", action: undefined },
   { href: `/saved`, icon: "favorite_border", label: "Saved" },
-  { href: `/settings`, icon: "settings", label: "Settings" },
+  { href: null, icon: "settings", label: "Settings" },
 ];
 
 const GUEST_NAV_ITEMS: NavItem[] = [
@@ -26,20 +27,25 @@ const GUEST_NAV_ITEMS: NavItem[] = [
   { href: `/browse`, icon: "category", label: "Browse" },
   { href: `/saved`, icon: "favorite_border", label: "Saved" },
   { href: `/login`, icon: "login", label: "Sign in" },
+  { href: null, icon: "settings", label: "Settings" },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
   const { isOpen, openCreateForm, closeCreateForm } = useCreateForm();
+  const { openSettings } = useSettings();
 
   if (pathname === "/login") return null;
 
   const isGuest = getCurrentUser()?.role === "guest";
   const navItems = isGuest
-    ? GUEST_NAV_ITEMS
+    ? GUEST_NAV_ITEMS.map((item) => ({
+        ...item,
+        action: item.href === null ? openSettings : item.action,
+      }))
     : FULL_NAV_ITEMS.map((item) => ({
         ...item,
-        action: item.href === null ? openCreateForm : item.action,
+        action: item.href === null && item.label === "Settings" ? openSettings : item.href === null ? openCreateForm : item.action,
       }));
 
   const getItemIcon = (item: NavItem, active: boolean) => {

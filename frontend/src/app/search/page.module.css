@@ -766,7 +766,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: white;
+  background: var(--card-bg);
   color: var(--primary-text);
   box-shadow: 0 10px 22px rgba(84, 61, 20, 0.08);
   transition:
@@ -785,7 +785,7 @@
 .browseSaveButton:hover {
   transform: translateY(-1px);
   border-color: var(--primary-text);
-  background: white;
+  background: var(--card-bg);
   box-shadow: 0 14px 26px rgba(84, 61, 20, 0.12);
 }
 
