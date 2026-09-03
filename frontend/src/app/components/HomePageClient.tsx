@@ -365,10 +365,9 @@ export default function HomePage() {
           )}
         </div>
 
-        <aside className={styles.quickPanel} aria-label="Kitchen helper">
+        <aside className={styles.quickPanel} aria-label="Kitchen converter">
           <div className={styles.quickPanelHeader}>
-            <h2 className={styles.quickPanelTitle}>Kitchen helper</h2>
-            <p className={styles.quickPanelSub}>Convert cooking units</p>
+            <h2 className={styles.quickPanelTitle}>Kitchen converter</h2>
           </div>
 
           <UnitConverter />

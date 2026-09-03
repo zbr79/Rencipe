@@ -127,14 +127,107 @@ function UnitRow({ units, defaultFromId, defaultToId }: { units: Unit[]; default
   );
 }
 
+const TEMP_UNITS = [
+  { id: "F", label: "°F" },
+  { id: "C", label: "°C" },
+] as const;
+
+type TempUnit = (typeof TEMP_UNITS)[number]["id"];
+
+function toCelsius(value: number, unit: TempUnit) {
+  return unit === "F" ? ((value - 32) * 5) / 9 : value;
+}
+
+function fromCelsius(value: number, unit: TempUnit) {
+  return unit === "F" ? (value * 9) / 5 + 32 : value;
+}
+
+function convertTemp(value: string, from: TempUnit, to: TempUnit) {
+  const number = parseFloat(value);
+  if (!Number.isFinite(number)) return "";
+  const celsius = toCelsius(number, from);
+  return String(Math.round(fromCelsius(celsius, to) * 10) / 10);
+}
+
+function TemperatureRow() {
+  const [fromValue, setFromValue] = useState("350");
+  const [fromId, setFromId] = useState<TempUnit>("F");
+  const [toId, setToId] = useState<TempUnit>("C");
+
+  const toValue = convertTemp(fromValue, fromId, toId);
+
+  function handleToChange(value: string) {
+    const number = parseFloat(value);
+    if (Number.isFinite(number)) {
+      setFromValue(convertTemp(value, toId, fromId));
+    }
+  }
+
+  return (
+    <div className={`${styles.group} ${styles.groupDivider}`}>
+      <p className={styles.groupLabel}>Temperature</p>
+      <div className={styles.line}>
+        <span className={styles.sideLabel}>From</span>
+        <input
+          type="number"
+          inputMode="decimal"
+          value={fromValue}
+          onChange={(event) => setFromValue(event.target.value)}
+          className={styles.input}
+          aria-label="Temperature from amount"
+        />
+        <div className={styles.pills}>
+          {TEMP_UNITS.map((unit) => (
+            <button
+              key={unit.id}
+              type="button"
+              onClick={() => setFromId(unit.id)}
+              className={`${styles.pill} ${unit.id === fromId ? styles.pillActive : ""}`}
+              aria-pressed={unit.id === fromId}
+            >
+              {unit.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className={styles.line}>
+        <span className={styles.sideLabel}>To</span>
+        <input
+          type="number"
+          inputMode="decimal"
+          value={toValue}
+          onChange={(event) => handleToChange(event.target.value)}
+          className={`${styles.input} ${styles.inputResult}`}
+          aria-label="Temperature to amount"
+        />
+        <div className={styles.pills}>
+          {TEMP_UNITS.map((unit) => (
+            <button
+              key={unit.id}
+              type="button"
+              onClick={() => setToId(unit.id)}
+              className={`${styles.pill} ${unit.id === toId ? styles.pillActive : ""}`}
+              aria-pressed={unit.id === toId}
+            >
+              {unit.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function UnitConverter() {
   return (
     <div className={styles.converter}>
       <p className={styles.groupLabel}>Volume</p>
       <UnitRow units={VOLUME_UNITS} defaultFromId="cup" defaultToId="ml" />
 
-      <p className={styles.groupLabel}>Weight</p>
+      <p className={`${styles.groupLabel} ${styles.groupDivider}`}>Weight</p>
       <UnitRow units={WEIGHT_UNITS} defaultFromId="oz" defaultToId="g" />
+
+      <TemperatureRow />
     </div>
   );
 }
