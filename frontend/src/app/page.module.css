@@ -112,6 +112,7 @@
 }
 
 .slideKicker,
+.slideSubtitle,
 .slideDescription,
 .slideMeta,
 .slideCta {
@@ -377,6 +378,18 @@
   justify-content: flex-start;
 }
 
+.cardSubtitle {
+  margin: 2px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .cardTitle {
   min-height: 40px;
   margin: 0;
@@ -623,6 +636,20 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
+  }
+
+  .slideSubtitle {
+    display: block;
+    margin: 6px 0 0;
+    max-width: 560px;
+    color: #8d8d8d;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  :global(html.dark) .slideSubtitle {
+    color: #a6a6a6;
   }
 
   .slideDescription {

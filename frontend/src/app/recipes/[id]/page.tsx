@@ -16,6 +16,7 @@ import { recordRecentlyViewedRecipe } from "../../utils/recentlyViewedRecipes";
 interface Recipe {
   id: string;
   title: string;
+  subtitle?: string;
   description: string;
   language?: RecipeLanguage;
   tips?: string;
@@ -199,6 +200,8 @@ export default function RecipeDetailPage() {
       />
 
       <h1 className={styles.recipeTitle}>{recipe.title}</h1>
+
+      {recipe.subtitle && <p className={styles.recipeSubtitle}>{recipe.subtitle}</p>}
 
       <div className={styles.recipeInfo}>
 

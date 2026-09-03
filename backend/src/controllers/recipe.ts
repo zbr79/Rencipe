@@ -38,6 +38,7 @@ function pickRecipe(doc: any) {
     id: String(doc._id),
     _id: String(doc._id),
     title: doc.title,
+    subtitle: doc.subtitle ?? "",
     description: doc.description,
     tips: doc.tips ?? "",
     recipeOrigin: doc.recipeOrigin === "shared" ? "shared" : "original",
@@ -203,6 +204,7 @@ export async function createRecipe(req: Request, res: Response) {
   try {
     const {
       title,
+      subtitle: rawSubtitle,
       description,
       tips: rawTips,
       recipeOrigin: rawRecipeOrigin,
@@ -227,6 +229,7 @@ export async function createRecipe(req: Request, res: Response) {
     if (!description) return res.status(400).json({ error: "description is required" });
 
     const recipeOrigin = normalizeRecipeOrigin(rawRecipeOrigin);
+    const subtitle = normalizeOptionalText(rawSubtitle);
     const tips = normalizeOptionalText(rawTips);
     const sharedSource = normalizeOptionalText(rawSharedSource);
     const sharedSourceLink = normalizeOptionalText(rawSharedSourceLink);
@@ -237,6 +240,7 @@ export async function createRecipe(req: Request, res: Response) {
 
     const doc = await Recipe.create({
       title,
+      subtitle: subtitle || undefined,
       description,
       tips: tips || undefined,
       recipeOrigin,
@@ -291,6 +295,7 @@ export async function updateRecipe(req: Request, res: Response) {
 
     const {
       title,
+      subtitle: rawSubtitle,
       description,
       tips: rawTips,
       recipeOrigin: rawRecipeOrigin,
@@ -317,6 +322,7 @@ export async function updateRecipe(req: Request, res: Response) {
     }
 
     const recipeOrigin = normalizeRecipeOrigin(rawRecipeOrigin);
+    const subtitle = normalizeOptionalText(rawSubtitle);
     const tips = normalizeOptionalText(rawTips);
     const sharedSource = normalizeOptionalText(rawSharedSource);
     const sharedSourceLink = normalizeOptionalText(rawSharedSourceLink);
@@ -326,6 +332,7 @@ export async function updateRecipe(req: Request, res: Response) {
     }
 
     existing.title = title;
+    existing.subtitle = subtitle || undefined;
     existing.description = description;
     existing.tips = tips || undefined;
     existing.recipeOrigin = recipeOrigin;

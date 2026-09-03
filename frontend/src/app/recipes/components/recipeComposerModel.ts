@@ -23,6 +23,7 @@ export type CreateValidationState = {
 
 export interface RecipeFormData {
   title: string;
+  subtitle: string;
   description: string;
   tips: string;
   authorId: string;
@@ -68,6 +69,7 @@ export function createEmptyIngredients(count = DEFAULT_INGREDIENT_ROWS): Ingredi
 export function createInitialFormData(authorId = ""): RecipeFormData {
   return {
     title: "",
+    subtitle: "",
     description: "",
     tips: "",
     authorId,
@@ -87,6 +89,7 @@ export function createInitialFormData(authorId = ""): RecipeFormData {
 export function normalizeRecipeForm(recipe: RecipeData): RecipeFormData {
   return {
     title: recipe.title,
+    subtitle: recipe.subtitle || "",
     description: recipe.description,
     tips: recipe.tips || "",
     authorId: recipe.authorId,
@@ -131,6 +134,7 @@ export function buildRecipeUpdatePayload(
 ) {
   return {
     title: data.title,
+    subtitle: data.subtitle.trim(),
     description: data.description,
     tips: data.tips.trim(),
     recipeOrigin: data.recipeOrigin,

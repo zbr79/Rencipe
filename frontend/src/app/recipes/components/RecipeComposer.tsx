@@ -111,6 +111,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
 
     setFormData({
       title: draft.title || "",
+      subtitle: draft.subtitle || "",
       description: draft.description || "",
       tips: draft.tips || "",
       authorId: accountId,
@@ -210,6 +211,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
 
   const getDraftData = () => ({
     title: formData.title,
+    subtitle: formData.subtitle,
     description: formData.description,
     recipeOrigin: formData.recipeOrigin,
     sharedSource: formData.sharedSource,
@@ -1032,12 +1034,14 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
         >
           <RecipeBasicsForm
             title={formData.title}
+            subtitle={formData.subtitle}
             description={formData.description}
             isPublic={formData.isPublic}
             publishDisabled={publishBusy}
             invalidTitle={activeCreateValidation.title}
             invalidDescription={activeCreateValidation.description}
             onTitleChange={(title) => setFormData((prev) => ({ ...prev, title }))}
+            onSubtitleChange={(subtitle) => setFormData((prev) => ({ ...prev, subtitle }))}
             onDescriptionChange={(description) => setFormData((prev) => ({ ...prev, description }))}
             onPublishChange={handlePublishChange}
           />

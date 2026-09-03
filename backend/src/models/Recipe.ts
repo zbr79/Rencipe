@@ -4,6 +4,7 @@ export type RecipeLanguage = "en" | "zh";
 
 export interface IRecipe extends Document {
   title: string;
+  subtitle?: string;
   description: string;
   tips?: string;
   recipeOrigin: "original" | "shared";
@@ -49,6 +50,7 @@ export interface IRecipe extends Document {
 const RecipeSchema = new Schema<IRecipe>(
   {
     title: { type: String, required: true, trim: true },
+    subtitle: { type: String, trim: true },
     description: { type: String, required: true, trim: true },
     tips: { type: String, trim: true },
     recipeOrigin: {

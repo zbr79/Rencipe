@@ -7,6 +7,7 @@ interface DraftData {
   draftType?: "recipe" | "meal";
   name?: string;
   title?: string;
+  subtitle?: string;
   description?: string;
   tips?: string;
   recipeOrigin?: "original" | "shared";

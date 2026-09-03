@@ -22,6 +22,7 @@ type Recipe = {
   id: string;
   _id?: string;
   title: string;
+  subtitle?: string;
   description: string;
   author?: AccountIdentity | null;
   authorId?: string | AccountIdentity | null;
@@ -331,6 +332,7 @@ export default function HomePage() {
                       <div className={styles.slideContent}>
                         <p className={styles.slideKicker}>Featured recipe</p>
                         <h1>{recipe.title}</h1>
+                        {recipe.subtitle && <p className={styles.slideSubtitle}>{recipe.subtitle}</p>}
                         {recipe.description && <p className={styles.slideDescription}>{recipe.description}</p>}
                         <div className={styles.slideMeta}>
                           {recipe.ratingCount > 0 && <span>{recipe.ratingAverage.toFixed(1)} ★</span>}
@@ -429,6 +431,7 @@ export default function HomePage() {
 
                   <div className={styles.cardContent}>
                     <h3 className={styles.cardTitle}>{r.title}</h3>
+                    {r.subtitle && <p className={styles.cardSubtitle}>{r.subtitle}</p>}
                   </div>
                 </Link>
 

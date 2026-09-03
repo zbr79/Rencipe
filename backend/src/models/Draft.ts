@@ -12,6 +12,7 @@ export interface IDraft extends Document {
   draftType: DraftType;
   name: string;
   title: string;
+  subtitle?: string;
   description: string;
   tips?: string;
   recipeOrigin: "original" | "shared";
@@ -45,6 +46,7 @@ const DraftSchema = new Schema<IDraft>(
     draftType: { type: String, enum: ["recipe", "meal"], default: "recipe", index: true },
     name: { type: String, required: true, default: "Untitled Draft" },
     title: { type: String, default: "" },
+    subtitle: { type: String, default: "" },
     description: { type: String, default: "" },
     tips: { type: String, default: "" },
     recipeOrigin: { type: String, enum: ["original", "shared"], default: "original" },

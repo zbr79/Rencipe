@@ -15,6 +15,7 @@ interface Recipe {
   id: string;
   _id?: string;
   title: string;
+  subtitle?: string;
   description: string;
   author?: AccountIdentity | null;
   authorId?: string | AccountIdentity | null;
@@ -404,6 +405,7 @@ export default function BrowsePage() {
                   </div>
                   <div className={styles.recipeBody}>
                     <h3>{recipe.title}</h3>
+                    {recipe.subtitle && <p className={styles.recipeCardSubtitle}>{recipe.subtitle}</p>}
                   </div>
                 </Link>
                 <div className={styles.cardFooter}>

@@ -14,6 +14,7 @@ interface Recipe {
   id: string;
   _id?: string;
   title: string;
+  subtitle?: string;
   description: string;
   author?: AccountIdentity | null;
   authorId?: string | AccountIdentity | null;
@@ -35,7 +36,7 @@ interface SearchOverlayProps {
 const HISTORY_KEY = "rencipe-search-history";
 
 function matchesRecipeSearch(recipe: Recipe, query: string) {
-  return matchesTextSearch(query, recipe.title, recipe.description, ...getVisibleTags(recipe.tags));
+  return matchesTextSearch(query, recipe.title, recipe.subtitle || "", recipe.description, ...getVisibleTags(recipe.tags));
 }
 
 export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
@@ -269,6 +270,7 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                     </div>
                     <div className={searchStyles.recipeBody}>
                       <h3>{recipe.title}</h3>
+                      {recipe.subtitle && <p className={searchStyles.recipeCardSubtitle}>{recipe.subtitle}</p>}
                     </div>
                   </Link>
                   <button

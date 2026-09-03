@@ -2,24 +2,28 @@ import styles from "./styles.module.css";
 
 interface RecipeBasicsFormProps {
   title: string;
+  subtitle: string;
   description: string;
   isPublic: boolean;
   publishDisabled?: boolean;
   invalidTitle?: boolean;
   invalidDescription?: boolean;
   onTitleChange: (value: string) => void;
+  onSubtitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onPublishChange: (checked: boolean) => void | Promise<void>;
 }
 
 export default function RecipeBasicsForm({
   title,
+  subtitle,
   description,
   isPublic,
   publishDisabled = false,
   invalidTitle = false,
   invalidDescription = false,
   onTitleChange,
+  onSubtitleChange,
   onDescriptionChange,
   onPublishChange,
 }: RecipeBasicsFormProps) {
@@ -61,6 +65,20 @@ export default function RecipeBasicsForm({
           </span>
           <span className={styles.publishLabel}>Publish</span>
         </label>
+      </div>
+
+      <div className={styles.formGroup}>
+        <label htmlFor="subtitle" className={styles.label}>
+          Second name
+        </label>
+        <input
+          id="subtitle"
+          type="text"
+          placeholder="Original or alternative name, e.g. Har Gow — Steamed Shrimp Dumplings"
+          value={subtitle}
+          onChange={(e) => onSubtitleChange(e.target.value)}
+          className={styles.input}
+        />
       </div>
 
       <div className={styles.formGroup}>
