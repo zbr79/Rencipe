@@ -161,6 +161,19 @@
     transition: all var(--transition-fast);
   }
 
+  button.sidebarSubLink {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  button.sidebarSubLink:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
   .sidebarSubLink:hover {
     background: var(--hover-bg);
     color: var(--foreground);
@@ -190,26 +203,6 @@
     font-size: 11px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-  }
-  .surpriseButton {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    min-height: 36px;
-    margin: 12px 2px 0;
-    padding: 0 12px;
-    border: 1px solid color-mix(in srgb, var(--primary) 26%, var(--border));
-    border-radius: 8px;
-    background: color-mix(in srgb, var(--primary-soft) 45%, var(--card-bg));
-    color: var(--primary-text);
-    font-size: 12.5px;
-    font-weight: 600;
-    transition: all var(--transition-fast);
-  }
-
-  .surpriseButton:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--primary-soft) 75%, var(--card-bg));
-    border-color: var(--primary);
   }
 
   .surpriseButton:disabled {
@@ -257,15 +250,23 @@
     min-height: 10px;
   }
 
+  .accountRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+
   .account {
+    flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 10px;
-    min-height: 48px;
-    padding: 6px 10px;
-    margin-top: 12px;
-    border-top: 1px solid var(--border);
-    padding-top: 14px;
+    min-height: 40px;
+    padding: 4px 10px;
     color: var(--foreground);
     text-decoration: none;
     border-radius: 9px;
@@ -283,6 +284,30 @@
     white-space: nowrap;
     font-size: 14px;
     font-weight: 600;
+  }
+
+  .accountSettings {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all var(--transition-fast);
+  }
+
+  .accountSettings:hover {
+    background: var(--hover-bg);
+    color: var(--foreground);
+    border-color: var(--border);
+  }
+
+  .accountSettings span {
+    font-size: 20px;
   }
 
   .topStrip {

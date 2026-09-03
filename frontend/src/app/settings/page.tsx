@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AccountAvatar from "../components/AccountAvatar";
 import AccountSwitchModal from "../components/AccountSwitchModal";
@@ -69,6 +70,8 @@ export default function SettingsPage() {
   const availableLanguageOptions = languageLocked ? languageOptions.filter((option) => option.value === "en") : languageOptions;
   const selectedLanguageLabel = languageOptions.find((option) => option.value === selectedLanguage)?.label || "English";
   const projectModeOn = session?.user.projectMode !== false;
+  const isGuest = session?.user?.role === "guest";
+  const visibleShortcuts = isGuest ? shortcutItems.filter((item) => item.label !== "Drafts" && item.label !== "My Work") : shortcutItems;
 
   async function updateAccountSettings(body: { language?: AccountLanguage; projectMode?: boolean }) {
     setSavingAccountSetting(true);
@@ -97,32 +100,53 @@ export default function SettingsPage() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.group}>
-        <div className={styles.accountSummaryRow}>
-          <button type="button" className={styles.accountSummaryAvatarButton} onClick={() => router.push("/settings/account")} aria-label="Open account settings">
+      <div className={styles.accountPageHeader}>
+        <h1>Settings</h1>
+        <p>Manage your preferences</p>
+      </div>
+      {isGuest ? (
+        <div className={styles.group}>
+          <div className={styles.accountSummaryRow}>
             <AccountAvatar account={session?.user} size={50} />
-          </button>
-          <span className={styles.accountSummaryText}>
-            <span className={styles.accountSummaryTitleLine}>
-              <button type="button" className={styles.accountSummaryTitleButton} onClick={() => router.push("/settings/account")}>
-                {getAccountDisplayName(session?.user)}
-              </button>
-              <button type="button" className={styles.accountSwitchButton} onClick={() => setSwitchModalOpen(true)} aria-label="Switch account">
-                <span className="material-symbols-outlined">swap_horiz</span>
+            <span className={styles.accountSummaryText}>
+              <span className={styles.accountSummaryTitleLine}>
+                <span className={styles.accountSummaryTitleButton}>Guest</span>
+              </span>
+              <span className={styles.accountSummarySubtitleButton}>Browsing without an account</span>
+            </span>
+            <Link href="/login" className={styles.guestSignInButton}>
+              Sign in
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.group}>
+          <div className={styles.accountSummaryRow}>
+            <button type="button" className={styles.accountSummaryAvatarButton} onClick={() => router.push("/settings/account")} aria-label="Open account settings">
+              <AccountAvatar account={session?.user} size={50} />
+            </button>
+            <span className={styles.accountSummaryText}>
+              <span className={styles.accountSummaryTitleLine}>
+                <button type="button" className={styles.accountSummaryTitleButton} onClick={() => router.push("/settings/account")}>
+                  {getAccountDisplayName(session?.user)}
+                </button>
+                <button type="button" className={styles.accountSwitchButton} onClick={() => setSwitchModalOpen(true)} aria-label="Switch account">
+                  <span className="material-symbols-outlined">swap_horiz</span>
+                </button>
+              </span>
+              <button type="button" className={styles.accountSummarySubtitleButton} onClick={() => router.push("/settings/account")}>
+                {session?.user.email || session?.user.username || "Account settings"}
               </button>
             </span>
-            <button type="button" className={styles.accountSummarySubtitleButton} onClick={() => router.push("/settings/account")}>
-              {session?.user.email || session?.user.username || "Account settings"}
+            <button type="button" className={styles.accountSummaryChevronButton} onClick={() => router.push("/settings/account")} aria-label="Open account settings">
+              <span className={`material-symbols-outlined ${styles.accountSummaryChevron}`}>chevron_right</span>
             </button>
-          </span>
-          <button type="button" className={styles.accountSummaryChevronButton} onClick={() => router.push("/settings/account")} aria-label="Open account settings">
-            <span className={`material-symbols-outlined ${styles.accountSummaryChevron}`}>chevron_right</span>
-          </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className={styles.shortcutGrid} aria-label="Account shortcuts">
-        {shortcutItems.map((item) => (
+        {visibleShortcuts.map((item) => (
           <button
             key={item.label}
             type="button"
@@ -136,47 +160,49 @@ export default function SettingsPage() {
       </div>
 
       <div className={styles.group}>
-        <div className={styles.settingItem}>
-          <div className={styles.settingLabel}>
-            <span className="material-symbols-outlined">language</span>
-            <span>Language</span>
+        {!isGuest && (
+          <div className={styles.settingItem}>
+            <div className={styles.settingLabel}>
+              <span className="material-symbols-outlined">language</span>
+              <span>Language</span>
+            </div>
+            <div className={styles.customSelectWrap}>
+              <button
+                type="button"
+                className={styles.customSelectButton}
+                onClick={() => {
+                  if (!languageLocked) setLanguageOpen((value) => !value);
+                }}
+                aria-haspopup="listbox"
+                aria-expanded={languageLocked ? false : languageOpen}
+                disabled={savingAccountSetting || languageLocked}
+              >
+                <span>{selectedLanguageLabel}</span>
+                <span className="material-symbols-outlined">expand_more</span>
+              </button>
+              {languageOpen && !languageLocked && (
+                <div className={styles.customSelectMenu} role="listbox">
+                  {availableLanguageOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={styles.customSelectOption}
+                      onClick={() => {
+                        setLanguageOpen(false);
+                        if (option.value !== selectedLanguage) void updateAccountSettings({ language: option.value });
+                      }}
+                      role="option"
+                      aria-selected={option.value === selectedLanguage}
+                    >
+                      <span className={styles.customSelectOptionLabel}>{option.label}</span>
+                      {option.value === selectedLanguage && <span className={`material-symbols-outlined ${styles.customSelectCheck}`}>check</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          <div className={styles.customSelectWrap}>
-            <button
-              type="button"
-              className={styles.customSelectButton}
-              onClick={() => {
-                if (!languageLocked) setLanguageOpen((value) => !value);
-              }}
-              aria-haspopup="listbox"
-              aria-expanded={languageLocked ? false : languageOpen}
-              disabled={savingAccountSetting || languageLocked}
-            >
-              <span>{selectedLanguageLabel}</span>
-              <span className="material-symbols-outlined">expand_more</span>
-            </button>
-            {languageOpen && !languageLocked && (
-              <div className={styles.customSelectMenu} role="listbox">
-                {availableLanguageOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={styles.customSelectOption}
-                    onClick={() => {
-                      setLanguageOpen(false);
-                      if (option.value !== selectedLanguage) void updateAccountSettings({ language: option.value });
-                    }}
-                    role="option"
-                    aria-selected={option.value === selectedLanguage}
-                  >
-                    <span className={styles.customSelectOptionLabel}>{option.label}</span>
-                    {option.value === selectedLanguage && <span className={`material-symbols-outlined ${styles.customSelectCheck}`}>check</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        )}
 
         {session?.user.role === "admin" && (
           <div className={styles.settingItem}>

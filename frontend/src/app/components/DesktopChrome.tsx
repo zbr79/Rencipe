@@ -189,19 +189,18 @@ export default function DesktopChrome() {
           ))}
         </nav>
 
-        <button
-          type="button"
-          className={styles.surpriseButton}
-          onClick={surpriseMe}
-          disabled={sidebarRecipes.length === 0}
-        >
-          <span className="material-symbols-rounded">casino</span>
-          <span>Surprise me</span>
-        </button>
-
         <div className={styles.sidebarSection}>
           <p className={styles.sidebarSectionLabel}>Explore</p>
           <nav className={styles.sidebarSubNav}>
+            <button
+              type="button"
+              className={styles.sidebarSubLink}
+              onClick={surpriseMe}
+              disabled={sidebarRecipes.length === 0}
+            >
+              <span className="material-symbols-rounded">casino</span>
+              <span className={styles.sidebarSubLinkTitle}>Surprise me</span>
+            </button>
             {exploreCategories.map((category) => (
               <Link
                 key={category.tag}
@@ -252,17 +251,39 @@ export default function DesktopChrome() {
         </button>
 
         {isGuest ? (
-          <div className={styles.account}>
-            <AccountAvatar account={user} size={32} />
-            <span className={styles.accountName}>Guest</span>
+          <div className={styles.accountRow}>
+            <div className={styles.account}>
+              <AccountAvatar account={user} size={32} />
+              <span className={styles.accountName}>Guest</span>
+            </div>
+            <button
+              type="button"
+              className={styles.accountSettings}
+              onClick={() => router.push("/settings")}
+              aria-label="Settings"
+              title="Settings"
+            >
+              <span className="material-symbols-rounded">settings</span>
+            </button>
           </div>
         ) : (
-          <Link href="/settings/account" className={styles.account}>
-            <AccountAvatar account={user} size={32} />
-            <span className={styles.accountName}>
-              {getAccountDisplayName(user) || "Account"}
-            </span>
-          </Link>
+          <div className={styles.accountRow}>
+            <Link href="/settings/account" className={styles.account}>
+              <AccountAvatar account={user} size={32} />
+              <span className={styles.accountName}>
+                {getAccountDisplayName(user) || "Account"}
+              </span>
+            </Link>
+            <button
+              type="button"
+              className={styles.accountSettings}
+              onClick={() => router.push("/settings")}
+              aria-label="Settings"
+              title="Settings"
+            >
+              <span className="material-symbols-rounded">settings</span>
+            </button>
+          </div>
         )}
       </aside>
 

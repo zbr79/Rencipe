@@ -1,5 +1,5 @@
 .container {
-  max-width: 920px;
+  max-width: 680px;
   margin: 0 auto;
   padding: 18px 18px 96px;
   background-color: var(--background);
@@ -48,6 +48,27 @@
   min-width: 0;
   display: grid;
   gap: 4px;
+}
+
+.guestSignInButton {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 9px;
+  background: var(--primary-strong);
+  color: var(--on-strong);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.guestSignInButton:hover {
+  background: var(--primary-strong-hover);
+  box-shadow: var(--shadow-sm);
 }
 
 .accountSummaryTitleLine {
@@ -669,7 +690,7 @@
 
 .shortcutGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
   overflow: visible;
   background: transparent;
@@ -924,10 +945,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .shortcutGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
   .signOutActionButton {
     grid-column: 1 / -1;
   }
@@ -1026,10 +1043,6 @@
 
   .profileActionGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .shortcutGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .shortcutButton {

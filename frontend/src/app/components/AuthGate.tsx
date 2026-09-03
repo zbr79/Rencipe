@@ -19,7 +19,8 @@ const GUEST_BLOCKED_PREFIXES = [
   "/drafts",
   "/my-work",
   "/meals",
-  "/settings",
+  "/settings/account",
+  "/settings/profile",
   "/profile",
 ];
 
