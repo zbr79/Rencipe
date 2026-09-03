@@ -819,7 +819,7 @@ async function main() {
   if (!author) {
     const insertResult = await users.insertOne({
       username: "rencipe",
-      displayName: "Rencipe Community",
+      displayName: "Rencipe",
       avatarUrl: "",
       email: "community@rencipe.local",
       phone: "",
@@ -861,7 +861,7 @@ async function main() {
       description: recipe.description,
       tips: recipe.tips,
       recipeOrigin: "shared",
-      sharedSource: "Rencipe Community",
+      sharedSource: "Rencipe",
       sharedSourceLink: "",
       authorId: author._id,
       image: recipe.image,

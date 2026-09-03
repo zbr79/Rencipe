@@ -527,7 +527,7 @@ async function main() {
       description: recipe.description,
       tips: recipe.tips,
       recipeOrigin: "shared",
-      sharedSource: "Rencipe Community",
+      sharedSource: "Rencipe",
       sharedSourceLink: "",
       authorId: author._id,
       image: recipe.image,
