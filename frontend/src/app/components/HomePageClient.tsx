@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../page.module.css";
 import { useSaved } from "../contexts/SavedContext";
 import AccountAvatar from "./AccountAvatar";
+import UnitConverter from "./UnitConverter";
 import { authFetch } from "../utils/authSession";
 import { getAccountDisplayName, type AccountIdentity } from "../utils/accountAvatar";
 import { getRecipeAuthor } from "../utils/recipeAuthor";
@@ -89,7 +90,6 @@ export default function HomePage() {
   const [slidePosition, setSlidePosition] = useState(0);
   const [skipTransition, setSkipTransition] = useState(false);
   const [paused, setPaused] = useState(false);
-  const [now, setNow] = useState(() => new Date());
   const swipeStartXRef = useRef<number | null>(null);
   const swipeStartYRef = useRef<number | null>(null);
   const dragStartTimeRef = useRef(0);
@@ -148,11 +148,6 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchSaved();
-  }, []);
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(intervalId);
   }, []);
 
   useEffect(() => {
@@ -370,36 +365,13 @@ export default function HomePage() {
           )}
         </div>
 
-        <aside className={styles.quickPanel} aria-label="Quick actions">
-          <div className={styles.quickClock}>
-            <p className={styles.quickClockTime}>
-              {now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-            </p>
-            <p className={styles.quickClockDate}>
-              {now.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" })}
-            </p>
+        <aside className={styles.quickPanel} aria-label="Kitchen helper">
+          <div className={styles.quickPanelHeader}>
+            <h2 className={styles.quickPanelTitle}>Kitchen helper</h2>
+            <p className={styles.quickPanelSub}>Convert cooking units</p>
           </div>
 
-          <nav className={styles.quickActions}>
-            <Link href="/create" className={styles.quickActionPrimary}>
-              <span className="material-symbols-outlined">add</span>
-              New Recipe
-            </Link>
-            <div className={styles.quickActionRow}>
-              <Link href="/browse" className={styles.quickAction}>
-                <span className="material-symbols-outlined">category</span>
-                Browse
-              </Link>
-              <Link href="/saved" className={styles.quickAction}>
-                <span className="material-symbols-outlined">favorite</span>
-                Saved
-              </Link>
-              <Link href="/drafts" className={styles.quickAction}>
-                <span className="material-symbols-outlined">draft</span>
-                Drafts
-              </Link>
-            </div>
-          </nav>
+          <UnitConverter />
         </aside>
       </section>
 
