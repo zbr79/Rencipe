@@ -588,7 +588,7 @@
     bottom: 0;
     right: 0;
     left: auto;
-    width: clamp(260px, 32%, 420px);
+    width: clamp(240px, 45%, 480px);
     height: 100%;
     z-index: 0;
     border-radius: 0;
@@ -601,12 +601,17 @@
   .slideContent {
     position: relative;
     z-index: 1;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    max-width: calc(100% - clamp(260px, 32%, 420px));
+    justify-content: flex-start;
+    max-width: calc(100% - clamp(240px, 45%, 480px));
     padding: 22px 28px;
     color: var(--foreground);
+  }
+
+  .slideContent > * {
+    flex-shrink: 0;
   }
 
 
@@ -622,7 +627,7 @@
 
   .slideDescription {
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
     margin: 10px 0 0;
