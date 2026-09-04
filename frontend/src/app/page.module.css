@@ -432,8 +432,8 @@
 
 .saveButton {
   justify-self: end;
-  width: 32px;
-  height: 32px;
+  width: 29px;
+  height: 29px;
   border: 1px solid color-mix(in srgb, var(--primary) 62%, white);
   border-radius: 999px;
   display: inline-flex;
@@ -450,15 +450,8 @@
 }
 
 .saveButton span {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1;
-}
-
-.saveButton:hover {
-  transform: translateY(-1px);
-  border-color: var(--primary-text);
-  background: var(--card-bg);
-  box-shadow: 0 14px 26px rgba(84, 61, 20, 0.12);
 }
 
 .saveButtonActive {

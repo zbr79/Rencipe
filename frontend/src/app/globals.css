@@ -232,7 +232,6 @@ button:disabled {
 
   .desktop-main {
     margin-left: var(--sidebar-w);
-    padding-top: var(--desktop-topbar-h);
     min-height: 100vh;
   }
 

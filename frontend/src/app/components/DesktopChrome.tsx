@@ -164,10 +164,21 @@ export default function DesktopChrome() {
   return (
     <>
       <aside className={styles.sidebar} aria-label="Primary">
-        <Link href="/" className={styles.brand}>
-          <span className={styles.brandIcon} aria-hidden="true">R</span>
-          <span className={styles.brandText}>Rencipe</span>
-        </Link>
+        <div className={styles.brandRow}>
+          <Link href="/" className={styles.brand}>
+            <span className={styles.brandIcon} aria-hidden="true">R</span>
+            <span className={styles.brandText}>Rencipe</span>
+          </Link>
+          <button
+            type="button"
+            className={styles.sidebarSearch}
+            onClick={() => setSearchOpen(true)}
+            aria-label="Search recipes"
+            title="Search recipes"
+          >
+            <span className="material-symbols-rounded">search</span>
+          </button>
+        </div>
 
         {!isGuest && (
           <button type="button" className={styles.createButton} onClick={openCreateForm}>
@@ -291,17 +302,6 @@ export default function DesktopChrome() {
           </div>
         )}
       </aside>
-
-      <header className={styles.topStrip}>
-        <button
-          type="button"
-          className={styles.searchTrigger}
-          onClick={() => setSearchOpen(true)}
-        >
-          <span className="material-symbols-rounded">search</span>
-          <span className={styles.searchHint}>Search recipes…</span>
-        </button>
-      </header>
 
       <SearchOverlay open={searchOpen} onClose={closeSearch} />
     </>

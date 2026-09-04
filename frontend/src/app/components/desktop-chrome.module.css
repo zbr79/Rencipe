@@ -2,10 +2,6 @@
   display: none;
 }
 
-.topStrip {
-  display: none;
-}
-
 @media (min-width: 768px) {
   .sidebar {
     position: fixed;
@@ -25,13 +21,46 @@
     overflow-x: hidden;
   }
 
+  .brandRow {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 2px 14px;
+  }
+
   .brand {
+    flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 4px 10px 14px;
+    padding: 4px 8px;
     text-decoration: none;
     color: var(--foreground);
+  }
+
+  .sidebarSearch {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .sidebarSearch:hover {
+    color: var(--foreground);
+    background: var(--hover-bg);
+  }
+
+  .sidebarSearch span {
+    font-size: 19px;
   }
 
   .brandIcon {
@@ -287,53 +316,4 @@
     font-size: 20px;
   }
 
-  .topStrip {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: var(--sidebar-w);
-    z-index: 900;
-    height: var(--desktop-topbar-h);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 0 24px;
-    background: color-mix(in srgb, var(--card-bg) 88%, transparent);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
-    box-sizing: border-box;
-  }
-
-  .searchTrigger {
-    width: min(100%, 380px);
-    min-height: 34px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 12px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--card-bg);
-    color: var(--text-muted);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-
-  .searchTrigger:hover {
-    border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
-    box-shadow: var(--shadow-sm);
-  }
-
-  .searchTrigger span:first-child {
-    font-size: 18px;
-    color: var(--text-muted);
-  }
-
-  .searchHint {
-    flex: 1;
-    text-align: left;
-  }
 }
