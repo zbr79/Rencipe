@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSaved } from "../contexts/SavedContext";
-import AccountAvatar from "./AccountAvatar";
+import RecipeCard from "./RecipeCard";
 import Breadcrumbs from "./Breadcrumbs";
 import styles from "../search/page.module.css";
 import { getVisibleTags } from "../utils/recipeTags";
 import { buildExploreCategories } from "../utils/exploreCategories";
 import { authFetch, getCurrentUser } from "../utils/authSession";
-import { getAccountDisplayName, type AccountIdentity } from "../utils/accountAvatar";
 import { getRecipeAuthor } from "../utils/recipeAuthor";
+import type { AccountIdentity } from "../utils/accountAvatar";
 
 interface Recipe {
   id: string;
@@ -304,11 +303,27 @@ export default function BrowsePage() {
       {loading && <p className={styles.loading}>Loading...</p>}
 
       {!loading && browseItems.length === 0 && (
-        <div className={styles.empty}>
-          <p>{allRecipes.length === 0 && allMeals.length === 0 ? "No recipes or meals yet" : `No ${visibilityTab} items in this view`}</p>
-          <button type="button" onClick={clearCategories} className={styles.secondaryButton}>
-            Show all
-          </button>
+        <div className={styles.emptyState}>
+          <div className={styles.emptyStateIcon}>
+            <span className="material-symbols-rounded" aria-hidden="true">
+              {selectedCategories.length > 0 ? "search_off" : "restaurant"}
+            </span>
+          </div>
+          <h2 className={styles.emptyStateTitle}>
+            {selectedCategories.length > 0 ? "No results found" : "Nothing here yet"}
+          </h2>
+          <p className={styles.emptyStateText}>
+            {selectedCategories.length > 0
+              ? "No recipes match all of your selected filters. Try removing one or two."
+              : allRecipes.length === 0 && allMeals.length === 0
+                ? "No recipes or meals have been shared yet. Be the first to add one."
+                : "There is nothing in this view right now."}
+          </p>
+          {selectedCategories.length > 0 && (
+            <button type="button" onClick={clearCategories} className={styles.emptyStateButton}>
+              Clear all filters
+            </button>
+          )}
         </div>
       )}
 
@@ -321,40 +336,23 @@ export default function BrowsePage() {
 
             return (
               <div key={`meal-${item.id}`} className={styles.recipeCardWrapper}>
-                <article className={styles.recipeCard}>
-                  <Link href={`/meals/${item.id}`} className={styles.recipeCardLink}>
-                    <div className={styles.recipeImage}>
-                      <span className={`material-symbols-rounded ${styles.mealCardIcon}`}>restaurant_menu</span>
-                      <span className={styles.mealBadge}>Meal</span>
-                    </div>
-                    <div className={styles.recipeBody}>
-                      <h3>{meal.name}</h3>
-                    </div>
-                  </Link>
-                  <div className={styles.cardFooter}>
-                    <div className={styles.uploaderLine}>
-                      <AccountAvatar account={author} size={24} />
-                      <span>{getAccountDisplayName(author)}</span>
-                    </div>
-
-                    <button
-                      type="button"
-                      className={`${styles.browseSaveButton} ${saved ? styles.browseSaveButtonActive : ""}`}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        if (saved) {
-                          unsaveMeal(undefined, item.id);
-                        } else {
-                          saveMeal(undefined, item.id);
-                        }
-                      }}
-                      aria-label={saved ? "Remove meal from saved" : "Save meal"}
-                    >
-                      <span className="material-symbols-outlined">{saved ? "favorite" : "favorite_border"}</span>
-                    </button>
-                  </div>
-                </article>
+                <RecipeCard
+                  href={`/meals/${item.id}`}
+                  title={meal.name}
+                  image={undefined}
+                  imageIcon="restaurant_menu"
+                  badge="Meal"
+                  author={author}
+                  saved={saved}
+                  saveLabel="Save meal"
+                  onToggleSave={() => {
+                    if (saved) {
+                      unsaveMeal(undefined, item.id);
+                    } else {
+                      saveMeal(undefined, item.id);
+                    }
+                  }}
+                />
               </div>
             );
           }
@@ -366,51 +364,21 @@ export default function BrowsePage() {
 
           return (
             <div key={`recipe-${recipeId}`} className={styles.recipeCardWrapper}>
-              <article className={styles.recipeCard}>
-                <Link href={`/recipes/${recipeId}`} className={styles.recipeCardLink}>
-                  <div className={styles.recipeImage}>
-                    {recipe.image ? <img src={recipe.image} alt={recipe.title} /> : <span className="material-symbols-rounded">restaurant</span>}
-                  </div>
-                  <div className={styles.recipeBody}>
-                    <h3>{recipe.title}</h3>
-                    {recipe.subtitle && <p className={styles.recipeCardSubtitle}>{recipe.subtitle}</p>}
-                    {(recipe.ratingCount > 0 || recipe.views > 0) && (
-                      <div className={styles.cardMeta}>
-                        {recipe.ratingCount > 0 && (
-                          <span className={styles.cardMetaRating}>
-                            <span className="material-symbols-outlined" aria-hidden="true">star</span>
-                            {recipe.ratingAverage.toFixed(1)}
-                          </span>
-                        )}
-                        {recipe.views > 0 && <span>{recipe.views} views</span>}
-                      </div>
-                    )}
-                  </div>
-                </Link>
-                <div className={styles.cardFooter}>
-                  <div className={styles.uploaderLine}>
-                    <AccountAvatar account={author} size={24} />
-                    <span>{getAccountDisplayName(author)}</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    className={`${styles.browseSaveButton} ${saved ? styles.browseSaveButtonActive : ""}`}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      if (saved) {
-                        unsaveRecipe(undefined, recipeId);
-                      } else {
-                        saveRecipe(undefined, recipeId);
-                      }
-                    }}
-                    aria-label={saved ? "Remove from saved" : "Save recipe"}
-                  >
-                    <span className="material-symbols-outlined">{saved ? "favorite" : "favorite_border"}</span>
-                  </button>
-                </div>
-              </article>
+              <RecipeCard
+                href={`/recipes/${recipeId}`}
+                title={recipe.title}
+                subtitle={recipe.subtitle}
+                image={recipe.image}
+                author={author}
+                saved={saved}
+                onToggleSave={() => {
+                  if (saved) {
+                    unsaveRecipe(undefined, recipeId);
+                  } else {
+                    saveRecipe(undefined, recipeId);
+                  }
+                }}
+              />
             </div>
           );
         })}

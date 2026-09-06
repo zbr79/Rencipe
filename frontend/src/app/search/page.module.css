@@ -567,6 +567,13 @@
   color: inherit;
   text-decoration: none;
   box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+}
+
+.recipeCard:hover {
+  transform: translateY(-0.6px);
+  box-shadow: var(--shadow-md);
+  border-color: color-mix(in srgb, var(--primary) 42%, var(--border));
 }
 
 .recipeCardLink,
@@ -698,19 +705,24 @@
 }
 
 .recipeGrid .recipeBody {
-  min-height: 52px;
-  padding: 10px 12px 8px;
+  min-height: 66px;
+  padding: 12px 14px 10px;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  align-items: stretch;
+  justify-content: flex-start;
 }
 
 .recipeGrid .cardFooter {
-  min-height: 34px;
-  padding: 0 10px 8px 12px;
+  min-height: 38px;
+  padding: 0 14px 12px;
 }
 
 .recipeGrid .uploaderLine {
-  gap: 6px;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .recipeBody {
@@ -786,12 +798,12 @@
 
 .recipeBody h3 {
   margin: 0;
-  min-height: 40px;
-  color: var(--text-primary);
+  min-height: 24px;
+  color: var(--foreground);
   font-size: 17px;
   line-height: 1.25;
-  font-weight: 750;
-  text-align: center;
+  font-weight: 700;
+  text-align: left;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -921,6 +933,66 @@
   gap: 12px;
 }
 
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 56px 24px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: var(--card-bg);
+}
+
+.emptyStateIcon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--hover-bg);
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.emptyStateIcon .material-symbols-rounded {
+  font-size: 28px;
+}
+
+.emptyStateTitle {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.emptyStateText {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 380px;
+}
+
+.emptyStateButton {
+  margin-top: 12px;
+  min-height: 38px;
+  padding: 0 20px;
+  border: 1px solid var(--primary);
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.emptyStateButton:hover {
+  background: color-mix(in srgb, var(--primary-soft) 70%, var(--card-bg));
+}
+
 .empty p {
   margin: 0;
   font-weight: 650;
@@ -1023,6 +1095,30 @@
   .page {
     width: min(100%, 1240px);
     padding: 24px 32px 72px;
+  }
+
+  .recipeGrid {
+    gap: 14px;
+  }
+
+  .recipeBody h3 {
+    font-size: 14px;
+    font-weight: 600;
+    min-height: 22px;
+  }
+
+  .recipeGrid .recipeBody {
+    padding: 10px 12px 10px;
+    min-height: 54px;
+  }
+
+  .recipeGrid .cardFooter {
+    padding: 0 12px 10px;
+    min-height: 30px;
+  }
+
+  .recipeCard {
+    border-radius: 10px;
   }
 
   .searchHeader {

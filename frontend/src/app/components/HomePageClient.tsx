@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../page.module.css";
 import { useSaved } from "../contexts/SavedContext";
-import AccountAvatar from "./AccountAvatar";
+import RecipeCard from "./RecipeCard";
+import type { AccountIdentity } from "../utils/accountAvatar";
 import UnitConverter from "./UnitConverter";
 import { authFetch } from "../utils/authSession";
-import { getAccountDisplayName, type AccountIdentity } from "../utils/accountAvatar";
 import { getRecipeAuthor } from "../utils/recipeAuthor";
 
 const TABS = [
@@ -425,48 +425,21 @@ export default function HomePage({
             const author = getRecipeAuthor(r);
             return (
             <div key={recipeId} className={styles.recipeCardWrapper}>
-              <article className={styles.recipeCard}>
-                <Link href={`/recipes/${recipeId}`} className={styles.cardLink}>
-                  <div className={styles.cardImage}>
-                    {r.image ? (
-                      <img src={r.image} alt={r.title} loading="lazy" />
-                    ) : (
-                      <div className={styles.imagePlaceholder}>
-                        <span className="material-symbols-outlined">restaurant</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className={styles.cardContent}>
-                    <h3 className={styles.cardTitle}>{r.title}</h3>
-                    {r.subtitle && <p className={styles.cardSubtitle}>{r.subtitle}</p>}
-                  </div>
-                </Link>
-
-                <div className={styles.cardFooter}>
-                  <div className={styles.uploaderLine}>
-                    <AccountAvatar account={author} size={24} />
-                    <span>{getAccountDisplayName(author)}</span>
-                  </div>
-
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (saved) {
-                        unsaveRecipe(undefined, recipeId);
-                      } else {
-                        saveRecipe(undefined, recipeId);
-                      }
-                    }}
-                    className={`${styles.saveButton} ${saved ? styles.saveButtonActive : ""}`}
-                    title={saved ? "Remove from saved" : "Save recipe"}
-                    aria-label={saved ? "Remove from saved" : "Save recipe"}
-                  >
-                    <span className="material-symbols-outlined">{saved ? "favorite" : "favorite_border"}</span>
-                  </button>
-                </div>
-              </article>
+              <RecipeCard
+                href={`/recipes/${recipeId}`}
+                title={r.title}
+                subtitle={r.subtitle}
+                image={r.image}
+                author={author}
+                saved={saved}
+                onToggleSave={() => {
+                  if (saved) {
+                    unsaveRecipe(undefined, recipeId);
+                  } else {
+                    saveRecipe(undefined, recipeId);
+                  }
+                }}
+              />
             </div>
           );
           })}
