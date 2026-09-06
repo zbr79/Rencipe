@@ -624,6 +624,7 @@
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
+  position: relative;
 }
 
 .recipeImage span {
@@ -635,6 +636,51 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.mealCardIcon {
+  font-size: 30px;
+  opacity: 0.7;
+}
+
+.mealBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  min-height: 22px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--foreground) 72%, transparent);
+  color: var(--card-bg);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cardMetaRating {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.cardMetaRating .material-symbols-outlined {
+  font-size: 14px;
+  color: var(--warning);
 }
 
 .resultCard .recipeImage {
@@ -653,7 +699,9 @@
 
 .recipeGrid .recipeBody {
   min-height: 52px;
-  padding: 10px 12px 6px;
+  padding: 10px 12px 8px;
+  display: flex;
+  flex-direction: column;
 }
 
 .recipeGrid .cardFooter {
@@ -1045,7 +1093,7 @@
 
 @media (min-width: 1200px) {
   .recipeGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 

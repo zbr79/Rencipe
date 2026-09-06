@@ -8,6 +8,7 @@ import AccountAvatar from "./AccountAvatar";
 import Breadcrumbs from "./Breadcrumbs";
 import styles from "../search/page.module.css";
 import { getVisibleTags } from "../utils/recipeTags";
+import { buildExploreCategories } from "../utils/exploreCategories";
 import { authFetch, getCurrentUser } from "../utils/authSession";
 import { getAccountDisplayName, type AccountIdentity } from "../utils/accountAvatar";
 import { getRecipeAuthor } from "../utils/recipeAuthor";
@@ -93,10 +94,10 @@ function comparePopularItems(left: BrowseItem, right: BrowseItem) {
   return compareNewestItems(left, right);
 }
 
-function matchesCategory(recipe: Recipe, category: string) {
-  const tags = getVisibleTags(recipe.tags || []);
-  if (category !== "all") return tags.some((tag) => tag.toLowerCase() === category.toLowerCase());
-  return true;
+function matchesCategory(recipe: Recipe, categories: string[]) {
+  const tags = getVisibleTags(recipe.tags || []).map((tag) => tag.toLowerCase());
+  if (categories.length === 0) return true;
+  return categories.every((category) => tags.includes(category.toLowerCase()));
 }
 
 function matchesVisibility(recipe: Recipe, visibility: VisibilityTab) {
@@ -129,10 +130,9 @@ export default function BrowsePage() {
   const [allMeals, setAllMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [visibilityTab, setVisibilityTab] = useState<VisibilityTab>("public");
   const [sortMode, setSortMode] = useState<SortMode>("popular");
-  const [requestedCategory, setRequestedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBrowseData();
@@ -140,7 +140,11 @@ export default function BrowsePage() {
 
   useEffect(() => {
     if (categoryParam) {
-      setRequestedCategory(categoryParam);
+      setSelectedCategories(
+        categoryParam.split(",").map((category) => category.trim().toLowerCase()).filter(Boolean)
+      );
+    } else {
+      setSelectedCategories([]);
     }
   }, [categoryParam]);
 
@@ -176,8 +180,8 @@ export default function BrowsePage() {
     () => allMeals.filter((meal) => matchesMealVisibility(meal, visibilityTab)).filter((meal) => visibilityTab === "private" || hasAvailableMealRecipes(meal)),
     [allMeals, visibilityTab]
   );
-  const filteredRecipes = visibleRecipes.filter((recipe) => matchesCategory(recipe, selectedCategory));
-  const filteredMeals = selectedCategory !== "all" ? [] : visibleMeals;
+  const filteredRecipes = visibleRecipes.filter((recipe) => matchesCategory(recipe, selectedCategories));
+  const filteredMeals = selectedCategories.length > 0 ? [] : visibleMeals;
   const browseItems = useMemo<BrowseItem[]>(() => {
     const recipeItems = filteredRecipes.map((recipe) => {
       const recipeId = recipe._id || recipe.id;
@@ -203,27 +207,27 @@ export default function BrowsePage() {
     });
     return [...recipeItems, ...mealItems].sort(sortMode === "popular" ? comparePopularItems : compareNewestItems);
   }, [filteredMeals, filteredRecipes, sortMode]);
-  const tagCategories = useMemo(() => {
-    const counts = new Map<string, number>();
-    visibleRecipes.forEach((recipe) => {
-      getVisibleTags(recipe.tags || []).forEach((tag) => counts.set(tag, (counts.get(tag) || 0) + 1));
-    });
-
-    return Array.from(counts.entries())
-      .sort((first, second) => second[1] - first[1] || first[0].localeCompare(second[0]))
-      .map(([tag]) => ({ id: tag, label: tag }));
+  const browseCategories = useMemo(() => {
+    return buildExploreCategories(
+      visibleRecipes.map((recipe) => ({ tags: getVisibleTags(recipe.tags || []) })),
+      12
+    ).map((entry) => ({ id: entry.tag, label: entry.tag }));
   }, [visibleRecipes]);
 
-  useEffect(() => {
-    if (!requestedCategory) return;
-    const match = tagCategories.find(
-      (category) => category.id.toLowerCase() === requestedCategory.toLowerCase()
-    );
-    if (match) {
-      setSelectedCategory(match.id);
-      setRequestedCategory(null);
-    }
-  }, [tagCategories, requestedCategory]);
+  const toggleCategory = (id: string) => {
+    const normalized = id.toLowerCase();
+    const next = selectedCategories.includes(normalized)
+      ? selectedCategories.filter((category) => category !== normalized)
+      : [...selectedCategories, normalized];
+    setSelectedCategories(next);
+    const query = next.length > 0 ? `?category=${next.map(encodeURIComponent).join(",")}` : "";
+    router.replace(`/browse${query}`, { scroll: false });
+  };
+
+  const clearCategories = () => {
+    setSelectedCategories([]);
+    router.replace("/browse", { scroll: false });
+  };
 
    return (
     <main className={styles.page}>
@@ -244,7 +248,7 @@ export default function BrowsePage() {
               className={`${styles.visibilityTab} ${visibilityTab === tab ? styles.visibilityTabActive : ""}`}
               onClick={() => {
                 setVisibilityTab(tab);
-                setSelectedCategory("all");
+                clearCategories();
               }}
             >
               <span className="material-symbols-rounded" aria-hidden="true">{tab === "public" ? "public" : "lock"}</span>
@@ -257,20 +261,6 @@ export default function BrowsePage() {
       <div className={styles.resultsHeader}>
         <div className={styles.resultsTitleGroup}>
           <h2>Browse</h2>
-          {selectedCategory !== "all" && (
-            <button
-              type="button"
-              className={styles.activeFilterChip}
-              onClick={() => {
-                setSelectedCategory("all");
-                router.replace("/browse");
-              }}
-              aria-label={`Clear ${selectedCategory} filter`}
-            >
-              <span>{selectedCategory}</span>
-              <span className="material-symbols-rounded" aria-hidden="true">close</span>
-            </button>
-          )}
         </div>
         <div className={styles.sortToggle} aria-label="Recipe sort">
           <button
@@ -286,12 +276,37 @@ export default function BrowsePage() {
         </div>
       </div>
 
+      {browseCategories.length > 0 && (
+        <div className={styles.categoryTabs} role="list" aria-label="Browse categories">
+          <button
+            type="button"
+            className={`${styles.categoryTab} ${selectedCategories.length === 0 ? styles.categoryTabActive : ""}`}
+            onClick={clearCategories}
+          >
+            All
+          </button>
+          {(() => {
+            const selectedIds = new Set(selectedCategories);
+            return browseCategories.map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                className={`${styles.categoryTab} ${selectedIds.has(category.id.toLowerCase()) ? styles.categoryTabActive : ""}`}
+                onClick={() => toggleCategory(category.id)}
+              >
+                {category.label}
+              </button>
+            ));
+          })()}
+        </div>
+      )}
+
       {loading && <p className={styles.loading}>Loading...</p>}
 
       {!loading && browseItems.length === 0 && (
         <div className={styles.empty}>
           <p>{allRecipes.length === 0 && allMeals.length === 0 ? "No recipes or meals yet" : `No ${visibilityTab} items in this view`}</p>
-          <button type="button" onClick={() => setSelectedCategory("all")} className={styles.secondaryButton}>
+          <button type="button" onClick={clearCategories} className={styles.secondaryButton}>
             Show all
           </button>
         </div>
@@ -309,7 +324,8 @@ export default function BrowsePage() {
                 <article className={styles.recipeCard}>
                   <Link href={`/meals/${item.id}`} className={styles.recipeCardLink}>
                     <div className={styles.recipeImage}>
-                      <span className="material-symbols-rounded">restaurant_menu</span>
+                      <span className={`material-symbols-rounded ${styles.mealCardIcon}`}>restaurant_menu</span>
+                      <span className={styles.mealBadge}>Meal</span>
                     </div>
                     <div className={styles.recipeBody}>
                       <h3>{meal.name}</h3>
@@ -358,6 +374,17 @@ export default function BrowsePage() {
                   <div className={styles.recipeBody}>
                     <h3>{recipe.title}</h3>
                     {recipe.subtitle && <p className={styles.recipeCardSubtitle}>{recipe.subtitle}</p>}
+                    {(recipe.ratingCount > 0 || recipe.views > 0) && (
+                      <div className={styles.cardMeta}>
+                        {recipe.ratingCount > 0 && (
+                          <span className={styles.cardMetaRating}>
+                            <span className="material-symbols-outlined" aria-hidden="true">star</span>
+                            {recipe.ratingAverage.toFixed(1)}
+                          </span>
+                        )}
+                        {recipe.views > 0 && <span>{recipe.views} views</span>}
+                      </div>
+                    )}
                   </div>
                 </Link>
                 <div className={styles.cardFooter}>

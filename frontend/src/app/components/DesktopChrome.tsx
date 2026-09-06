@@ -11,6 +11,7 @@ import { authFetch, getCurrentUser } from "../utils/authSession";
 import { getAccountDisplayName } from "../utils/accountAvatar";
 import { readRecentlyViewedRecipes } from "../utils/recentlyViewedRecipes";
 import { getVisibleTags } from "../utils/recipeTags";
+import { buildExploreCategories } from "../utils/exploreCategories";
 import styles from "./desktop-chrome.module.css";
 
 const NAV_ITEMS = [
@@ -25,16 +26,6 @@ const NAV_ITEMS = [
 const GUEST_NAV_HREFS = ["/", "/browse", "/saved"];
 
 const MAX_EXPLORE_CATEGORIES = 8;
-
-const CATEGORY_PRIORITY = [
-  "Chinese",
-  "Cantonese",
-  "Sichuan",
-  "Korean",
-  "Japanese",
-  "Thai",
-  "Vietnamese",
-];
 
 const CATEGORY_ICONS: Record<string, string> = {
   chinese: "restaurant",
@@ -116,34 +107,10 @@ export default function DesktopChrome() {
   }, []);
 
   const exploreCategories = useMemo(() => {
-    const counts = new Map<string, number>();
-    sidebarRecipes.forEach((recipe) => {
-      getVisibleTags(recipe.tags || []).forEach((tag) => {
-        counts.set(tag, (counts.get(tag) || 0) + 1);
-      });
-    });
-
-    const byCount = Array.from(counts.entries()).sort(
-      (left, right) => right[1] - left[1] || left[0].localeCompare(right[0])
-    );
-    const priority = CATEGORY_PRIORITY.map((tag) => ({
-      tag,
-      count: counts.get(tag) || 0,
-    })).filter((entry) => entry.count > 0);
-    const rest = byCount
-      .filter(([tag]) => !CATEGORY_PRIORITY.includes(tag))
-      .map(([tag, count]) => ({ tag, count }));
-
-    const merged = [...priority, ...rest];
-    const seen = new Set<string>();
-    const result: { tag: string; count: number }[] = [];
-    for (const entry of merged) {
-      if (seen.has(entry.tag)) continue;
-      seen.add(entry.tag);
-      result.push(entry);
-      if (result.length >= MAX_EXPLORE_CATEGORIES) break;
-    }
-    return result;
+    const recipes = sidebarRecipes.map((recipe) => ({
+      tags: getVisibleTags(recipe.tags || []),
+    }));
+    return buildExploreCategories(recipes, MAX_EXPLORE_CATEGORIES);
   }, [sidebarRecipes]);
 
   const surpriseMe = () => {
