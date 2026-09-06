@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 interface BackButtonProps {
   label?: string;
+  ariaLabel?: string;
   fallbackHref?: string;
   className?: string;
   style?: CSSProperties;
@@ -13,6 +14,7 @@ interface BackButtonProps {
 
 export default function BackButton({
   label = "Back",
+  ariaLabel,
   fallbackHref = "/",
   className,
   style,
@@ -30,7 +32,7 @@ export default function BackButton({
   };
 
   return (
-    <button type="button" className={className} style={style} onClick={handleBack}>
+    <button type="button" className={className} style={style} aria-label={ariaLabel ?? label} onClick={handleBack}>
       {children ?? (
         <>
           <span className="material-symbols-outlined">arrow_back</span>

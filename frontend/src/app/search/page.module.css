@@ -15,6 +15,12 @@
   padding: 14px 18px 96px;
 }
 
+.pageTop {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 .searchHeader {
   position: sticky;
   top: 0;
@@ -457,16 +463,34 @@
   display: none;
 }
 
-.visibilityTabs {
+.browseTabsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.visibilityTabs,
+.contentTabs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  margin: 0 0 14px;
   padding: 6px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--card-bg);
   box-shadow: var(--shadow-sm);
+}
+
+.visibilityTabs {
+  flex: 0 1 auto;
+  min-width: 220px;
+}
+
+.contentTabs {
+  flex: 0 0 auto;
 }
 
 .visibilityTab {

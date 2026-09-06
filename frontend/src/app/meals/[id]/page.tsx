@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import NumberOnlyInput from "../../components/NumberOnlyInput";
 import BackButton from "../../components/BackButton";
+import Breadcrumbs from "../../components/Breadcrumbs";
 import FloatingActionPanel from "../../components/FloatingActionPanel";
 import { useConfirmDialog } from "../../components/ConfirmDialogProvider";
 import { useSaved } from "../../contexts/SavedContext";
@@ -1093,7 +1094,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
       )}
 
       <header className={styles.header}>
-        <BackButton fallbackHref="/" className={styles.backLink} />
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Meals", href: "/meals" }, { label: meal.name }]} mobileBackHref="/" />
         <div>
           {!isMeal && <p className={styles.kicker}>Meal</p>}
           <h1>{meal.name}</h1>

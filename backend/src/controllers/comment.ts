@@ -125,10 +125,6 @@ export async function createComment(req: Request, res: Response) {
       return res.status(404).json({ error: "Comment target not found" });
     }
 
-    if (await userHasComment(entryType, entryId, user.id)) {
-      return res.status(409).json({ error: "You already commented here" });
-    }
-
     const comment = await Comment.create({
       entryType,
       entryId: new mongoose.Types.ObjectId(entryId),

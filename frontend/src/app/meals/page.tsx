@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import Breadcrumbs from "../components/Breadcrumbs";
 import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import { useSaved } from "../contexts/SavedContext";
 import { useQuickCreateMeal } from "../hooks/useQuickCreateMeal";
@@ -54,8 +55,9 @@ export default function MealsPage() {
   };
 
   return (
-    <div className={styles.container}>
+    <main className={styles.container}>
       <header className={styles.header}>
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Meals" }]} mobileBackHref="/" />
         <div>
           <p className={styles.kicker}>Meals</p>
           <h1>Meals</h1>
@@ -88,7 +90,7 @@ export default function MealsPage() {
                 {visibleMeals.map((meal) => (
                   <Link key={meal._id} href={`/meals/${meal._id}`} className={styles.mealCard}>
                     <div>
-                      <h3>{getMealDisplayName(meal.name)}</h3>
+                      <h2>{getMealDisplayName(meal.name)}</h2>
                       <p>{meal.people.length} people | Meal</p>
                       <p>{getMealRecipeCount(meal)} recipes selected</p>
                     </div>
@@ -112,6 +114,6 @@ export default function MealsPage() {
 
         </>
       )}
-    </div>
+    </main>
   );
 }

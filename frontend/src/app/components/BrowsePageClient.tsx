@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSaved } from "../contexts/SavedContext";
 import AccountAvatar from "./AccountAvatar";
+import Breadcrumbs from "./Breadcrumbs";
 import styles from "../search/page.module.css";
 import { getVisibleTags } from "../utils/recipeTags";
 import { authFetch, getCurrentUser } from "../utils/authSession";
@@ -49,13 +50,6 @@ type BrowseItem =
 
 type VisibilityTab = "public" | "private";
 type SortMode = "popular" | "newest";
-type ContentFilter = "all" | "recipes";
-
-const BROWSE_CONTENT_FILTER_KEY = "rencipe-browse-content-filter";
-const contentFilterOptions: { value: ContentFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "recipes", label: "Recipes" },
-];
 
 function getRecipeTimestamp(recipe: Recipe) {
   const timestamp = Date.parse(recipe.createdAt || "");
@@ -138,16 +132,9 @@ export default function BrowsePage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [visibilityTab, setVisibilityTab] = useState<VisibilityTab>("public");
   const [sortMode, setSortMode] = useState<SortMode>("popular");
-  const [contentFilter, setContentFilter] = useState<ContentFilter>("all");
-  const [contentFilterOpen, setContentFilterOpen] = useState(false);
   const [requestedCategory, setRequestedCategory] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedFilter = window.localStorage.getItem(BROWSE_CONTENT_FILTER_KEY);
-    if (storedFilter === "all" || storedFilter === "recipes") {
-      setContentFilter(storedFilter);
-    }
-
     fetchBrowseData();
   }, []);
 
@@ -156,10 +143,6 @@ export default function BrowsePage() {
       setRequestedCategory(categoryParam);
     }
   }, [categoryParam]);
-
-  useEffect(() => {
-    window.localStorage.setItem(BROWSE_CONTENT_FILTER_KEY, contentFilter);
-  }, [contentFilter]);
 
   useEffect(() => {
     fetchSaved();
@@ -194,7 +177,7 @@ export default function BrowsePage() {
     [allMeals, visibilityTab]
   );
   const filteredRecipes = visibleRecipes.filter((recipe) => matchesCategory(recipe, selectedCategory));
-  const filteredMeals = contentFilter === "recipes" || selectedCategory !== "all" ? [] : visibleMeals;
+  const filteredMeals = selectedCategory !== "all" ? [] : visibleMeals;
   const browseItems = useMemo<BrowseItem[]>(() => {
     const recipeItems = filteredRecipes.map((recipe) => {
       const recipeId = recipe._id || recipe.id;
@@ -230,7 +213,6 @@ export default function BrowsePage() {
       .sort((first, second) => second[1] - first[1] || first[0].localeCompare(second[0]))
       .map(([tag]) => ({ id: tag, label: tag }));
   }, [visibleRecipes]);
-  const contentFilterLabel = contentFilterOptions.find((option) => option.value === contentFilter)?.label || "All";
 
   useEffect(() => {
     if (!requestedCategory) return;
@@ -245,6 +227,10 @@ export default function BrowsePage() {
 
    return (
     <main className={styles.page}>
+      <div className={styles.pageTop}>
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Browse" }]} mobileBackHref="/" />
+      </div>
+
       {error && <div className={styles.error}>Error: {error}</div>}
 
       {!isGuest && (
@@ -285,40 +271,6 @@ export default function BrowsePage() {
               <span className="material-symbols-rounded" aria-hidden="true">close</span>
             </button>
           )}
-          <div className={styles.contentFilterWrap}>
-            <button
-              type="button"
-              className={styles.contentFilterButton}
-              onClick={() => setContentFilterOpen((open) => !open)}
-              aria-haspopup="listbox"
-              aria-expanded={contentFilterOpen}
-              aria-label="Browse content type"
-            >
-              <span>{contentFilterLabel}</span>
-              <span className="material-symbols-rounded" aria-hidden="true">expand_more</span>
-            </button>
-            {contentFilterOpen && (
-              <div className={styles.contentFilterMenu} role="listbox">
-                {contentFilterOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={styles.contentFilterOption}
-                    role="option"
-                    aria-selected={contentFilter === option.value}
-                    onClick={() => {
-                      setContentFilter(option.value);
-                      setSelectedCategory("all");
-                      setContentFilterOpen(false);
-                    }}
-                  >
-                    <span className={styles.contentFilterOptionLabel}>{option.label}</span>
-                    {contentFilter === option.value && <span className={`material-symbols-rounded ${styles.contentFilterOptionCheck}`} aria-hidden="true">check</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
         <div className={styles.sortToggle} aria-label="Recipe sort">
           <button

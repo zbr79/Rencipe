@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import BackButton from "../components/BackButton";
+import Breadcrumbs from "../components/Breadcrumbs";
 import EmptyState from "../components/EmptyState";
 import { toastError, toastSuccess } from "../components/toast/toast";
 import { useSaved, type Meal } from "../contexts/SavedContext";
@@ -95,6 +95,14 @@ function mealToItem(meal: Meal, trashed = false): WorkItem {
 }
 
 export default function MyWorkPage() {
+  return (
+    <Suspense fallback={null}>
+      <MyWorkPageInner />
+    </Suspense>
+  );
+}
+
+function MyWorkPageInner() {
   const { meals, fetchMeals, loadingMeals } = useSaved();
   const searchParams = useSearchParams();
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
@@ -242,7 +250,7 @@ export default function MyWorkPage() {
   return (
     <main className={styles.container}>
       <header className={styles.pageHeader}>
-        <BackButton fallbackHref="/settings" className={styles.backLink} />
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "My Work" }]} mobileBackHref="/" />
         <div>
           <p className={styles.kicker}>Workspace</p>
           <h1>My Work</h1>
@@ -305,7 +313,7 @@ export default function MyWorkPage() {
                   {item.image ? <img src={item.image} alt={item.title} /> : <span className="material-symbols-outlined">delete</span>}
                 </div>
                 <div className={styles.workText}>
-                  <h3>{item.title}</h3>
+                  <h2>{item.title}</h2>
                   <p>{item.meta}</p>
                   <span>{formatDate(item.updatedAt)}</span>
                 </div>
@@ -324,7 +332,7 @@ export default function MyWorkPage() {
                   {item.image ? <img src={item.image} alt={item.title} /> : <span className="material-symbols-outlined">{item.icon}</span>}
                 </div>
                 <div className={styles.workText}>
-                  <h3>{item.title}</h3>
+                  <h2>{item.title}</h2>
                   <p>{item.meta}</p>
                   <span>{formatDate(item.updatedAt)}</span>
                 </div>

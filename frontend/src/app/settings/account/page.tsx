@@ -4,7 +4,7 @@ import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AccountAvatar from "../../components/AccountAvatar";
-import BackButton from "../../components/BackButton";
+import Breadcrumbs from "../../components/Breadcrumbs";
 import ClaimAccountForm from "./components/ClaimAccountForm";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { authFetch, removeSignedInAccount, readAuthSession, writeAuthSession, type AuthSession } from "../../utils/authSession";
@@ -174,9 +174,9 @@ export default function AccountSettingsPage() {
   };
 
   return (
-    <div className={styles.container}>
+    <main className={styles.container}>
       <div className={styles.accountPageHeader}>
-        <BackButton fallbackHref="/settings" className={styles.backLink} label="Settings" />
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Settings", href: "/settings" }, { label: "Account" }]} mobileBackHref="/settings" />
         <h1>Account</h1>
       </div>
 
@@ -285,6 +285,6 @@ export default function AccountSettingsPage() {
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }

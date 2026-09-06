@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import BackButton from "../../../components/BackButton";
+import Breadcrumbs from "../../../components/Breadcrumbs";
 import { toastError, toastSuccess } from "../../../components/toast/toast";
 import { authFetch, readAuthSession, writeAuthSession, type AuthSession, type AuthUser } from "../../../utils/authSession";
 import styles from "../../page.module.css";
@@ -137,9 +137,9 @@ export default function EditAccountFieldPage() {
   if (!config) return null;
 
   return (
-    <div className={styles.container}>
+    <main className={styles.container}>
       <div className={styles.accountPageHeader}>
-        <BackButton fallbackHref="/settings/account" className={styles.backLink} label="Account" />
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Settings", href: "/settings" }, { label: "Account", href: "/settings/account" }, { label: config.label }]} mobileBackHref="/settings/account" />
         <h1>{config.label}</h1>
       </div>
 
@@ -157,6 +157,6 @@ export default function EditAccountFieldPage() {
           </button>
         </div>
       </form>
-    </div>
+    </main>
   );
 }

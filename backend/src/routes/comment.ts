@@ -12,6 +12,6 @@ const router = express.Router();
 router.post("/comments/:commentId/upvote", requireAccount, upvoteComment);
 router.delete("/comments/:commentId", requireAuth, deleteComment);
 router.get("/comments/:entryType/:entryId", authenticateOptional, listComments);
-router.post("/comments/:entryType/:entryId", requireAccount, createComment);
+router.post("/comments/:entryType/:entryId", requireAuth, createComment);
 
 export default router;

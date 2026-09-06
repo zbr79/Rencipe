@@ -41,7 +41,6 @@ type Recipe = {
 
 type ListRes = { recipes: Recipe[] };
 
-const AUTO_SCROLL_DELAY_MS = 4200;
 const DRAG_START_THRESHOLD_PX = 10;
 const FLICK_MAX_DURATION_MS = 350;
 const FLICK_MIN_DISTANCE_PX = 40;
@@ -80,12 +79,19 @@ function getRecommendationScore(recipe: Recipe) {
   return recipe.ratingAverage * 100 + recipe.ratingCount * 12 + recipe.likes * 5 + recipe.views * 0.1 + getRecipeUpdatedTimestamp(recipe) / 1_000_000_000_000;
 }
 
-export default function HomePage() {
+export default function HomePage({
+  initialRecipes = null,
+  initialVisibleCount = 24,
+}: {
+  initialRecipes?: Recipe[] | null;
+  initialVisibleCount?: number;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes ?? []);
+  const [loading, setLoading] = useState(initialRecipes === null);
+  const [visibleCount, setVisibleCount] = useState(initialVisibleCount);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("recommended");
   const [slidePosition, setSlidePosition] = useState(0);
@@ -144,22 +150,14 @@ export default function HomePage() {
   }
 
   useEffect(() => {
-    fetchRecipes();
+    if (initialRecipes === null) {
+      fetchRecipes();
+    }
   }, []);
 
   useEffect(() => {
     fetchSaved();
   }, []);
-
-  useEffect(() => {
-    if (slideCount <= 1 || paused) return;
-
-    const timeoutId = window.setTimeout(() => {
-      setSlidePosition((current) => current + 1);
-    }, AUTO_SCROLL_DELAY_MS);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [slidePosition, paused, slideCount]);
 
   const tabs = TABS;
 
@@ -284,6 +282,7 @@ export default function HomePage() {
 
   return (
     <main className={styles.container}>
+      <h1 className="visually-hidden">Newest recipes for this week</h1>
       <section className={styles.dashboard}>
         <div
           ref={dashboardRef}
@@ -316,6 +315,7 @@ export default function HomePage() {
                         ? 0
                         : trackIndex - 1;
                   const active = visibleIndex === activeSlideIndex;
+                  const isClone = trackIndex === 0 || trackIndex === slideCount + 1;
                   return (
                     <Link
                       key={`slide-${trackIndex}`}
@@ -324,14 +324,21 @@ export default function HomePage() {
                       onClick={handleSlideClick}
                       onMouseDown={(event) => event.preventDefault()}
                       onDragStart={(event) => event.preventDefault()}
-                      aria-hidden={!active}
-                      tabIndex={active ? 0 : -1}
+                      aria-hidden={!active || isClone}
+                      tabIndex={active && !isClone ? 0 : -1}
                     >
-                      <img src={recipe.image!} alt={recipe.title} className={styles.slideImage} draggable={false} />
+                      <img
+                        src={recipe.image!}
+                        alt={recipe.title}
+                        className={styles.slideImage}
+                        draggable={false}
+                        fetchPriority={active ? "high" : undefined}
+                        loading={active ? "eager" : "lazy"}
+                      />
                       <div className={styles.slideShade} />
                       <div className={styles.slideContent}>
                         <p className={styles.slideKicker}>Featured recipe</p>
-                        <h1>{recipe.title}</h1>
+                        <h2>{recipe.title}</h2>
                         {recipe.subtitle && <p className={styles.slideSubtitle}>{recipe.subtitle}</p>}
                         {recipe.description && <p className={styles.slideDescription}>{recipe.description}</p>}
                         <div className={styles.slideMeta}>
@@ -362,7 +369,7 @@ export default function HomePage() {
             </>
           ) : (
             <div className={styles.slideFallback}>
-              <h1>Newest recipes for this week</h1>
+              <h2>Newest recipes for this week</h2>
             </div>
           )}
         </div>
@@ -401,7 +408,7 @@ export default function HomePage() {
       ) : recipes.length === 0 ? (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>🍳</div>
-          <h3 className={styles.emptyTitle}>No recipes yet</h3>
+          <h2 className={styles.emptyTitle}>No recipes yet</h2>
           <p className={styles.emptyDescription}>
             Be the first to share a recipe.
           </p>
@@ -410,8 +417,9 @@ export default function HomePage() {
           </Link>
         </div>
       ) : (
+        <>
         <div className={styles.recipeGrid}>
-          {visibleRecipes.map((r) => {
+          {visibleRecipes.slice(0, visibleCount).map((r) => {
             const recipeId = r._id || r.id;
             const saved = isSaved(recipeId);
             const author = getRecipeAuthor(r);
@@ -421,7 +429,7 @@ export default function HomePage() {
                 <Link href={`/recipes/${recipeId}`} className={styles.cardLink}>
                   <div className={styles.cardImage}>
                     {r.image ? (
-                      <img src={r.image} alt={r.title} />
+                      <img src={r.image} alt={r.title} loading="lazy" />
                     ) : (
                       <div className={styles.imagePlaceholder}>
                         <span className="material-symbols-outlined">restaurant</span>
@@ -463,6 +471,18 @@ export default function HomePage() {
           );
           })}
         </div>
+        {visibleCount < visibleRecipes.length && (
+          <div className={styles.loadMoreRow}>
+            <button
+              type="button"
+              className={styles.loadMoreBtn}
+              onClick={() => setVisibleCount((current) => current + 24)}
+            >
+              Load more recipes
+            </button>
+          </div>
+        )}
+        </>
       )}
     </main>
   );

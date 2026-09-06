@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import BackButton from "../../../components/BackButton";
+import Breadcrumbs from "../../../components/Breadcrumbs";
 import AccountAvatar from "../../../components/AccountAvatar";
 import { toastSuccess } from "../../../components/toast/toast";
 import {
@@ -70,9 +70,9 @@ export default function SwitchAccountPage() {
   };
 
   return (
-    <div className={styles.container}>
+    <main className={styles.container}>
       <div className={styles.accountPageHeader}>
-        <BackButton fallbackHref="/settings/account" className={styles.backLink} label="Account" />
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Settings", href: "/settings" }, { label: "Account", href: "/settings/account" }, { label: "Switch Account" }]} mobileBackHref="/settings/account" />
         <h1>Switch Account</h1>
       </div>
 
@@ -122,6 +122,6 @@ export default function SwitchAccountPage() {
           Sign out all
         </button>
       </div>
-    </div>
+    </main>
   );
 }

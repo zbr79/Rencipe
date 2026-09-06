@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { authFetch, clearAuthSession, readAuthSession, readSignedInAccounts, writeAuthSession } from "../utils/authSession";
 
 async function startGuestSession() {
@@ -37,14 +37,14 @@ function isMealsPath(pathname: string) {
 export default function AuthGate({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [checking, setChecking] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [authenticated, setAuthenticated] = useState(true);
 
   useEffect(() => {
     let active = true;
     const isLoginPage = pathname === "/login";
-    const isAddAccountLogin = isLoginPage && searchParams.get("mode") === "add-account";
+    const isAddAccountLogin =
+      isLoginPage && typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "add-account";
     const isAccountSwitcher = pathname === "/settings/account/switch";
     const session = readAuthSession();
 
@@ -143,7 +143,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, [pathname, router, searchParams]);
+  }, [pathname, router]);
 
   if (checking) return null;
   if (!authenticated && pathname !== "/login") return null;

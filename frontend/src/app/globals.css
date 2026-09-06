@@ -7,12 +7,12 @@
   --primary-soft: #fbf0d4;
   --primary-text: #8f6404;
   --on-primary: #3a2c0e;
-  --primary-strong: #b05c33;
-  --primary-strong-hover: #9a4e2a;
+  --primary-strong: #a24f28;
+  --primary-strong-hover: #92471f;
   --on-strong: #fdf6ec;
   --secondary: #4c7a52;
   --secondary-hover: #3f6645;
-  --accent: #c05a2e;
+  --accent: #ab4f25;
   --accent-soft: #fbeadf;
   --error: #c8422f;
   --error-hover: #a93625;
@@ -24,7 +24,7 @@
   --input-bg: #fffdf7;
   --text-primary: #33291a;
   --text-secondary: #6f6350;
-  --text-muted: #9c8f7a;
+  --text-muted: #7a6e58;
   --surface-muted: #f4ead9;
   --hover-bg: #f4ead9;
 
@@ -379,6 +379,18 @@ textarea {
   height: 1px;
   background: var(--border);
   margin: var(--spacing-lg) 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .text-muted {

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSaved } from "../contexts/SavedContext";
 import AccountAvatar from "../components/AccountAvatar";
+import Breadcrumbs from "../components/Breadcrumbs";
 import EmptyState from "../components/EmptyState";
 import styles from "./page.module.css";
 import { getAccountDisplayName } from "../utils/accountAvatar";
@@ -41,7 +42,10 @@ export default function SavedPage() {
   };
 
   return (
-    <div className={styles.container}>
+    <main className={styles.container}>
+      <div className={styles.pageTop}>
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Saved" }]} mobileBackHref="/" />
+      </div>
 
       <div className={styles.filtersSection}>
         <input
@@ -106,6 +110,6 @@ export default function SavedPage() {
             })}
           </div>
       </>
-    </div>
+    </main>
   );
 }

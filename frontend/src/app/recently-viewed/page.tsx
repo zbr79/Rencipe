@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import BackButton from "../components/BackButton";
+import Breadcrumbs from "../components/Breadcrumbs";
 import { useSwipeRowDrag } from "../hooks/useSwipeRowDrag";
 import { readRecentlyViewedRecipes, removeRecentlyViewedRecipe, type RecentlyViewedRecipe } from "../utils/recentlyViewedRecipes";
 import { matchesTextSearch } from "../utils/textSearch";
@@ -52,7 +52,7 @@ export default function RecentlyViewedPage() {
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <BackButton fallbackHref="/settings" className={styles.backLink} label="Settings" />
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Recently Viewed" }]} mobileBackHref="/" />
         <h1>Recently Viewed</h1>
       </header>
 

@@ -10,7 +10,7 @@ router.get("/recipes", authenticateOptional, listRecipes);
 router.post("/recipes", requireAuth, createRecipe);
 router.get("/recipes/:id", authenticateOptional, getRecipeById);
 router.put("/recipes/:id", requireAuth, updateRecipe);
-router.post("/recipes/:id/rating", requireAccount, rateRecipe);
+router.post("/recipes/:id/rating", requireAuth, rateRecipe);
 router.delete("/recipes/:id", requireAuth, deleteRecipe);
 router.patch("/recipes/:id/restore", requireAuth, restoreRecipe);
 router.post("/recipes/:id/upload-image", requireAuth, upload.single("image"), uploadRecipeImage);

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import BackButton from "../components/BackButton";
+import Breadcrumbs from "../components/Breadcrumbs";
 import EmptyState from "../components/EmptyState";
 import styles from "./drafts.module.css";
 import { useConfirmDialog } from "../components/ConfirmDialogProvider";
@@ -87,9 +87,9 @@ export default function DraftsPage() {
   });
 
   return (
-    <div className={styles.container}>
+    <main className={styles.container}>
       <header className={styles.pageHeader}>
-        <BackButton fallbackHref="/settings" className={styles.backLink} />
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Drafts" }]} mobileBackHref="/" />
         <div>
           <p className={styles.kicker}>Recipes</p>
           <h1>Drafts</h1>
@@ -133,7 +133,7 @@ export default function DraftsPage() {
                   {draft.image ? <img src={draft.image} alt={draft.title || draft.name || "Draft"} /> : <span className="material-symbols-outlined">edit_note</span>}
                 </div>
                 <div className={styles.draftText}>
-                  <h3>{draft.name || draft.title || "Untitled Draft"}</h3>
+                  <h2>{draft.name || draft.title || "Untitled Draft"}</h2>
                   <p>{draft.draftType === "meal" ? "Meal draft" : draft.title || "Untitled recipe"}</p>
                   <span>Updated {new Date(draft.updatedAt).toLocaleDateString()}</span>
                 </div>
@@ -149,6 +149,6 @@ export default function DraftsPage() {
           ))}
         </div>
       )}
-    </div>
+    </main>
   );
 }

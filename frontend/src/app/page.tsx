@@ -1,10 +1,35 @@
 import { Suspense } from "react";
 import HomePage from "./components/HomePageClient";
 
-export default function Page() {
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:6100";
+
+async function fetchRecipes() {
+  try {
+    const response = await fetch(`${BACKEND_URL}/recipes`, { cache: "no-store" });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return Array.isArray(data.recipes) ? data.recipes : null;
+  } catch {
+    return null;
+  }
+}
+
+export default async function Page() {
+  const initialRecipes = await fetchRecipes();
+  const publicRecipes = Array.isArray(initialRecipes)
+    ? initialRecipes.filter((recipe: any) => recipe.isPublic !== false)
+    : [];
+  const newest = [...publicRecipes].sort(
+    (a: any, b: any) => Date.parse(b.createdAt || "") - Date.parse(a.createdAt || "")
+  );
+  const heroImage = newest.find((recipe: any) => recipe.image)?.image;
+
   return (
-    <Suspense fallback={null}>
-      <HomePage />
-    </Suspense>
+    <>
+      {heroImage && <link rel="preload" as="image" href={heroImage} fetchPriority="high" />}
+      <Suspense fallback={null}>
+        <HomePage initialRecipes={initialRecipes} initialVisibleCount={24} />
+      </Suspense>
+    </>
   );
 }

@@ -1,9 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import Link from "next/link";
+import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { toastError } from "./toast/toast";
-import { authFetch, getCurrentUser } from "../utils/authSession";
+import { authFetch, readAuthSession } from "../utils/authSession";
 import styles from "./comment-section.module.css";
 
 type CommentEntryType = "recipe" | "meal";
@@ -22,6 +21,9 @@ interface Comment {
 interface CommentSectionProps {
   entryType: CommentEntryType;
   entryId: string;
+  card?: boolean;
+  title?: string;
+  ratingSlot?: ReactNode;
 }
 
 function formatCommentDate(value: string) {
@@ -30,31 +32,47 @@ function formatCommentDate(value: string) {
   return new Date(timestamp).toLocaleDateString();
 }
 
-export default function CommentSection({ entryType, entryId }: CommentSectionProps) {
+export default function CommentSection({ entryType, entryId, card = false, title = "Comments", ratingSlot }: CommentSectionProps) {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [canComment, setCanComment] = useState(false);
-  const isGuest = getCurrentUser()?.role === "guest";
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    let active = true;
+
     async function fetchComments() {
       setLoading(true);
       try {
         const response = await authFetch(`/api/comments/${entryType}/${entryId}`);
         if (!response.ok) throw new Error("Failed to load comments");
         const data = await response.json();
+        if (!active) return;
         setComments(data.comments || []);
-        setCanComment(Boolean(data.canComment));
       } catch (error: any) {
-        toastError(error.message || "Could not load comments");
+        if (active) toastError(error.message || "Could not load comments");
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     }
 
-    if (entryId) void fetchComments();
+    async function fetchWithSessionRetry() {
+      let attempt = 0;
+      while (attempt < 5) {
+        const hadSession = Boolean(readAuthSession());
+        await fetchComments();
+        if (hadSession) return;
+        if (!active) return;
+        attempt += 1;
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+      }
+    }
+
+    if (entryId) void fetchWithSessionRetry();
+
+    return () => {
+      active = false;
+    };
   }, [entryId, entryType]);
 
   async function handleSubmitComment(event: FormEvent<HTMLFormElement>) {
@@ -72,7 +90,6 @@ export default function CommentSection({ entryType, entryId }: CommentSectionPro
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not post comment");
       setComments((current) => [data.comment, ...current]);
-      setCanComment(false);
       setCommentText("");
     } catch (error: any) {
       toastError(error.message || "Could not post comment");
@@ -97,33 +114,20 @@ export default function CommentSection({ entryType, entryId }: CommentSectionPro
   }
 
   async function handleDeleteComment(commentId: string) {
-    const target = comments.find((comment) => comment._id === commentId);
     const deleted = await updateComment(commentId, `/api/comments/${commentId}`, "DELETE");
     if (deleted) {
       setComments((current) => current.filter((comment) => comment._id !== commentId));
-      if (target?.isOwn) setCanComment(true);
     }
   }
 
   return (
-    <section className={styles.commentsSection} aria-label={`${entryType} comments`}>
+    <section className={`${styles.commentsSection} ${card ? styles.commentsCard : ""}`} aria-label={`${entryType} comments`}>
       <div className={styles.sectionHeader}>
-        <h3>Comments</h3>
-        <span>{comments.length}</span>
+        <h2>{title}</h2>
+        <span className={styles.count}>{comments.length}</span>
       </div>
 
-      {canComment && isGuest ? (
-        <p className={styles.statusText}>
-          <Link href="/settings/account" className={styles.signupLink}>Create an account</Link> to post comments.
-        </p>
-      ) : canComment ? (
-        <form className={styles.commentForm} onSubmit={handleSubmitComment}>
-          <textarea value={commentText} onChange={(event) => setCommentText(event.target.value)} placeholder="Add a comment" rows={3} />
-          <button type="submit" disabled={submitting || !commentText.trim()}>{submitting ? "Posting" : "Post"}</button>
-        </form>
-      ) : (
-        <p className={styles.statusText}>You can comment once.</p>
-      )}
+      {ratingSlot && <div className={styles.ratingSlot}>{ratingSlot}</div>}
 
       {loading ? (
         <p className={styles.statusText}>Loading...</p>
@@ -143,12 +147,24 @@ export default function CommentSection({ entryType, entryId }: CommentSectionPro
                   <span className="material-symbols-outlined">thumb_up</span>
                   {comment.upvotes}
                 </button>
-                {comment.canDelete && <button type="button" onClick={() => handleDeleteComment(comment._id)}>Delete</button>}
+                {comment.canDelete && <button type="button" className={styles.actionDelete} onClick={() => handleDeleteComment(comment._id)}>Delete</button>}
               </div>
             </article>
           ))}
         </div>
       )}
+
+      <form className={styles.commentForm} onSubmit={handleSubmitComment}>
+        <textarea
+          value={commentText}
+          onChange={(event) => setCommentText(event.target.value)}
+          placeholder="Share your thoughts…"
+          rows={2}
+        />
+        <div className={styles.commentFormFooter}>
+          <button type="submit" disabled={submitting || !commentText.trim()}>{submitting ? "Posting" : "Post"}</button>
+        </div>
+      </form>
     </section>
   );
 }
