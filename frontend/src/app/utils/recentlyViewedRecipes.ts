@@ -4,6 +4,7 @@ import { filterRecipesForUserLanguage, type RecipeLanguage } from "./recipeLangu
 const RECENTLY_VIEWED_BASE_KEY = "rencipe-recently-viewed-recipes";
 const RECENTLY_VIEWED_MAX_ITEMS = 50;
 const RECENTLY_VIEWED_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
+export const RECENTLY_VIEWED_CHANGE_EVENT = "rencipe-recently-viewed-change";
 
 export interface RecentlyViewedRecipe {
   id: string;
@@ -16,6 +17,11 @@ export interface RecentlyViewedRecipe {
 
 function getRecentlyViewedKey(userId = getCurrentUserId()) {
   return userId ? `${RECENTLY_VIEWED_BASE_KEY}:${userId}` : RECENTLY_VIEWED_BASE_KEY;
+}
+
+function notifyRecentlyViewedChange() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(RECENTLY_VIEWED_CHANGE_EVENT));
 }
 
 function isRecentlyViewedRecipe(value: Partial<RecentlyViewedRecipe> | null | undefined): value is RecentlyViewedRecipe {
@@ -73,11 +79,13 @@ export function recordRecentlyViewedRecipe(recipe: Omit<RecentlyViewedRecipe, "v
   const nextItems = pruneRecentlyViewedRecipes([nextItem, ...readRawRecentlyViewedRecipes(userId)]);
 
   window.localStorage.setItem(storageKey, JSON.stringify(nextItems));
+  notifyRecentlyViewedChange();
 }
 
 export function clearRecentlyViewedRecipes(userId?: string) {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(getRecentlyViewedKey(userId));
+  notifyRecentlyViewedChange();
 }
 
 export function removeRecentlyViewedRecipe(recipeId: string, userId?: string) {
@@ -87,9 +95,11 @@ export function removeRecentlyViewedRecipe(recipeId: string, userId?: string) {
   const nextItems = readRawRecentlyViewedRecipes(userId).filter((item) => item.id !== recipeId);
   if (nextItems.length === 0) {
     window.localStorage.removeItem(storageKey);
+    notifyRecentlyViewedChange();
     return [];
   }
 
   window.localStorage.setItem(storageKey, JSON.stringify(nextItems));
+  notifyRecentlyViewedChange();
   return nextItems;
 }

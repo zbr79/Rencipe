@@ -9,7 +9,10 @@ import AccountAvatar from "./AccountAvatar";
 import SearchOverlay from "./SearchOverlay";
 import { authFetch, getCurrentUser } from "../utils/authSession";
 import { getAccountDisplayName } from "../utils/accountAvatar";
-import { readRecentlyViewedRecipes } from "../utils/recentlyViewedRecipes";
+import {
+  readRecentlyViewedRecipes,
+  RECENTLY_VIEWED_CHANGE_EVENT,
+} from "../utils/recentlyViewedRecipes";
 import { getVisibleTags } from "../utils/recipeTags";
 import { buildExploreCategories } from "../utils/exploreCategories";
 import styles from "./desktop-chrome.module.css";
@@ -26,6 +29,7 @@ const NAV_ITEMS = [
 const GUEST_NAV_HREFS = ["/", "/browse", "/saved"];
 
 const MAX_EXPLORE_CATEGORIES = 8;
+const MAX_RECENTLY_VIEWED_ITEMS = 5;
 
 const CATEGORY_ICONS: Record<string, string> = {
   chinese: "restaurant",
@@ -80,8 +84,23 @@ export default function DesktopChrome() {
   const [searchOpen, setSearchOpen] = useState(false);
   const closeSearch = useCallback(() => setSearchOpen(false), []);
   const user = getCurrentUser();
-  const recentlyViewed = readRecentlyViewedRecipes();
+  const [recentlyViewed, setRecentlyViewed] = useState(() => readRecentlyViewedRecipes());
   const [sidebarRecipes, setSidebarRecipes] = useState<SidebarRecipe[]>([]);
+
+  useEffect(() => {
+    const syncRecentlyViewed = () => {
+      setRecentlyViewed(readRecentlyViewedRecipes());
+    };
+
+    syncRecentlyViewed();
+    window.addEventListener(RECENTLY_VIEWED_CHANGE_EVENT, syncRecentlyViewed);
+    window.addEventListener("storage", syncRecentlyViewed);
+
+    return () => {
+      window.removeEventListener(RECENTLY_VIEWED_CHANGE_EVENT, syncRecentlyViewed);
+      window.removeEventListener("storage", syncRecentlyViewed);
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     let ignore = false;
@@ -218,7 +237,7 @@ export default function DesktopChrome() {
           <div className={styles.sidebarSection}>
             <p className={styles.sidebarSectionLabel}>Recently viewed</p>
             <nav className={styles.sidebarSubNav}>
-              {recentlyViewed.slice(0, 3).map((item) => (
+              {recentlyViewed.slice(0, MAX_RECENTLY_VIEWED_ITEMS).map((item) => (
                 <Link
                   key={item.id}
                   href={`/recipes/${item.id}`}
