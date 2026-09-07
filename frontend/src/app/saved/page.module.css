@@ -66,33 +66,81 @@
   font-weight: 600;
 }
 
-.filtersSection {
-  width: 100%;
-  margin-bottom: 16px;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.searchBox {
-  width: min(100%, 560px);
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 10px 0 14px;
+.searchPanel {
+  width: min(100%, 680px);
+  display: grid;
+  gap: 12px;
+  margin-bottom: 22px;
+  padding: 14px;
   border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--card-bg);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--card-bg) 92%, var(--primary-soft));
   box-shadow: var(--shadow-sm);
 }
 
-.searchIcon {
+.searchPanelHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchPanelIcon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  font-size: 20px;
+}
+
+.searchPanelHeader h3 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 750;
+}
+
+.searchPanelHeader p {
+  margin: 3px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.searchBox {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.searchBox:focus-within {
+  border-color: var(--primary);
+  background: var(--card-bg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-soft) 78%, transparent);
+}
+
+.searchBox::before {
+  content: "search";
+  width: 22px;
   flex: none;
   color: var(--primary-text);
+  font-family: "Material Symbols Rounded";
   font-size: 21px;
+  line-height: 1;
 }
 
 .searchInput {
@@ -119,21 +167,33 @@
 }
 
 .clearSearch {
-  width: 28px;
-  height: 28px;
+  min-height: 30px;
   flex: none;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 999px;
-  background: var(--hover-bg);
+  gap: 4px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--card-bg);
   color: var(--text-secondary);
   cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.clearSearch span {
-  font-size: 18px;
+.clearSearch:hover {
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+
+.clearSearch span:first-child {
+  font-size: 16px;
+}
+
+.clearSearchText {
+  white-space: nowrap;
 }
 
 .savedGrid {
