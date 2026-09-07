@@ -37,9 +37,10 @@
 }
 
 .pageHeader {
-  display: flex;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(100px, 126px) minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
 }
@@ -64,82 +65,32 @@
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 600;
+  justify-self: end;
+  white-space: nowrap;
 }
 
-.searchPanel {
-  width: min(100%, 680px);
-  display: grid;
-  gap: 12px;
-  margin-bottom: 22px;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--card-bg) 92%, var(--primary-soft));
-  box-shadow: var(--shadow-sm);
-}
-
-.searchPanelHeader {
+.searchBar {
+  width: 100%;
+  max-width: 126px;
+  min-height: 30px;
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.searchPanelIcon {
-  width: 34px;
-  height: 34px;
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: var(--primary-soft);
-  color: var(--primary-text);
-  font-size: 20px;
-}
-
-.searchPanelHeader h3 {
-  margin: 0;
-  color: var(--foreground);
-  font-size: 14px;
-  line-height: 1.2;
-  font-weight: 750;
-}
-
-.searchPanelHeader p {
-  margin: 3px 0 0;
-  color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1.2;
-}
-
-.searchBox {
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 10px 0 14px;
+  gap: 7px;
+  padding: 0 8px 0 10px;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--input-bg);
+  border-radius: 999px;
+  background: var(--card-bg);
   transition:
     border-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    background-color var(--transition-fast);
+    box-shadow var(--transition-fast);
 }
 
-.searchBox:focus-within {
-  border-color: var(--primary);
-  background: var(--card-bg);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-soft) 78%, transparent);
-}
-
-.searchBox::before {
-  content: "search";
-  width: 22px;
+.searchBarIcon {
+  width: 16px;
+  height: 16px;
   flex: none;
   color: var(--primary-text);
-  font-family: "Material Symbols Rounded";
-  font-size: 21px;
+  font-size: 16px !important;
   line-height: 1;
 }
 
@@ -152,10 +103,17 @@
   outline: none;
   background: transparent;
   color: var(--foreground);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   box-sizing: border-box;
   appearance: none;
+}
+
+.searchInput:focus,
+.searchInput:focus-visible {
+  border: 0 !important;
+  outline: none;
+  box-shadow: none !important;
 }
 
 .searchInput::placeholder {
@@ -167,33 +125,28 @@
 }
 
 .clearSearch {
-  min-height: 30px;
+  width: 24px;
+  height: 24px;
   flex: none;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 0 9px;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  background: var(--card-bg);
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   font-family: inherit;
-  font-size: 12px;
-  font-weight: 700;
 }
 
 .clearSearch:hover {
-  border-color: var(--primary);
+  background: var(--hover-bg);
   color: var(--primary-text);
 }
 
-.clearSearch span:first-child {
-  font-size: 16px;
-}
-
-.clearSearchText {
-  white-space: nowrap;
+.clearSearch span {
+  font-size: 17px;
 }
 
 .savedGrid {
@@ -231,7 +184,27 @@
   }
 
   .pageHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title count"
+      "search search";
+    align-items: center;
+    gap: 10px 12px;
     margin-bottom: 12px;
+  }
+
+  .resultsTitleGroup {
+    grid-area: title;
+  }
+
+  .searchBar {
+    grid-area: search;
+    width: 100%;
+    max-width: none;
+  }
+
+  .pageCount {
+    grid-area: count;
   }
 }
 

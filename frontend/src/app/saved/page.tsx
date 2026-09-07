@@ -58,32 +58,17 @@ export default function SavedPage() {
         <div className={styles.resultsTitleGroup}>
           <h2 className={styles.pageTitle}>Saved</h2>
         </div>
-        {!isLoading && savedRecipes.length > 0 && (
-          <span className={styles.pageCount}>
-            {filteredRecipes.length} {filteredRecipes.length === 1 ? "recipe" : "recipes"}
-          </span>
-        )}
-      </div>
-
-      {savedRecipes.length > 0 && (
-        <section className={styles.searchPanel} aria-labelledby="saved-search-label">
-          <div className={styles.searchPanelHeader}>
-            <span className={`material-symbols-rounded ${styles.searchPanelIcon}`} aria-hidden="true">
+        {savedRecipes.length > 0 && (
+          <div className={styles.searchBar}>
+            <span className={`material-symbols-rounded ${styles.searchBarIcon}`} aria-hidden="true">
               search
             </span>
-            <div>
-              <h3 id="saved-search-label">Find a saved recipe</h3>
-              <p>Search by title or description</p>
-            </div>
-          </div>
-          <div className={styles.searchBox}>
             <label htmlFor="saved-recipe-search" className="visually-hidden">
               Search within saved recipes
             </label>
             <input
               id="saved-recipe-search"
               type="search"
-              placeholder="Start typing to search..."
               value={filters.searchTerm}
               onChange={(e) =>
                 setFilters({ ...filters, searchTerm: e.target.value })
@@ -100,12 +85,16 @@ export default function SavedPage() {
                 <span className="material-symbols-rounded" aria-hidden="true">
                   close
                 </span>
-                <span className={styles.clearSearchText}>Clear</span>
               </button>
             )}
           </div>
-        </section>
-      )}
+        )}
+        {!isLoading && savedRecipes.length > 0 && (
+          <span className={styles.pageCount}>
+            {filteredRecipes.length} {filteredRecipes.length === 1 ? "Recipe" : "Recipes"}
+          </span>
+        )}
+      </div>
 
       {isLoading && <p className={styles.loading}>Loading saved recipes...</p>}
 
