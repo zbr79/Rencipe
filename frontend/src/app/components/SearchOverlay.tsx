@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import searchStyles from "../search/page.module.css";
+import searchStyles from "./search-overlay.module.css";
 import { useSaved } from "../contexts/SavedContext";
 import { getVisibleTags } from "../utils/recipeTags";
 import { matchesTextSearch } from "../utils/textSearch";
@@ -166,12 +166,23 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
   if (!open) return null;
 
   return (
-    <div className={searchStyles.overlay} role="dialog" aria-modal="true" aria-label="Search">
+    <div
+      className={searchStyles.overlay}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Search recipes"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <main className={searchStyles.page}>
         <header className={searchStyles.searchHeader}>
-          <button type="button" className={searchStyles.backButton} onClick={onClose} aria-label="Close search">
-            <span className="material-symbols-outlined">arrow_back</span>
-          </button>
+          <div className={searchStyles.modalTitleRow}>
+            <h1>Search recipes</h1>
+            <button type="button" className={searchStyles.backButton} onClick={onClose} aria-label="Close search">
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          </div>
 
           <div className={searchStyles.searchBox}>
             <span className={`material-symbols-outlined ${searchStyles.searchIcon}`}>search</span>
@@ -287,7 +298,7 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                     }}
                     aria-label={saved ? "Remove from saved" : "Save recipe"}
                   >
-                    <span className="material-symbols-outlined">{saved ? "bookmark" : "bookmark_border"}</span>
+                    <span className="material-symbols-outlined">{saved ? "favorite" : "favorite_border"}</span>
                   </button>
                 </article>
               );

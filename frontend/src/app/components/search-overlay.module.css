@@ -1,0 +1,406 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10010;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(39, 31, 19, 0.28);
+}
+
+.page {
+  width: min(100%, 544px);
+  height: min(476px, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-xl);
+}
+
+.searchHeader {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modalTitleRow {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modalTitleRow h1 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.backButton,
+.iconButton {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.backButton {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.backButton:hover,
+.iconButton:hover {
+  background: var(--hover-bg);
+  color: var(--foreground);
+}
+
+.backButton span {
+  font-size: 19px;
+}
+
+.searchBox {
+  min-width: 0;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--input-bg);
+}
+
+.searchIcon {
+  flex: none;
+  color: var(--text-muted);
+  font-size: 20px;
+}
+
+.searchBox > input {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0 !important;
+  outline: none;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: none !important;
+}
+
+.searchBox > input::placeholder {
+  color: var(--text-muted);
+}
+
+.clearSearch {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 7px;
+  background: var(--hover-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.clearSearch:hover {
+  color: var(--foreground);
+}
+
+.clearSearch span {
+  font-size: 18px;
+}
+
+.sectionBlock,
+.resultsHeader,
+.error,
+.loading,
+.empty,
+.resultList {
+  margin-left: 18px;
+  margin-right: 18px;
+}
+
+.sectionBlock {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 0;
+}
+
+.historySection {
+  min-height: 0;
+}
+
+.sectionHeader,
+.resultsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionHeader {
+  margin-bottom: 10px;
+}
+
+.sectionHeader h2,
+.resultsHeader h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.resultsHeader {
+  padding: 16px 0 10px;
+}
+
+.resultsHeader > span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.iconButton {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+}
+
+.iconButton span {
+  font-size: 18px;
+}
+
+.historyList {
+  display: grid;
+  gap: 6px;
+}
+
+.historyRow {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.historyRow:hover {
+  border-color: var(--border);
+  background: var(--hover-bg);
+  color: var(--foreground);
+}
+
+.historyRowText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.historyPreview {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.emptyHistory {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--error) 30%, var(--border));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--error) 8%, var(--card-bg));
+  color: var(--error);
+  font-size: 13px;
+}
+
+.loading,
+.empty {
+  padding: 24px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.secondaryButton {
+  min-height: 34px;
+  margin-top: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.secondaryButton:hover {
+  background: var(--hover-bg);
+}
+
+.resultList {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  gap: 6px;
+  overflow: auto;
+  padding-bottom: 18px;
+}
+
+.resultCard {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+}
+
+.resultCard:hover {
+  border-color: color-mix(in srgb, var(--primary) 42%, var(--border));
+  background: color-mix(in srgb, var(--hover-bg) 35%, var(--card-bg));
+}
+
+.resultCardLink {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+}
+
+.recipeImage {
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--hover-bg);
+  color: var(--text-muted);
+}
+
+.recipeImage img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.recipeImage span {
+  font-size: 20px;
+}
+
+.recipeBody {
+  min-width: 0;
+}
+
+.recipeBody h3 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recipeCardSubtitle {
+  margin: 3px 0 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saveButton {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--primary) 62%, white);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--primary-text);
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.saveButton:hover {
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+
+.saveButtonActive {
+  border-color: color-mix(in srgb, #d84f67 34%, var(--border));
+  background: color-mix(in srgb, #d84f67 14%, var(--card-bg));
+  color: #d84f67;
+}
+
+.saveButton span {
+  font-size: 17px;
+}
+
+@media (max-width: 767px) {
+  .overlay {
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .page {
+    width: 100%;
+    height: calc(100vh - 24px);
+    border-radius: 14px;
+  }
+}
