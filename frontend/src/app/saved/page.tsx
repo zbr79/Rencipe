@@ -50,24 +50,31 @@ export default function SavedPage() {
 
   return (
     <main className={styles.container}>
-      <div className={styles.pageTop}>
+      <header className={styles.header}>
         <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Saved" }]} mobileBackHref="/" />
-      </div>
-
-      <div className={styles.pageHeader}>
-        <div>
-          <h1 className={styles.pageTitle}>Saved recipes</h1>
+        <div className={styles.headerCopy}>
+          <p className={styles.kicker}>Saved</p>
+          <h1>Saved recipes</h1>
           {!isLoading && savedRecipes.length > 0 && (
-            <p className={styles.pageCount}>
-              {filteredRecipes.length} {filteredRecipes.length === 1 ? "recipe" : "recipes"}
+            <p className={styles.headerMeta}>
+              {filteredRecipes.length === savedRecipes.length
+                ? `${savedRecipes.length} ${savedRecipes.length === 1 ? "recipe" : "recipes"} saved`
+                : `Showing ${filteredRecipes.length} of ${savedRecipes.length} recipes`}
             </p>
           )}
         </div>
-      </div>
+      </header>
 
       {savedRecipes.length > 0 && (
-        <div className={styles.filtersSection}>
+        <div className={styles.searchSection}>
+          <label className="visually-hidden" htmlFor="saved-recipe-search">
+            Search saved recipes
+          </label>
+          <span className={`material-symbols-rounded ${styles.searchIcon}`} aria-hidden="true">
+            search
+          </span>
           <input
+            id="saved-recipe-search"
             type="text"
             placeholder="Search saved recipes"
             value={filters.searchTerm}
@@ -76,6 +83,16 @@ export default function SavedPage() {
             }
             className={styles.searchInput}
           />
+          {filters.searchTerm && (
+            <button
+              type="button"
+              className={styles.clearSearch}
+              onClick={() => setFilters({ searchTerm: "" })}
+              aria-label="Clear search"
+            >
+              <span className="material-symbols-rounded" aria-hidden="true">close</span>
+            </button>
+          )}
         </div>
       )}
 
