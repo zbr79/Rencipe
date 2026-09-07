@@ -96,7 +96,7 @@ export default function SavedPage() {
           title="No matching recipes"
           subtitle="Try a different search term."
           actionLabel="Clear search"
-          onActionClick={() => setFilters({ searchTerm: "" })}
+          actionHref="/saved"
         />
       )}
 
