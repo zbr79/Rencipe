@@ -66,18 +66,24 @@ export default function SavedPage() {
       </div>
 
       {savedRecipes.length > 0 && (
-        <div className={styles.filtersSection}>
-          <div className={styles.searchBox}>
-            <span className={`material-symbols-rounded ${styles.searchIcon}`} aria-hidden="true">
+        <section className={styles.searchPanel} aria-labelledby="saved-search-label">
+          <div className={styles.searchPanelHeader}>
+            <span className={`material-symbols-rounded ${styles.searchPanelIcon}`} aria-hidden="true">
               search
             </span>
+            <div>
+              <h3 id="saved-search-label">Find a saved recipe</h3>
+              <p>Search by title or description</p>
+            </div>
+          </div>
+          <div className={styles.searchBox}>
             <label htmlFor="saved-recipe-search" className="visually-hidden">
-              Search saved recipes
+              Search within saved recipes
             </label>
             <input
               id="saved-recipe-search"
               type="search"
-              placeholder="Search saved recipes"
+              placeholder="Start typing to search..."
               value={filters.searchTerm}
               onChange={(e) =>
                 setFilters({ ...filters, searchTerm: e.target.value })
@@ -94,10 +100,11 @@ export default function SavedPage() {
                 <span className="material-symbols-rounded" aria-hidden="true">
                   close
                 </span>
+                <span className={styles.clearSearchText}>Clear</span>
               </button>
             )}
           </div>
-        </div>
+        </section>
       )}
 
       {isLoading && <p className={styles.loading}>Loading saved recipes...</p>}
