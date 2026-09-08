@@ -42,4 +42,16 @@
     flex-direction: column;
     gap: 10px;
   }
+
+  .links {
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+
+  .links a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 6px;
+  }
 }

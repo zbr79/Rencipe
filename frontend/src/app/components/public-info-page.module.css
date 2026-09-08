@@ -47,3 +47,10 @@
 .content p + p {
   margin-top: 14px;
 }
+
+@media (max-width: 767px) {
+  .backLink {
+    min-height: 44px;
+    padding: 0 8px;
+  }
+}

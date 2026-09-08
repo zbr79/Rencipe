@@ -77,6 +77,7 @@ export default function BottomNav() {
                 <span className={`material-symbols-outlined ${styles.icon}`}>
                   {getItemIcon(item, false)}
                 </span>
+                <span className={styles.label}>{item.label}</span>
               </button>
             );
           }
@@ -96,6 +97,7 @@ export default function BottomNav() {
               <span className={`material-symbols-outlined ${styles.icon}`}>
                 {getItemIcon(item, active)}
               </span>
+              <span className={styles.label}>{item.label}</span>
             </Link>
           );
         })}

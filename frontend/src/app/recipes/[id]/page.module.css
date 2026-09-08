@@ -540,6 +540,37 @@
 }
 
 @media (max-width: 767px) {
+  .metaRow {
+    gap: 8px 12px;
+  }
+
+  .metaRow > * + * {
+    padding-left: 0;
+    margin-left: 0;
+    border-left: 0;
+  }
+
+  .metaChip {
+    white-space: normal;
+  }
+
+  .ingredientItem {
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .ingredientName {
+    flex: 1 1 auto;
+  }
+
+  .ingredientAmount {
+    flex: 0 0 auto;
+  }
+
+  .ratingMessage {
+    white-space: normal;
+  }
+
   .ingredientsSection,
   .directionsSection,
   .tipsSection {
