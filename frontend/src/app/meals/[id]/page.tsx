@@ -387,7 +387,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
           if (typeof window !== "undefined" && activeUserId) {
             const draftId = new URLSearchParams(window.location.search).get("draftId");
             if (draftId) {
-              const draftResponse = await fetch(`/api/drafts?authorId=${activeUserId}&id=${draftId}`);
+              const draftResponse = await authFetch(`/api/drafts?authorId=${activeUserId}&id=${draftId}`);
               if (draftResponse.ok) {
                 const draftData = await draftResponse.json();
                 if (draftData.draft?.draftType === "meal") {
@@ -494,7 +494,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
 
     try {
       const payload = getMealDraftPayload(nextSettings, recipes);
-      const response = await fetch("/api/drafts", {
+      const response = await authFetch("/api/drafts", {
         method: mealDraftId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(mealDraftId ? { ...payload, id: mealDraftId } : payload),
@@ -569,7 +569,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
       const data = await response.json();
       const normalizedMeal = normalizeMeal(data.meal, currentUser);
       if (mealDraftId) {
-        await fetch(`/api/drafts?authorId=${currentUser.id}&id=${mealDraftId}`, { method: "DELETE" }).catch(() => null);
+        await authFetch(`/api/drafts?authorId=${currentUser.id}&id=${mealDraftId}`, { method: "DELETE" }).catch(() => null);
       }
 
       const normalizedSettings = getSettingsFromMeal(normalizedMeal);

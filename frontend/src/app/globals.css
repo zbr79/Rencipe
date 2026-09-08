@@ -249,6 +249,16 @@ button:disabled {
   }
 }
 
+@media (min-width: 768px) and (max-width: 1100px) {
+  :root {
+    --sidebar-w: 188px;
+  }
+
+  .desktop-main {
+    min-width: 0;
+  }
+}
+
 .btn-secondary:hover:not(:disabled) {
   background: var(--secondary-hover);
   box-shadow: var(--shadow-md);

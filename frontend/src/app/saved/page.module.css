@@ -163,6 +163,17 @@
   font-weight: 600;
 }
 
+.savedEmptyState {
+  min-height: 360px;
+  margin-top: 24px;
+}
+
+@media (max-width: 640px) {
+  .savedEmptyState {
+    min-height: 280px;
+  }
+}
+
 .createLink {
   display: inline-flex;
   align-items: center;

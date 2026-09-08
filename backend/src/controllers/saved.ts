@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Saved from "../models/Saved";
 import Recipe from "../models/Recipe";
 import Meal from "../models/Meal";
+import { getAuthUser } from "../middleware/auth";
 
 function activeRecipeQuery() {
   return {
@@ -33,10 +34,10 @@ function removeTrashedSavedMeals(savedItems: any) {
 
 export const getSavedItems = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.query;
+    const userId = getAuthUser(req)?.id;
 
     if (!userId) {
-      return res.status(400).json({ error: "userId is required" });
+      return res.status(401).json({ error: "Authentication required" });
     }
 
     if (!mongoose.Types.ObjectId.isValid(userId as string)) {
@@ -88,14 +89,15 @@ export const getSavedItems = async (req: Request, res: Response) => {
 
 export const saveRecipe = async (req: Request, res: Response) => {
   try {
-    const { userId, recipeId } = req.body;
+    const { recipeId } = req.body;
+    const userId = getAuthUser(req)?.id;
 
     if (!userId || !recipeId) {
-      return res.status(400).json({ error: "userId and recipeId are required" });
+      return res.status(400).json({ error: "recipeId is required" });
     }
 
     if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(recipeId)) {
-      return res.status(400).json({ error: "userId and recipeId must be valid MongoDB ObjectIds" });
+      return res.status(400).json({ error: "recipeId must be a valid MongoDB ObjectId" });
     }
 
     const recipe = await Recipe.findOne({ _id: recipeId, ...activeRecipeQuery() });
@@ -155,14 +157,15 @@ export const saveRecipe = async (req: Request, res: Response) => {
 
 export const unsaveRecipe = async (req: Request, res: Response) => {
   try {
-    const { userId, recipeId } = req.body;
+    const { recipeId } = req.body;
+    const userId = getAuthUser(req)?.id;
 
     if (!userId || !recipeId) {
-      return res.status(400).json({ error: "userId and recipeId are required" });
+      return res.status(400).json({ error: "recipeId is required" });
     }
 
     if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(recipeId)) {
-      return res.status(400).json({ error: "userId and recipeId must be valid MongoDB ObjectIds" });
+      return res.status(400).json({ error: "recipeId must be a valid MongoDB ObjectId" });
     }
 
     const savedItems = await Saved.findOne({
@@ -211,14 +214,15 @@ export const unsaveRecipe = async (req: Request, res: Response) => {
 
 export const saveMeal = async (req: Request, res: Response) => {
   try {
-    const { userId, mealId } = req.body;
+    const { mealId } = req.body;
+    const userId = getAuthUser(req)?.id;
 
     if (!userId || !mealId) {
-      return res.status(400).json({ error: "userId and mealId are required" });
+      return res.status(400).json({ error: "mealId is required" });
     }
 
     if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(mealId)) {
-      return res.status(400).json({ error: "userId and mealId must be valid MongoDB ObjectIds" });
+      return res.status(400).json({ error: "mealId must be a valid MongoDB ObjectId" });
     }
 
     const meal = await Meal.findOne({ _id: mealId, ...activeMealQuery() });
@@ -274,14 +278,15 @@ export const saveMeal = async (req: Request, res: Response) => {
 
 export const unsaveMeal = async (req: Request, res: Response) => {
   try {
-    const { userId, mealId } = req.body;
+    const { mealId } = req.body;
+    const userId = getAuthUser(req)?.id;
 
     if (!userId || !mealId) {
-      return res.status(400).json({ error: "userId and mealId are required" });
+      return res.status(400).json({ error: "mealId is required" });
     }
 
     if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(mealId)) {
-      return res.status(400).json({ error: "userId and mealId must be valid MongoDB ObjectIds" });
+      return res.status(400).json({ error: "mealId must be a valid MongoDB ObjectId" });
     }
 
     const savedItems = await Saved.findOne({ userId: new mongoose.Types.ObjectId(userId) });

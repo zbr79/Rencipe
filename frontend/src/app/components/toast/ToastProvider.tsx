@@ -9,7 +9,7 @@ export default function ToastProvider() {
       gutter={8}
       containerStyle={{
         top: "calc(12px + env(safe-area-inset-top))",
-        zIndex: 2200,
+        zIndex: 15000,
       }}
       toastOptions={{
         duration: 2500,

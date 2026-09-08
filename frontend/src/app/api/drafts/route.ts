@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:6000";
 
+function forwardHeaders(request: NextRequest) {
+  const headers: Record<string, string> = {};
+  const authorization = request.headers.get("authorization");
+  if (authorization) headers.Authorization = authorization;
+  return headers;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -9,6 +16,7 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...forwardHeaders(request),
       },
       body: JSON.stringify(body),
     });
@@ -49,6 +57,7 @@ export async function GET(request: NextRequest) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        ...forwardHeaders(request),
       },
     });
 
@@ -84,6 +93,7 @@ export async function PUT(request: NextRequest) {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        ...forwardHeaders(request),
       },
       body: JSON.stringify(body),
     });
@@ -123,6 +133,7 @@ export async function DELETE(request: NextRequest) {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        ...forwardHeaders(request),
       },
     });
 
