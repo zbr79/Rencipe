@@ -1,87 +1,132 @@
 .topBar {
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: var(--card-bg);
+  z-index: 900;
+  background: color-mix(in srgb, var(--card-bg) 92%, transparent);
   border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
   transition: all var(--transition-base);
 }
 
 .container {
-  max-width: 1200px;
+  max-width: var(--app-shell-width);
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 56px;
+  gap: 12px;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--foreground);
 }
 
-.logo h1 {
-  font-size: 20px;
-  font-weight: 700;
+.logoIcon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  font-size: 23px;
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.logoText {
+  font-size: 17px;
+  font-weight: 600;
   margin: 0;
+  letter-spacing: 0;
+}
+
+.navLinks {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.navLink {
+  padding: 9px 13px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.navLink:hover,
+.navLinkActive {
   color: var(--foreground);
+  background: var(--hover-bg);
 }
 
 .actions {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  min-width: 42px;
 }
 
-.themeToggle {
-  background: transparent;
-  border: 1px solid var(--border);
-  font-size: 20px;
-  cursor: pointer;
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-base);
-  display: flex;
+.searchButton {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
   color: var(--foreground);
+  box-shadow: none;
 }
 
-.themeToggle:hover {
-  background-color: var(--hover-bg);
-  border-color: var(--text-secondary);
+.searchButton span {
+  font-size: 26px;
 }
 
-/* Dark mode */
-:global(.dark) .topBar {
-  background: var(--bg-primary, #1a1a1a);
-  border-bottom-color: var(--border-color, #333333);
-}
-
-:global(.dark) .logo h1 {
-  color: var(--text-primary, #ffffff);
-}
-
-:global(.dark) .themeToggle:hover {
-  background-color: var(--bg-hover, #333333);
+@media (min-width: 768px) {
+  .topBar {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
   .container {
     padding: 0 12px;
-    height: 48px;
+    height: 56px;
   }
 
-  .logo h1 {
-    font-size: 18px;
+  .logoText {
+    font-size: 17px;
   }
 
-  .themeToggle {
-    font-size: 18px;
-    padding: 6px;
+  .logoIcon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .navLinks {
+    display: none;
+  }
+
+  .searchButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .searchButton span {
+    font-size: 26px;
   }
 }

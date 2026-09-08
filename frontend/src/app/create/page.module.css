@@ -6,7 +6,6 @@
   transition: opacity 0.3s ease;
 }
 
-/* Image Display */
 .imageDisplay {
   position: relative;
   margin-bottom: 32px;
@@ -28,7 +27,6 @@
   filter: brightness(0.85);
 }
 
-/* Modal Overlay */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -40,11 +38,9 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(2px);
   animation: fadeIn 0.2s ease-out;
 }
 
-/* Header */
 .header {
   text-align: center;
   margin-bottom: 40px;
@@ -54,7 +50,7 @@
 
 .header h1 {
   font-size: 36px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--foreground);
   margin: 0 0 8px;
   background: none;
@@ -69,7 +65,6 @@
   margin: 0;
 }
 
-/* Upload Prompt */
 .uploadPrompt {
   background-color: var(--card-bg);
   border: 2px dashed var(--border);
@@ -88,7 +83,7 @@
 
 .uploadPromptBtn {
   padding: 10px 24px;
-  background-color: var(--primary);
+  background-color: var(--primary-text);
   color: white;
   border: none;
   border-radius: 6px;
@@ -139,14 +134,12 @@
   border-color: #fee2e2;
 }
 
-/* Form */
 .form {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-/* Base Section */
 .section {
   background-color: var(--card-bg);
   border-radius: 0;
@@ -168,7 +161,6 @@
   }
 }
 
-/* Submit Button */
 .submitBtn {
   padding: 12px 32px;
   background-color: var(--success);
@@ -196,7 +188,6 @@
   cursor: not-allowed;
 }
 
-/* Submit Container */
 .submitContainer {
   display: flex;
   justify-content: center;
@@ -204,7 +195,6 @@
   padding: 0 0 20px 0;
 }
 
-/* Responsive */
 @media (max-width: 600px) {
   .container {
     padding: 24px 16px 120px;

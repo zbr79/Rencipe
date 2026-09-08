@@ -1,36 +1,123 @@
 .container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 40px 20px 100px;
+  padding: 24px 18px 96px;
   background-color: var(--background);
 }
 
-/* Header */
 .header {
-  text-align: center;
-  margin-bottom: 40px;
-  padding: 0;
-  border-bottom: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
 }
 
 .header h1 {
-  font-size: 36px;
-  font-weight: 800;
+  font-size: clamp(32px, 5vw, 50px);
+  line-height: 1;
+  font-weight: 700;
   color: var(--foreground);
-  margin: 0 0 8px;
-  background: none;
-  -webkit-background-clip: unset;
-  -webkit-text-fill-color: unset;
-  background-clip: unset;
-}
-
-.header p {
-  font-size: 16px;
-  color: var(--text-secondary);
   margin: 0;
 }
 
-/* Messages */
+.header p {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 10px 0 0;
+}
+
+.kicker {
+  margin: 0 0 8px !important;
+  color: var(--secondary) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+}
+
+.imageDisplay {
+  width: min(100%, 560px);
+  aspect-ratio: 4 / 3;
+  margin-bottom: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  background: var(--hover-bg);
+}
+
+.imageDisplayButton {
+  display: block;
+  padding: 0;
+  cursor: pointer;
+}
+
+.imageDisplayButton:disabled {
+  cursor: progress;
+}
+
+.recipeImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+}
+
+.coverImageSection {
+  width: 100%;
+  margin-bottom: 0;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.coverActionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.uploadPrompt {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 0;
+  padding: 18px 0;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+}
+
+.uploadPromptText {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.uploadPromptBtn {
+  min-height: 38px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .message {
   padding: 14px 16px;
   margin-bottom: 20px;
@@ -64,22 +151,20 @@
   border-color: #fee2e2;
 }
 
-/* Form */
 .form {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-/* Base Section */
 .section {
   background-color: var(--card-bg);
-  border-radius: 0;
-  padding: 28px 0;
-  box-shadow: none;
+  border-radius: 8px;
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
   animation: fadeIn 0.4s ease-out;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 0;
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
 }
 
 @keyframes fadeIn {
@@ -93,50 +178,14 @@
   }
 }
 
-/* Submit Button */
-.submitBtn {
-  padding: 12px 32px;
-  background-color: var(--success);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.submitBtn:hover:not(:disabled) {
-  background-color: #059669;
-  transform: none;
-  box-shadow: var(--shadow-md);
-}
-
-.submitBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Submit Container */
-.submitContainer {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
-  padding: 0 0 20px 0;
-}
-
-/* Responsive */
 @media (max-width: 600px) {
   .container {
-    padding: 24px 16px 120px;
+    padding: 16px 12px 96px;
   }
 
   .header {
-    padding: 0;
+    flex-direction: column;
+    padding: 20px;
   }
 
   .header h1 {
@@ -148,11 +197,12 @@
   }
 
   .section {
-    padding: 20px 0;
+    padding: 18px;
   }
 
-  .submitBtn {
-    width: 100%;
+  .coverImageSection,
+  .uploadPrompt {
+    padding: 16px 0;
   }
 }
 
@@ -164,8 +214,23 @@
   .header h1 {
     font-size: 20px;
   }
+}
 
-  .submitBtn {
-    width: 100%;
+@media (min-width: 768px) {
+  .container {
+    padding: 16px 12px 96px;
+  }
+
+  .header {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+  }
+
+  .section {
+    padding: 18px;
   }
 }

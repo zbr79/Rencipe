@@ -1,0 +1,237 @@
+import { Request, Response } from "express";
+import Draft from "../models/Draft";
+import mongoose from "mongoose";
+
+function normalizeDraftType(value: any) {
+  return value === "meal" ? "meal" : "recipe";
+}
+
+function normalizeDraftPeople(people: any) {
+  if (!Array.isArray(people)) return [];
+
+  return people.map((person: any, index: number) => ({
+    name: person?.name || `Person ${index + 1}`,
+    modifier: Math.max(0.1, Math.min(5, Number(person?.modifier) || 1)),
+  }));
+}
+
+function normalizeDraftRecipeIds(recipes: any) {
+  if (!Array.isArray(recipes)) return [];
+
+  return recipes
+    .map((recipe: any) => {
+      const recipeId = typeof recipe === "string" ? recipe : recipe?._id || recipe?.id;
+      return mongoose.Types.ObjectId.isValid(recipeId) ? new mongoose.Types.ObjectId(recipeId) : null;
+    })
+    .filter(Boolean);
+}
+
+export async function saveDraft(req: Request, res: Response) {
+  try {
+    const {
+      authorId,
+      draftType,
+      name,
+      title,
+      subtitle,
+      description,
+      tips,
+      recipeOrigin,
+      sharedSource,
+      sharedSourceLink,
+      image,
+      component,
+      isPublic,
+      mainIngredients,
+      seasonings,
+      steps,
+      servings,
+      tags,
+      people,
+      recipes,
+    } = req.body;
+
+    if (!authorId) {
+      return res.status(400).json({ error: "authorId is required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(authorId)) {
+      return res.status(400).json({ error: "authorId must be a valid MongoDB ObjectId" });
+    }
+
+    const draft = new Draft({
+      authorId: new mongoose.Types.ObjectId(authorId),
+      draftType: normalizeDraftType(draftType),
+      name: name || "Untitled Draft",
+      title: title || "",
+      subtitle: subtitle || "",
+      description: description || "",
+      tips: tips || "",
+      recipeOrigin: recipeOrigin === "shared" ? "shared" : "original",
+      sharedSource: sharedSource || "",
+      sharedSourceLink: sharedSourceLink || "",
+      image: image || undefined,
+      component: component ?? false,
+      isPublic: isPublic ?? false,
+      mainIngredients: mainIngredients || [],
+      seasonings: seasonings || [],
+      steps: steps || [],
+      servings: servings || 1,
+      tags: tags || [],
+      people: normalizeDraftPeople(people),
+      recipes: normalizeDraftRecipeIds(recipes),
+    });
+
+    await draft.save();
+    await draft.populate({ path: "recipes", model: "Recipe" });
+    res.status(201).json({ draft });
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || "Failed to save draft" });
+  }
+}
+
+export async function getDraft(req: Request, res: Response) {
+  try {
+    const { authorId, id } = req.query;
+
+    if (!authorId) {
+      return res.status(400).json({ error: "authorId is required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(authorId as string)) {
+      return res.status(400).json({ error: "authorId must be a valid MongoDB ObjectId" });
+    }
+
+    if (id) {
+      if (!mongoose.Types.ObjectId.isValid(id as string)) {
+        return res.status(400).json({ error: "draft id must be a valid MongoDB ObjectId" });
+      }
+      const draft = await Draft.findOne({
+        _id: new mongoose.Types.ObjectId(id as string),
+        authorId: new mongoose.Types.ObjectId(authorId as string),
+      }).populate({ path: "recipes", model: "Recipe" });
+      return res.json({ draft });
+    }
+
+    const drafts = await Draft.find({
+      authorId: new mongoose.Types.ObjectId(authorId as string),
+    }).populate({ path: "recipes", model: "Recipe" }).sort({ updatedAt: -1 });
+
+    res.json({ drafts });
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || "Failed to get drafts" });
+  }
+}
+
+export async function updateDraft(req: Request, res: Response) {
+  try {
+    const rawId = req.params.id || req.body.id;
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
+    const {
+      authorId,
+      draftType,
+      name,
+      title,
+      subtitle,
+      description,
+      tips,
+      recipeOrigin,
+      sharedSource,
+      sharedSourceLink,
+      image,
+      component,
+      isPublic,
+      mainIngredients,
+      seasonings,
+      steps,
+      servings,
+      tags,
+      people,
+      recipes,
+    } = req.body;
+
+    if (!authorId) {
+      return res.status(400).json({ error: "authorId is required" });
+    }
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "draft id must be a valid MongoDB ObjectId" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(authorId)) {
+      return res.status(400).json({ error: "authorId must be a valid MongoDB ObjectId" });
+    }
+
+    const draft = await Draft.findOneAndUpdate(
+      {
+        _id: new mongoose.Types.ObjectId(id),
+        authorId: new mongoose.Types.ObjectId(authorId),
+      },
+      {
+        draftType: normalizeDraftType(draftType),
+        name: name,
+        title: title,
+        subtitle: subtitle,
+        description: description,
+        tips: tips || "",
+        recipeOrigin: recipeOrigin === "shared" ? "shared" : "original",
+        sharedSource: sharedSource || "",
+        sharedSourceLink: sharedSourceLink || "",
+        image: image,
+        component: component ?? false,
+        isPublic: isPublic ?? false,
+        mainIngredients: mainIngredients,
+        seasonings: seasonings,
+        steps: steps,
+        servings: servings,
+        tags: tags,
+        people: normalizeDraftPeople(people),
+        recipes: normalizeDraftRecipeIds(recipes),
+      },
+      { new: true }
+    ).populate({ path: "recipes", model: "Recipe" });
+
+    if (!draft) {
+      return res.status(404).json({ error: "Draft not found" });
+    }
+
+    res.json({ draft });
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || "Failed to update draft" });
+  }
+}
+
+export async function deleteDraft(req: Request, res: Response) {
+  try {
+    const { authorId, id } = req.query;
+
+    if (!authorId) {
+      return res.status(400).json({ error: "authorId is required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(authorId as string)) {
+      return res.status(400).json({ error: "authorId must be a valid MongoDB ObjectId" });
+    }
+
+    if (!id) {
+      return res.status(400).json({ error: "draft id is required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id as string)) {
+      return res.status(400).json({ error: "draft id must be a valid MongoDB ObjectId" });
+    }
+
+    const result = await Draft.findOneAndDelete({
+      _id: new mongoose.Types.ObjectId(id as string),
+      authorId: new mongoose.Types.ObjectId(authorId as string),
+    });
+
+    if (!result) {
+      return res.status(404).json({ error: "Draft not found" });
+    }
+
+    return res.json({ message: "Draft deleted successfully" });
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || "Failed to delete draft" });
+  }
+}

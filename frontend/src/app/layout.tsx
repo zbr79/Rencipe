@@ -1,16 +1,28 @@
 import type { ReactNode } from 'react';
+import type { Viewport } from 'next';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { CreateFormProvider } from './contexts/CreateFormContext';
-import { CartProvider } from './contexts/CartContext';
 import { SavedProvider } from './contexts/SavedContext';
+import { SettingsProvider } from './contexts/SettingsContext';
 import TopBar from './components/TopBar';
 import BottomNav from './components/BottomNav';
+import DesktopChrome from './components/DesktopChrome';
 import CreateFormModal from './components/CreateFormModal';
+import SettingsModal from './components/SettingsModal';
+import AuthGate from './components/AuthGate';
+import ConfirmDialogProvider from './components/ConfirmDialogProvider';
+import ToastProvider from './components/toast/ToastProvider';
 import './globals.css';
 
 export const metadata = {
   title: 'Rencipe',
-  description: '食谱分享平台',
+  description: 'Recipe sharing and meal building platform',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -19,22 +31,33 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="zh" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0" />
       </head>
       <body>
         <ThemeProvider>
-          <CartProvider>
-            <SavedProvider>
+          <ToastProvider />
+          <SavedProvider>
+            <ConfirmDialogProvider>
               <CreateFormProvider>
-                <TopBar />
-                {children}
-                <BottomNav />
-                <CreateFormModal />
+                <SettingsProvider>
+                  <AuthGate>
+                    <TopBar />
+                    <DesktopChrome />
+                    <div className="desktop-main">
+                      {children}
+                    </div>
+                    <BottomNav />
+                    <CreateFormModal />
+                    <SettingsModal />
+                  </AuthGate>
+                </SettingsProvider>
               </CreateFormProvider>
-            </SavedProvider>
-          </CartProvider>
+            </ConfirmDialogProvider>
+          </SavedProvider>
         </ThemeProvider>
       </body>
     </html>

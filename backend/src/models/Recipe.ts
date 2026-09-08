@@ -1,14 +1,22 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { textToPinyin, textToFirstLetters } from "../utils/pinyin";
+
+export type RecipeLanguage = "en" | "zh";
 
 export interface IRecipe extends Document {
   title: string;
-  titlePinyin?: string; // Full pinyin of title
-  titleFirstLetters?: string; // First-letter abbreviation of title
+  subtitle?: string;
   description: string;
+  tips?: string;
+  recipeOrigin: "original" | "shared";
+  sharedSource?: string;
+  sharedSourceLink?: string;
   authorId: mongoose.Types.ObjectId;
-  image?: string; // Cloudinary image URL
-  component: boolean; // Can be used as a component in meal prep
+  image?: string;
+  language: RecipeLanguage;
+  component: boolean;
+  isPublic: boolean;
+  deletedAt?: Date | null;
+  trashExpiresAt?: Date | null;
 
   mainIngredients: {
     name: string;
@@ -23,7 +31,7 @@ export interface IRecipe extends Document {
   steps: {
     stepNumber: number;
     instruction: string;
-    image?: string; // Cloudinary image URL for step
+    image?: string;
   }[];
 
   servings: number;
@@ -42,12 +50,32 @@ export interface IRecipe extends Document {
 const RecipeSchema = new Schema<IRecipe>(
   {
     title: { type: String, required: true, trim: true },
-    titlePinyin: String, // Auto-generated full pinyin
-    titleFirstLetters: String, // Auto-generated first-letter abbreviation
+    subtitle: { type: String, trim: true },
     description: { type: String, required: true, trim: true },
+    tips: { type: String, trim: true },
+    recipeOrigin: {
+      type: String,
+      enum: ["original", "shared"],
+      default: "original",
+    },
+    sharedSource: {
+      type: String,
+      trim: true,
+      required(this: IRecipe) {
+        return this.recipeOrigin === "shared";
+      },
+    },
+    sharedSourceLink: {
+      type: String,
+      trim: true,
+    },
     authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     image: String,
-    component: { type: Boolean, default: false }, // Can be used as a component in meal prep
+    language: { type: String, enum: ["en", "zh"], default: "en", index: true },
+    component: { type: Boolean, default: false },
+    isPublic: { type: Boolean, default: false },
+    deletedAt: { type: Date, default: undefined, index: true },
+    trashExpiresAt: { type: Date, default: undefined },
 
     mainIngredients: [
       {
@@ -83,12 +111,9 @@ const RecipeSchema = new Schema<IRecipe>(
   { timestamps: true }
 );
 
-// Pre-save hook to generate pinyin fields
-RecipeSchema.pre<IRecipe>("save", async function() {
-  if (this.title) {
-    this.titlePinyin = textToPinyin(this.title);
-    this.titleFirstLetters = textToFirstLetters(this.title);
-  }
-});
+RecipeSchema.index(
+  { trashExpiresAt: 1 },
+  { expireAfterSeconds: 0, partialFilterExpression: { trashExpiresAt: { $type: "date" } } }
+);
 
 export default mongoose.models.Recipe || mongoose.model<IRecipe>("Recipe", RecipeSchema);

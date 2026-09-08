@@ -1,0 +1,232 @@
+.container {
+  width: min(100%, 1240px);
+  margin: 0 auto;
+  padding: 14px 18px 96px;
+}
+
+.segmentedTabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 6px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.segmentedTab {
+  min-height: 42px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.segmentedTabActive {
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+
+.pageTop {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.pageHeader {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(100px, 126px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.resultsTitleGroup {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pageTitle {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.pageCount {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  justify-self: end;
+  white-space: nowrap;
+}
+
+.searchBar {
+  width: 100%;
+  max-width: 126px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 8px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.searchBarIcon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--primary-text);
+  font-size: 16px !important;
+  line-height: 1;
+}
+
+.searchInput {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 600;
+  box-sizing: border-box;
+  appearance: none;
+}
+
+.searchInput:focus,
+.searchInput:focus-visible {
+  border: 0 !important;
+  outline: none;
+  box-shadow: none !important;
+}
+
+.searchInput::placeholder {
+  color: var(--text-muted);
+}
+
+.searchInput::-webkit-search-cancel-button {
+  display: none;
+}
+
+.clearSearch {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.clearSearch:hover {
+  background: var(--hover-bg);
+  color: var(--primary-text);
+}
+
+.clearSearch span {
+  font-size: 17px;
+}
+
+.savedGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.loading,
+.empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.createLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  margin-top: 12px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--primary-strong);
+  color: var(--on-strong);
+  font-weight: 600;
+  text-decoration: none;
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 14px 12px 96px;
+  }
+
+  .pageHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title count"
+      "search search";
+    align-items: center;
+    gap: 10px 12px;
+    margin-bottom: 12px;
+  }
+
+  .resultsTitleGroup {
+    grid-area: title;
+  }
+
+  .searchBar {
+    grid-area: search;
+    width: 100%;
+    max-width: none;
+  }
+
+  .pageCount {
+    grid-area: count;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 14px 18px 72px;
+  }
+
+  .savedGrid {
+    gap: 14px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .savedGrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 370px) {
+  .savedGrid {
+    grid-template-columns: 1fr;
+  }
+}
