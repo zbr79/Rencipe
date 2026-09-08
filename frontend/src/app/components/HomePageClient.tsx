@@ -13,9 +13,9 @@ import { getRecipeAuthor } from "../utils/recipeAuthor";
 
 const TABS = [
   { id: "recommended", label: "Recommended" },
-  { id: "newest", label: "Newest" },
-  { id: "health", label: "Health" },
+  { id: "newest", label: "New" },
   { id: "quick", label: "Quick" },
+  { id: "health", label: "Health" },
 ];
 
 type Recipe = {
