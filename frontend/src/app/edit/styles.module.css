@@ -10,31 +10,39 @@
 .container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 40px 20px 100px;
+  padding: 22px 20px 100px;
   background-color: var(--background);
-} 
+}
 
-.header {
+.editorHeader {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 32px;
-  padding-bottom: 16px;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding: 16px 0;
   border-bottom: 1px solid var(--border);
 }
 
 .backLink {
-  display: inline-block;
-  background: none;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card-bg);
   border: 1px solid var(--border);
   color: var(--foreground);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  padding: 8px 16px;
+  padding: 0 13px;
   text-decoration: none;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: all 0.2s ease;
+}
+
+.backLink span {
+  font-size: 20px;
 }
 
 .backLink:hover {
@@ -42,10 +50,21 @@
 }
 
 .title {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: clamp(24px, 4vw, 38px);
+  line-height: 1.05;
+  font-weight: 750;
   margin: 0;
   color: var(--foreground);
+  text-align: right;
+}
+
+.kicker {
+  margin: 0 0 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: right;
 }
 
 .error {
@@ -64,12 +83,23 @@
 }
 
 .imageDisplay {
+  position: relative;
   width: 100%;
-  height: 420px;
+  display: block;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--hover-bg);
+  box-shadow: var(--shadow-sm);
   margin-bottom: 20px;
+  padding: 0;
   cursor: pointer;
+  appearance: none;
+}
+
+.imageDisplay:disabled {
+  cursor: progress;
 }
 
 .recipeImage {
@@ -77,6 +107,129 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.replaceImageIconButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+  color: var(--primary-text);
+  box-shadow: var(--shadow-sm);
+}
+
+.imageSavingBadge {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 2;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.replaceImageIconButton span {
+  font-size: 22px;
+}
+
+.floatingPanel {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  transform: translateX(0) translateY(-50%);
+  transition: transform 260ms ease;
+}
+
+.floatingPanelCollapsed {
+  transform: translateX(calc(100% - 24px)) translateY(-50%);
+}
+
+.panelToggle {
+  width: 24px;
+  height: 42px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
+  background: var(--card-bg);
+  color: var(--foreground);
+  box-shadow: var(--shadow-sm);
+}
+
+.floatingPanelCollapsed .panelToggle {
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
+}
+
+.panelToggle span {
+  font-size: 19px;
+}
+
+.panelActions {
+  display: grid;
+  gap: 6px;
+  min-width: 48px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-left: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--card-bg) 96%, transparent);
+  box-shadow: var(--shadow-md);
+}
+
+.panelButton {
+  width: 38px;
+  min-height: 38px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--foreground);
+}
+
+.panelButton span:first-child,
+.panelButton span {
+  color: var(--primary-text);
+  font-size: 22px;
+}
+
+.panelButtonPrimary {
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  border-color: color-mix(in srgb, var(--primary) 26%, var(--border));
+}
+
+.panelButtonDanger span:first-child,
+.panelButtonDanger {
+  color: var(--error);
+}
+
+.panelButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .submitContainer {
@@ -88,7 +241,7 @@
 
 .submitBtn {
   padding: 12px 32px;
-  background-color: var(--primary);
+  background-color: var(--primary-text);
   color: white;
   border: none;
   border-radius: 6px;
@@ -103,8 +256,29 @@
 }
 
 .submitBtn:hover:not(:disabled) {
-  background-color: #2563eb;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  background-color: #9a6e08;
+  box-shadow: 0 2px 8px rgba(184, 134, 11, 0.3);
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 16px 12px 100px;
+  }
+
+  .editorHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .title,
+  .kicker {
+    text-align: left;
+  }
+
+  .title {
+    font-size: 28px;
+  }
 }
 
 .submitBtn:disabled {
@@ -117,8 +291,22 @@
     padding: 24px 16px 120px;
   }
 
-  .header {
-    padding: 0;
+  .editorHeader {
+    align-items: flex-start;
+  }
+
+  .title,
+  .kicker {
+    text-align: right;
+  }
+
+  .floatingPanel {
+    right: 0;
+  }
+
+  .panelActions {
+    min-width: 46px;
+    padding: 5px;
   }
 
   .submitBtn {

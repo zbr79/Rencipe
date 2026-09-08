@@ -2,73 +2,100 @@ import styles from "./styles.module.css";
 
 interface RecipeBasicsFormProps {
   title: string;
+  subtitle: string;
   description: string;
-  servings: number;
-  component: boolean;
+  isPublic: boolean;
+  publishDisabled?: boolean;
+  invalidTitle?: boolean;
+  invalidDescription?: boolean;
   onTitleChange: (value: string) => void;
+  onSubtitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
-  onServingsChange: (value: number) => void;
-  onComponentChange: (value: boolean) => void;
+  onPublishChange: (checked: boolean) => void | Promise<void>;
 }
 
 export default function RecipeBasicsForm({
   title,
+  subtitle,
   description,
-  servings,
-  component,
+  isPublic,
+  publishDisabled = false,
+  invalidTitle = false,
+  invalidDescription = false,
   onTitleChange,
+  onSubtitleChange,
   onDescriptionChange,
-  onServingsChange,
-  onComponentChange,
+  onPublishChange,
 }: RecipeBasicsFormProps) {
   return (
-    <>
-      {/* Recipe Basics */}
-      <section className={styles.section}>
-        <div className={styles.formGroup}>
-          <label htmlFor="title" className={styles.label}>
-            食谱名称
+    <section className={styles.section}>
+      <div className={styles.titleRow}>
+        <div className={`${styles.formGroup} ${styles.titleGroup}`}>
+          <label htmlFor="title" className={`${styles.label} ${invalidTitle ? styles.labelInvalid : ""}`}>
+            Recipe Name
           </label>
           <input
             id="title"
             type="text"
-            placeholder="输入食谱名称..."
+            placeholder="Enter recipe name..."
             value={title}
             onChange={(e) => onTitleChange(e.target.value)}
             required
-            className={styles.input}
+            aria-invalid={invalidTitle}
+            className={`${styles.input} ${invalidTitle ? styles.inputInvalid : ""}`}
           />
         </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="description" className={styles.label}>
-            简介
-          </label>
-          <textarea
-            id="description"
-            placeholder="菜谱简介..."
-            value={description}
-            onChange={(e) => onDescriptionChange(e.target.value)}
-            required
-            className={styles.textarea}
-            rows={4}
-          />
-        </div>
-
-        <div className={styles.formGroup} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <label
+          className={`${styles.publishToggle} ${isPublic ? styles.publishToggleActive : ""} ${publishDisabled ? styles.publishToggleDisabled : ""}`}
+          htmlFor="publish-toggle"
+        >
           <input
-            id="component"
+            id="publish-toggle"
             type="checkbox"
-            checked={component ?? false}
-            onChange={(e) => onComponentChange(e.target.checked)}
-            className={styles.checkbox}
-            style={{ width: "20px", height: "20px", cursor: "pointer" }}
+            checked={isPublic}
+            disabled={publishDisabled}
+            onChange={(e) => {
+              void onPublishChange(e.target.checked);
+            }}
+            className={styles.publishCheckbox}
           />
-          <label htmlFor="component" className={styles.label} style={{ margin: 0, cursor: "pointer" }}>
-            可用作膳食计划的组件
-          </label>
-        </div>
-      </section>
-    </>
+          <span className={styles.publishSwitch} aria-hidden="true">
+            <span className={styles.publishKnob} />
+          </span>
+          <span className={styles.publishLabel}>Publish</span>
+        </label>
+      </div>
+
+      <div className={styles.formGroup}>
+        <label htmlFor="subtitle" className={styles.label}>
+          Second name
+        </label>
+        <input
+          id="subtitle"
+          type="text"
+          placeholder="Original or alternative name, e.g. Har Gow — Steamed Shrimp Dumplings"
+          value={subtitle}
+          onChange={(e) => onSubtitleChange(e.target.value)}
+          className={styles.input}
+        />
+      </div>
+
+      <div className={styles.formGroup}>
+        <label htmlFor="description" className={`${styles.label} ${invalidDescription ? styles.labelInvalid : ""}`}>
+          Description
+        </label>
+        <textarea
+          id="description"
+          placeholder="Describe the recipe..."
+          value={description}
+          onChange={(e) => onDescriptionChange(e.target.value)}
+          required
+          aria-invalid={invalidDescription}
+          className={`${styles.textarea} ${invalidDescription ? styles.inputInvalid : ""}`}
+          rows={4}
+        />
+      </div>
+    </section>
   );
 }

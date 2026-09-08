@@ -11,6 +11,7 @@ interface Step {
 interface StepsSectionProps {
   steps: Step[];
   stepImages: { [key: number]: string };
+  invalidSteps?: boolean;
   onStepsChange: (steps: Step[]) => void;
   onStepImageChange: (e: React.ChangeEvent<HTMLInputElement>, stepNumber: number) => void;
   onRemoveStep: (index: number) => void;
@@ -21,6 +22,7 @@ interface StepsSectionProps {
 export default function StepsSection({
   steps,
   stepImages,
+  invalidSteps = false,
   onStepsChange,
   onStepImageChange,
   onRemoveStep,
@@ -33,95 +35,97 @@ export default function StepsSection({
     onStepsChange(updated);
   };
 
+  const openFilePicker = (inputId: string) => {
+    document.getElementById(inputId)?.click();
+  };
+
   return (
-    <section className={styles.section}>
+    <section className={`${styles.section} ${invalidSteps ? styles.sectionInvalid : ""}`}>
       <div className={styles.sectionHeader}>
-        <h2>烹饪步骤</h2>
-        <span className={styles.infoIcon}>ⓘ</span>
+        <h2 className={invalidSteps ? styles.sectionTitleInvalid : ""}>Cooking Steps</h2>
       </div>
 
       <div className={styles.stepsList}>
-        {steps.map((step, idx) => (
-          <div key={idx} className={styles.stepContainer}>
-            <div className={styles.stepHeader}>
-              <h3 className={styles.stepTitle}>步骤 {step.stepNumber}</h3>
-              <button
-                type="button"
-                onClick={() => onRemoveStep(idx)}
-                className={styles.deleteBtn}
-              >
-                ✕
-              </button>
-            </div>
+        {steps.map((step, idx) => {
+          const fileInputId = `step-image-${step.stepNumber}`;
+          const stepImage = stepImages[step.stepNumber];
 
-            <div className={styles.stepContent}>
-              {/* Image Upload Area */}
-              <div className={styles.imageUploadArea}>
-                {stepImages[step.stepNumber] ? (
-                  <>
-                    <div className={styles.imageContainer}>
-                      <img 
-                        src={stepImages[step.stepNumber]} 
+          return (
+            <div key={idx} className={`${styles.stepContainer} ${invalidSteps ? styles.stepContainerInvalid : ""}`}>
+              <div className={styles.stepHeader}>
+                <h3 className={styles.stepTitle}>Step {step.stepNumber}</h3>
+                <button
+                  type="button"
+                  onClick={() => onRemoveStep(idx)}
+                  className={styles.deleteBtn}
+                  aria-label={`Remove step ${step.stepNumber}`}
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <div className={styles.stepContent}>
+                <textarea
+                  placeholder="Add step instructions"
+                  value={step.instruction}
+                  onChange={(e) => handleInstructionChange(idx, e.target.value)}
+                  aria-invalid={invalidSteps}
+                  className={`${styles.textarea} ${invalidSteps ? styles.inputInvalid : ""}`}
+                  rows={3}
+                />
+
+                <div className={styles.stepImageSection}>
+                  <input
+                    id={fileInputId}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => onStepImageChange(e, step.stepNumber)}
+                    className={styles.fileInput}
+                  />
+
+                  <div className={styles.imageToolbar}>
+                    <button
+                      type="button"
+                      onClick={() => openFilePicker(fileInputId)}
+                      className={`${styles.imageActionBtn} ${stepImage ? styles.secondaryImageBtn : styles.addImageBtn}`}
+                      aria-label={`${stepImage ? "Replace" : "Add"} image for step ${step.stepNumber}`}
+                    >
+                      <span className="material-symbols-outlined">add_photo_alternate</span>
+                      <span>{stepImage ? "Replace image" : "Add image"}</span>
+                    </button>
+
+                    {stepImage && onRemoveStepImage && (
+                      <button
+                        type="button"
+                        onClick={() => onRemoveStepImage(step.stepNumber)}
+                        className={`${styles.imageActionBtn} ${styles.removeImageBtn}`}
+                        aria-label={`Delete image for step ${step.stepNumber}`}
+                      >
+                        <span className="material-symbols-outlined">delete</span>
+                        <span>Delete image</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {stepImage && (
+                    <div className={styles.imagePreviewCard}>
+                      <img
+                        src={stepImage}
                         alt={`Step ${step.stepNumber}`}
                         className={styles.stepImage}
                       />
                     </div>
-                    <div className={styles.imageActions}>
-                      <input
-                        id={`file-${idx}`}
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => onStepImageChange(e, step.stepNumber)}
-                        style={{ display: "none" }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => document.getElementById(`file-${idx}`)?.click()}
-                        className={styles.changeImageBtn}
-                      >
-                        更换图片
-                      </button>
-                      {onRemoveStepImage && (
-                        <button
-                          type="button"
-                          onClick={() => onRemoveStepImage(step.stepNumber)}
-                          className={styles.removeImageBtn}
-                        >
-                          删除图片
-                        </button>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <label htmlFor={`file-${idx}`} className={styles.uploadPlaceholder}>
-                    <div className={styles.uploadIcon}>+ 步骤图</div>
-                    <div className={styles.uploadText}>清晰的步骤会让菜谱更受欢迎</div>
-                    <input
-                      id={`file-${idx}`}
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => onStepImageChange(e, step.stepNumber)}
-                      style={{ display: "none" }}
-                    />
-                  </label>
-                )}
+                  )}
+                </div>
               </div>
-
-              {/* Description */}
-              <textarea
-                placeholder="添加步骤说明"
-                value={step.instruction}
-                onChange={(e) => handleInstructionChange(idx, e.target.value)}
-                className={styles.textarea}
-                rows={3}
-              />
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <button type="button" onClick={onAddStep} className={styles.addBtn}>
-        + 添加步骤
+        <span className="material-symbols-outlined">add</span>
+        <span>Add Step</span>
       </button>
     </section>
   );

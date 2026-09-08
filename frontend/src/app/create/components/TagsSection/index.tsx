@@ -1,4 +1,5 @@
 import styles from "./styles.module.css";
+import { COMPONENT_TAG } from "../../../utils/recipeTags";
 
 interface TagsSectionProps {
   tags: string[];
@@ -18,29 +19,35 @@ export default function TagsSection({
   return (
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
-        <h2>标签</h2>
+        <h2>Tags</h2>
       </div>
 
-      <input
-        type="text"
-        placeholder="按回车键添加标签"
-        value={tagsInput}
-        onChange={(e) => onTagsInputChange(e.target.value)}
-        onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), onAddTag())}
-        className={styles.input}
-      />
+      <div className={styles.tagInputRow}>
+        <input
+          type="text"
+          placeholder="Add tags"
+          value={tagsInput}
+          onChange={(e) => onTagsInputChange(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), onAddTag())}
+          className={styles.input}
+        />
+        <button type="button" className={styles.addTagButton} onClick={onAddTag} aria-label="Add tag">
+          <span className="material-symbols-outlined">add</span>
+        </button>
+      </div>
 
       {tags && tags.length > 0 && (
         <div className={styles.tagsList}>
-          {tags.map((tag, idx) => (
+          {tags.map((tag, idx) => tag === COMPONENT_TAG ? null : (
             <span key={idx} className={styles.tag}>
               {tag}
               <button
                 type="button"
                 onClick={() => onRemoveTag(idx)}
                 className={styles.tagRemove}
+                aria-label={`Remove ${tag}`}
               >
-                ✕
+                <span className="material-symbols-outlined">close</span>
               </button>
             </span>
           ))}

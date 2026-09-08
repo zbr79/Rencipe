@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCreateForm } from "../contexts/CreateFormContext";
-import { useSaved } from "../contexts/SavedContext";
+import { useSettings } from "../contexts/SettingsContext";
+import { getCurrentUser } from "../utils/authSession";
 import styles from "./bottom-nav.module.css";
 
 interface NavItem {
@@ -11,22 +12,49 @@ interface NavItem {
   icon: string;
   label: string;
   action?: () => void;
-  badge?: number;
 }
+
+const FULL_NAV_ITEMS: NavItem[] = [
+  { href: `/`, icon: "home", label: "Home" },
+  { href: `/browse`, icon: "category", label: "Browse" },
+  { href: null, icon: "add_circle", label: "Create", action: undefined },
+  { href: `/saved`, icon: "favorite_border", label: "Saved" },
+  { href: null, icon: "settings", label: "Settings" },
+];
+
+const GUEST_NAV_ITEMS: NavItem[] = [
+  { href: `/`, icon: "home", label: "Home" },
+  { href: `/browse`, icon: "category", label: "Browse" },
+  { href: `/saved`, icon: "favorite_border", label: "Saved" },
+  { href: `/login`, icon: "login", label: "Sign in" },
+  { href: null, icon: "settings", label: "Settings" },
+];
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const { openCreateForm } = useCreateForm();
-  const { savedCount, mealPlans } = useSaved();
-  const totalSavedCount = savedCount + mealPlans.length;
+  const { isOpen, openCreateForm, closeCreateForm } = useCreateForm();
+  const { openSettings } = useSettings();
 
-  const navItems: NavItem[] = [
-    { href: `/`, icon: "home", label: "Home" },
-    { href: `/search`, icon: "search", label: "Search" },
-    { href: null, icon: "add_circle", label: "Create", action: openCreateForm },
-    { href: `/saved`, icon: "bookmark", label: "Saved", badge: totalSavedCount },
-    { href: `/settings`, icon: "settings", label: "Settings" },
-  ];
+  if (pathname === "/login") return null;
+
+  const isGuest = getCurrentUser()?.role === "guest";
+  const navItems = isGuest
+    ? GUEST_NAV_ITEMS.map((item) => ({
+        ...item,
+        action: item.href === null ? openSettings : item.action,
+      }))
+    : FULL_NAV_ITEMS.map((item) => ({
+        ...item,
+        action: item.href === null && item.label === "Settings" ? openSettings : item.href === null ? openCreateForm : item.action,
+      }));
+
+  const getItemIcon = (item: NavItem, active: boolean) => {
+    if (item.href === "/saved") {
+      return active ? "favorite" : "favorite_border";
+    }
+
+    return item.icon;
+  };
 
   return (
     <nav className={styles.nav}>
@@ -36,18 +64,24 @@ export default function BottomNav() {
             return (
               <button
                 key={item.label}
-                onClick={item.action}
+                onClick={() => {
+                  if (isOpen) {
+                    closeCreateForm();
+                    return;
+                  }
+                  item.action?.();
+                }}
                 className={styles.item}
                 title={item.label}
               >
                 <span className={`material-symbols-outlined ${styles.icon}`}>
-                  {item.icon}
+                  {getItemIcon(item, false)}
                 </span>
               </button>
             );
           }
 
-          const active = pathname === item.href;
+          const active = pathname === item.href || (item.href === "/browse" && pathname.startsWith("/browse"));
 
           return (
             <Link
@@ -55,13 +89,13 @@ export default function BottomNav() {
               href={item.href!}
               className={`${styles.item} ${active ? styles.active : ""}`}
               title={item.label}
+              onClick={() => {
+                if (isOpen) closeCreateForm();
+              }}
             >
               <span className={`material-symbols-outlined ${styles.icon}`}>
-                {item.icon}
+                {getItemIcon(item, active)}
               </span>
-              {item.badge !== undefined && item.badge > 0 && (
-                <span className={styles.badge}>{item.badge}</span>
-              )}
             </Link>
           );
         })}

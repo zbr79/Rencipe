@@ -1,0 +1,96 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.breadcrumbs {
+  display: none;
+}
+
+.mobileBack {
+  display: contents;
+}
+
+.backCircle {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.backCircle:hover {
+  color: var(--foreground);
+  border-color: var(--text-secondary);
+  transform: translateX(-2px);
+}
+
+.backCircle span {
+  font-size: 20px;
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.list li a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.list li a:hover {
+  color: var(--primary-text);
+  text-decoration: underline;
+}
+
+.list li + li::before {
+  content: "chevron_right";
+  font-family: "Material Symbols Rounded";
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-muted);
+  flex: none;
+}
+
+.current {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 380px;
+}
+
+@media (min-width: 768px) {
+  .breadcrumbs {
+    display: block;
+  }
+
+  .mobileBack {
+    display: none;
+  }
+}

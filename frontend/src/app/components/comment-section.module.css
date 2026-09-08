@@ -1,0 +1,214 @@
+.commentsSection {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--border);
+}
+
+.commentsCard {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.sectionHeader .count {
+  min-width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.statusText {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ratingSlot {
+  padding: 6px 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.commentForm {
+  display: grid;
+  gap: 10px;
+}
+
+.commentForm textarea {
+  width: 100%;
+  min-height: 54px;
+  resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  color: var(--foreground);
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  box-sizing: border-box;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.commentForm textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.commentForm textarea:focus {
+  outline: none;
+  border-color: var(--primary-text);
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.12);
+}
+
+.commentFormFooter {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.commentForm button {
+  min-height: 34px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--primary-strong);
+  color: var(--on-strong);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.commentForm button:hover:not(:disabled) {
+  background: var(--primary-strong-hover);
+  transform: translateY(-1px);
+}
+
+.commentForm button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.commentList {
+  display: grid;
+  gap: 10px;
+}
+
+.commentCard {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--card-bg) 94%, var(--hover-bg));
+}
+
+.commentMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.commentMeta strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commentMeta span {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.commentCard p {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.commentActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.commentActions button {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: color 150ms ease, border-color 150ms ease, background-color 150ms ease;
+}
+
+.commentActions button span {
+  font-size: 15px;
+}
+
+.commentActions button:hover {
+  border-color: var(--text-secondary);
+  color: var(--foreground);
+}
+
+.commentActions .actionActive {
+  color: var(--primary-text);
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  background: var(--primary-soft);
+}
+
+.commentActions .actionDelete {
+  color: var(--text-muted);
+}
+
+.commentActions .actionDelete:hover {
+  color: var(--error);
+  border-color: color-mix(in srgb, var(--error) 45%, var(--border));
+}
+
+@media (max-width: 640px) {
+  .commentsSection {
+    margin-top: 14px;
+  }
+}

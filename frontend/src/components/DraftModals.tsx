@@ -18,9 +18,9 @@ export default function UnsavedChangesModal({
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
-        <h2 style={styles.title}>未保存的更改</h2>
+        <h2 style={styles.title}>Unsaved Changes</h2>
         <p style={styles.message}>
-          你有未保存的食谱更改。是否要保存为草稿？
+          You have unsaved recipe changes. Save them as a draft before leaving?
         </p>
         <div style={styles.buttons}>
           <button
@@ -28,56 +28,14 @@ export default function UnsavedChangesModal({
             disabled={isSaving}
             style={{ ...styles.button, ...styles.discardBtn }}
           >
-            放弃
+            Discard
           </button>
           <button
             onClick={onSave}
             disabled={isSaving}
             style={{ ...styles.button, ...styles.saveBtn }}
           >
-            {isSaving ? "保存中..." : "保存草稿"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface RestoreDraftModalProps {
-  isOpen: boolean;
-  lastSaved: string | null;
-  onRestore: () => void;
-  onDiscard: () => void;
-}
-
-export function RestoreDraftModal({
-  isOpen,
-  lastSaved,
-  onRestore,
-  onDiscard,
-}: RestoreDraftModalProps) {
-  if (!isOpen) return null;
-
-  return (
-    <div style={styles.overlay}>
-      <div style={styles.modal}>
-        <h2 style={styles.title}>恢复草稿</h2>
-        <p style={styles.message}>
-          发现之前保存的草稿{lastSaved && ` (${lastSaved})`}。
-          是否要恢复它？
-        </p>
-        <div style={styles.buttons}>
-          <button
-            onClick={onDiscard}
-            style={{ ...styles.button, ...styles.discardBtn }}
-          >
-            不恢复
-          </button>
-          <button
-            onClick={onRestore}
-            style={{ ...styles.button, ...styles.saveBtn }}
-          >
-            恢复草稿
+            {isSaving ? "Saving..." : "Save Draft"}
           </button>
         </div>
       </div>
