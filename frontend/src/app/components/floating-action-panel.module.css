@@ -107,7 +107,8 @@
 
 @media (max-width: 600px) {
   .floatingPanel {
-    bottom: calc(70px + env(safe-area-inset-bottom));
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    z-index: 10000;
   }
 
   .panelActions {
@@ -116,9 +117,9 @@
   }
 
   .panelButton {
-    width: 38px;
-    min-width: 38px;
-    min-height: 38px;
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 
