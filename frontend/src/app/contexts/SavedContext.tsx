@@ -10,6 +10,7 @@ export interface SavedRecipe {
   _id: string;
   id: string;
   title: string;
+  subtitle?: string;
   description: string;
   language?: RecipeLanguage;
   author?: AccountIdentity | null;

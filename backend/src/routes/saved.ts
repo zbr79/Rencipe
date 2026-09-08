@@ -1,8 +1,10 @@
 import express from "express";
 import { getSavedItems, saveRecipe, unsaveRecipe, saveMeal, unsaveMeal } from "../controllers/saved";
+import { requireAuth } from "../middleware/auth";
 
 const router = express.Router();
 
+router.use(requireAuth);
 router.get("/saved", getSavedItems);
 router.post("/saved/add", saveRecipe);
 router.post("/saved/remove", unsaveRecipe);

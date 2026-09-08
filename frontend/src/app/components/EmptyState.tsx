@@ -7,21 +7,31 @@ interface EmptyStateProps {
   subtitle?: string;
   actionLabel?: string;
   actionHref?: string;
+  onActionClick?: () => void;
+  className?: string;
 }
 
-export default function EmptyState({ icon, title, subtitle, actionLabel, actionHref }: EmptyStateProps) {
+export default function EmptyState({ icon, title, subtitle, actionLabel, actionHref, onActionClick, className }: EmptyStateProps) {
   return (
-    <div className={styles.emptyState}>
-      <span className={`material-symbols-rounded ${styles.icon}`} aria-hidden="true">
-        {icon}
-      </span>
+    <div className={`${styles.emptyState} ${className || ""}`.trim()}>
+      <div className={styles.iconWrap}>
+        <span className={`material-symbols-rounded ${styles.iconGlyph}`} aria-hidden="true">
+          {icon}
+        </span>
+      </div>
       <h3 className={styles.title}>{title}</h3>
       {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-      {actionLabel && actionHref && (
-        <Link href={actionHref} className={styles.action}>
+      {actionLabel && (onActionClick ? (
+        <button type="button" className={styles.action} onClick={onActionClick}>
           {actionLabel}
-        </Link>
-      )}
+        </button>
+      ) : (
+        actionHref && (
+          <Link href={actionHref} className={styles.action}>
+            {actionLabel}
+          </Link>
+        )
+      ))}
     </div>
   );
 }

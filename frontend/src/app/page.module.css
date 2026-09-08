@@ -586,6 +586,7 @@
     max-width: 100%;
     min-width: 0;
     padding: 14px 14px 12px;
+    min-height: 230px;
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -814,5 +815,44 @@
   .recipeCard:hover {
     transform: translateY(-0.6px);
     box-shadow: var(--shadow-md);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .dashboard {
+    display: block;
+  }
+
+  .dashboardContent {
+    --hero-height: 248px;
+  }
+
+  .quickPanel {
+    display: none;
+  }
+
+  .slideImage {
+    width: clamp(220px, 34%, 340px);
+  }
+
+  .slideContent {
+    max-width: calc(100% - clamp(220px, 34%, 340px));
+    padding: 20px 24px 48px;
+  }
+
+  .dashboardContent h1,
+  .dashboardContent h2,
+  .slideFallback h1,
+  .slideFallback h2 {
+    font-size: clamp(20px, 2.15vw, 26px);
+    line-height: 1.08;
+  }
+
+  .slideDescription {
+    -webkit-line-clamp: 3;
+  }
+
+  .slideDots {
+    bottom: 10px;
   }
 }

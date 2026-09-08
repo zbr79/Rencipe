@@ -7,7 +7,7 @@ import Breadcrumbs from "../components/Breadcrumbs";
 import EmptyState from "../components/EmptyState";
 import styles from "./drafts.module.css";
 import { useConfirmDialog } from "../components/ConfirmDialogProvider";
-import { getCurrentUserId } from "../utils/authSession";
+import { authFetch, getCurrentUserId } from "../utils/authSession";
 import { matchesTextSearch } from "../utils/textSearch";
 import { useSwipeRowDrag } from "../hooks/useSwipeRowDrag";
 
@@ -40,7 +40,7 @@ export default function DraftsPage() {
       setLoading(true);
       const userId = getCurrentUserId();
       if (!userId) throw new Error("Sign in before viewing drafts");
-      const response = await fetch(`/api/drafts?authorId=${userId}`);
+      const response = await authFetch(`/api/drafts?authorId=${userId}`);
       if (!response.ok) throw new Error("Failed to fetch drafts");
       const data = await response.json();
       setDrafts(data.drafts || []);
@@ -67,7 +67,7 @@ export default function DraftsPage() {
     try {
       const userId = getCurrentUserId();
       if (!userId) throw new Error("Sign in before deleting drafts");
-      const response = await fetch(`/api/drafts?authorId=${userId}&id=${draftId}`, {
+      const response = await authFetch(`/api/drafts?authorId=${userId}&id=${draftId}`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Failed to delete draft");
