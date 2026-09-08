@@ -494,9 +494,16 @@
   }
 
   .tabs {
-    flex-wrap: wrap;
-    overflow-x: visible;
-    row-gap: 8px;
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab {
+    padding-inline: 10px;
+    font-size: 13px;
   }
 
   .dashboardContent {
