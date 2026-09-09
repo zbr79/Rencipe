@@ -60,7 +60,7 @@ const RECIPES = [
     ],
     servings: 4,
     tags: ["Chinese", "Sichuan", "Seafood", "Spicy", "Soup", "Dinner"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Sliced_Fish_in_Hot_Chili_Oil.jpg/960px-Sliced_Fish_in_Hot_Chili_Oil.jpg",
+    image: "https://redhousespice.com/wp-content/uploads/2017/11/Sichuan-boiled-fish-landscape.jpg",
     views: 710, likes: 84, ratingAverage: 4.7, ratingCount: 52,
   },
   {
@@ -461,7 +461,7 @@ const RECIPES = [
     ],
     servings: 4,
     tags: ["Chinese", "Chicken", "Rice", "Lunch", "Easy"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Hainanese_chicken_rice.jpg/960px-Hainanese_chicken_rice.jpg",
+    image: "https://rasamalaysia.com/wp-content/uploads/2024/11/chicken-rice2.jpg",
     views: 730, likes: 82, ratingAverage: 4.6, ratingCount: 49,
   },
   {
@@ -488,7 +488,7 @@ const RECIPES = [
     ],
     servings: 4,
     tags: ["Cantonese", "Noodles", "Soup", "Beef", "Dinner"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Beef_brisket_noodle_soup.jpg/960px-Beef_brisket_noodle_soup.jpg",
+    image: "https://thewoksoflife.com/wp-content/uploads/2017/03/beef-noodle-soup-16.jpg",
     views: 660, likes: 75, ratingAverage: 4.6, ratingCount: 43,
   },
 ];
