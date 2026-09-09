@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { authFetch } from "../app/utils/authSession";
 
 interface DraftData {
   _id?: string;
@@ -69,7 +70,7 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
         if (draftId) {
           url += `&id=${draftId}`;
         }
-        const res = await fetch(url);
+        const res = await authFetch(url);
         const data = await res.json();
 
         const draftData = data.draft;
@@ -97,7 +98,7 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
         try {
           setIsSaving(true);
           const activeDraftId = currentDraftIdRef.current;
-          const response = await fetch(activeDraftId ? "/api/drafts" : "/api/drafts", {
+          const response = await authFetch("/api/drafts", {
             method: activeDraftId ? "PUT" : "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -157,7 +158,7 @@ export function useDraft({ authorId, draftId, enabled = true }: UseDraftOptions)
 
     try {
       const url = `/api/drafts?authorId=${authorId}&id=${idToDelete}`;
-      await fetch(url, { method: "DELETE" });
+      await authFetch(url, { method: "DELETE" });
       setDraft(null);
       setCurrentDraftId(null);
       currentDraftIdRef.current = null;

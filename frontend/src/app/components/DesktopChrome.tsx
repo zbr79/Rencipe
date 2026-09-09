@@ -7,6 +7,7 @@ import { useCreateForm } from "../contexts/CreateFormContext";
 import { useSettings } from "../contexts/SettingsContext";
 import AccountAvatar from "./AccountAvatar";
 import SearchOverlay from "./SearchOverlay";
+import SignInModal from "./SignInModal";
 import { authFetch, getCurrentUser } from "../utils/authSession";
 import { getAccountDisplayName } from "../utils/accountAvatar";
 import {
@@ -82,6 +83,7 @@ export default function DesktopChrome() {
   const { openCreateForm } = useCreateForm();
   const { openSettings } = useSettings();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [signInOpen, setSignInOpen] = useState(false);
   const closeSearch = useCallback(() => setSearchOpen(false), []);
   const user = getCurrentUser();
   const [recentlyViewed, setRecentlyViewed] = useState(() => readRecentlyViewedRecipes());
@@ -254,10 +256,16 @@ export default function DesktopChrome() {
 
         {isGuest ? (
           <div className={styles.accountRow}>
-            <div className={styles.account}>
+            <button
+              type="button"
+              className={styles.account}
+              onClick={() => setSignInOpen(true)}
+              aria-label="Sign in"
+              title="Sign in"
+            >
               <AccountAvatar account={user} size={32} />
               <span className={styles.accountName}>Guest</span>
-            </div>
+            </button>
             <button
               type="button"
               className={styles.accountSettings}
@@ -290,6 +298,7 @@ export default function DesktopChrome() {
       </aside>
 
       <SearchOverlay open={searchOpen} onClose={closeSearch} />
+      <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} />
     </>
   );
 }

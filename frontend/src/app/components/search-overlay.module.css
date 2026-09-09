@@ -401,6 +401,7 @@
   .page {
     width: 100%;
     height: calc(100vh - 24px);
+    height: calc(100dvh - 24px);
     border-radius: 14px;
   }
 }

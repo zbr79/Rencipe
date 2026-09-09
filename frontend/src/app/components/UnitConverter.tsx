@@ -27,7 +27,9 @@ function convert(value: number, from: Unit, to: Unit) {
 }
 
 function validNumber(value: string) {
-  const number = parseFloat(value);
+  const normalized = value.trim();
+  if (!normalized) return null;
+  const number = Number(normalized);
   return Number.isFinite(number) && number >= 0 ? number : null;
 }
 
@@ -47,7 +49,11 @@ function UnitRow({ units, defaultFromId, defaultToId }: { units: Unit[]; default
   function handleFromChange(value: string) {
     setFromValue(value);
     const number = validNumber(value);
-    if (number !== null) setToValue(convert(number, from, to));
+    if (number === null) {
+      setToValue("");
+      return;
+    }
+    setToValue(convert(number, from, to));
   }
 
   function handleToChange(value: string) {
@@ -59,28 +65,39 @@ function UnitRow({ units, defaultFromId, defaultToId }: { units: Unit[]; default
   function selectFrom(id: string) {
     setFromId(id);
     const unit = units.find((item) => item.id === id)!;
-    const base = validNumber(fromValue) ?? 1;
+    const base = validNumber(fromValue);
+    if (base === null) {
+      setToValue("");
+      return;
+    }
     setToValue(convert(base, unit, to));
   }
 
   function selectTo(id: string) {
     setToId(id);
     const unit = units.find((item) => item.id === id)!;
-    const base = validNumber(fromValue) ?? 1;
+    const base = validNumber(fromValue);
+    if (base === null) {
+      setToValue("");
+      return;
+    }
     setToValue(convert(base, from, unit));
   }
+
+  const fromInvalid = validNumber(fromValue) === null;
 
   return (
     <div className={styles.group}>
       <div className={styles.line}>
         <span className={styles.sideLabel}>From</span>
         <input
-          type="number"
+          type="text"
           inputMode="decimal"
           min="0"
           value={fromValue}
           onChange={(event) => handleFromChange(event.target.value)}
-          className={styles.input}
+          className={`${styles.input} ${fromInvalid ? styles.inputInvalid : ""}`}
+          aria-invalid={fromInvalid}
           aria-label="From amount"
         />
         <div className={styles.pills}>
@@ -97,11 +114,12 @@ function UnitRow({ units, defaultFromId, defaultToId }: { units: Unit[]; default
           ))}
         </div>
       </div>
+      {fromInvalid && <p className={styles.inputHint}>{fromValue.trim() ? "Enter a valid amount" : "Enter an amount"}</p>}
 
       <div className={styles.line}>
         <span className={styles.sideLabel}>To</span>
         <input
-          type="number"
+          type="text"
           inputMode="decimal"
           min="0"
           value={toValue}

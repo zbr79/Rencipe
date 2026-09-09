@@ -11,14 +11,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "userId and mealId are required" }, { status: 400 });
     }
 
+    const authorization = request.headers.get("authorization");
     const response = await fetch(`${BACKEND_URL}/saved/meals/remove`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(authorization ? { Authorization: authorization } : {}),
+      },
       body: JSON.stringify({ userId, mealId }),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to unsave meal");
+      const error = await response.json().catch(() => null);
+      return NextResponse.json(
+        { error: error?.error || "Failed to unsave meal" },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();

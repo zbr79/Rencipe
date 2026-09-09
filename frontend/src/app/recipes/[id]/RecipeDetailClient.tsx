@@ -12,6 +12,7 @@ import { useSaved } from "../../contexts/SavedContext";
 import { getVisibleTags } from "../../utils/recipeTags";
 import { getAccountDisplayName, type AccountIdentity } from "../../utils/accountAvatar";
 import { getRecipeAuthor } from "../../utils/recipeAuthor";
+import { getImageFocusStyle, type RecipeImageFocus } from "../../utils/imageFocus";
 import { authFetch, getCurrentUser, type AuthUser } from "../../utils/authSession";
 import type { RecipeLanguage } from "../../utils/recipeLanguage";
 import styles from "./page.module.css";
@@ -27,6 +28,7 @@ interface Recipe {
   authorId: string;
   author?: AccountIdentity | null;
   image?: string;
+  imageFocus?: RecipeImageFocus;
   mainIngredients: Array<{
     name: string;
     quantity: number;
@@ -256,8 +258,10 @@ export default function RecipeDetailPage({
         if (!author) return null;
         return (
           <div className={styles.byline}>
-            <AccountAvatar account={author} size={28} />
-            <span className={styles.bylineName}>{getAccountDisplayName(author)}</span>
+            <div className={styles.publisher}>
+              <AccountAvatar account={author} size={28} />
+              <span className={styles.bylineName}>{getAccountDisplayName(author)}</span>
+            </div>
             {recipe.createdAt && (
               <span className={styles.bylineDate}>
                 {new Date(recipe.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
@@ -269,11 +273,9 @@ export default function RecipeDetailPage({
 
       <div className={styles.metaRow}>
           {recipe.ratingCount > 0 && (
-            <div className={styles.ratingRow}>
+            <div className={`${styles.ratingRow} ${styles.ratingMeta}`}>
               <span className={styles.stars} aria-hidden="true">
-                {Array.from({ length: 5 }, (_, index) => (
-                  <span key={index} className={`material-symbols-outlined ${index < Math.round(recipe.ratingAverage) ? styles.starFilled : ""}`}>star</span>
-                ))}
+                <span className={`material-symbols-outlined ${styles.starFilled}`}>star</span>
               </span>
               <span className={styles.ratingText}>
                 {recipe.ratingAverage.toFixed(1)} ({recipe.ratingCount})
@@ -281,20 +283,13 @@ export default function RecipeDetailPage({
             </div>
           )}
 
-          <span className={styles.metaChip}>
+          <span className={`${styles.metaChip} ${styles.viewsMeta}`}>
             <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
             {recipe.views}
           </span>
 
-          {recipe.likes > 0 && (
-            <span className={styles.metaChip}>
-              <span className="material-symbols-outlined" aria-hidden="true">thumb_up</span>
-              {recipe.likes}
-            </span>
-          )}
-
           {recipe.servings > 0 && (
-            <span className={styles.metaChip}>
+            <span className={`${styles.metaChip} ${styles.servingsMeta}`}>
               <span className="material-symbols-outlined" aria-hidden="true">restaurant</span>
               {recipe.servings} servings
             </span>
@@ -317,6 +312,7 @@ export default function RecipeDetailPage({
                 src={recipe.image}
                 alt={recipe.title}
                 className={styles.recipeImage}
+                style={getImageFocusStyle(recipe.imageFocus?.detail)}
                 fetchPriority="high"
               />
             </div>
@@ -390,41 +386,43 @@ export default function RecipeDetailPage({
 
         </div>
 
-        <CommentSection
-        entryType="recipe"
-        entryId={recipeId}
-        card
-        title="Reviews"
-        ratingSlot={
-          <div className={styles.mergedRating}>
-            <span className={styles.mergedRatingLabel}>Rate this recipe</span>
-            <div className={styles.ratingButtons}>
-              {Array.from({ length: 5 }, (_, index) => {
-                const rating = index + 1;
-                return (
-                  <button
-                    key={rating}
-                    type="button"
-                    className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""} ${ratingSubmitted ? styles.starButtonDone : ""}`}
-                    onClick={() => handleRatingSubmit(rating)}
-                    disabled={ratingSubmitting || ratingSubmitted}
-                    aria-label={`Rate ${rating} star${rating === 1 ? "" : "s"}`}
-                  >
-                    <span className="material-symbols-outlined">star</span>
-                  </button>
-                );
-              })}
-            </div>
-            {ratingSubmitting ? (
-              <span className={styles.ratingMessage}>Submitting...</span>
-            ) : ratingSubmitted ? (
-              <span className={styles.ratingMessage}>You rated this {selectedRating}/5</span>
-            ) : (
-              ratingMessage && <span className={styles.ratingMessage}>{ratingMessage}</span>
-            )}
-          </div>
-        }
-      />
+        {currentUser && currentUser.role !== "guest" && (
+          <CommentSection
+            entryType="recipe"
+            entryId={recipeId}
+            card
+            title="Reviews"
+            ratingSlot={
+              <div className={styles.mergedRating}>
+                <span className={styles.mergedRatingLabel}>Rate this recipe</span>
+                <div className={styles.ratingButtons}>
+                  {Array.from({ length: 5 }, (_, index) => {
+                    const rating = index + 1;
+                    return (
+                      <button
+                        key={rating}
+                        type="button"
+                        className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""} ${ratingSubmitted ? styles.starButtonDone : ""}`}
+                        onClick={() => handleRatingSubmit(rating)}
+                        disabled={ratingSubmitting || ratingSubmitted}
+                        aria-label={`Rate ${rating} star${rating === 1 ? "" : "s"}`}
+                      >
+                        <span className="material-symbols-outlined">star</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {ratingSubmitting ? (
+                  <span className={styles.ratingMessage}>Submitting...</span>
+                ) : ratingSubmitted ? (
+                  <span className={styles.ratingMessage}>You rated this {selectedRating}/5</span>
+                ) : (
+                  ratingMessage && <span className={styles.ratingMessage}>{ratingMessage}</span>
+                )}
+              </div>
+            }
+          />
+        )}
     </main>
   );
 }

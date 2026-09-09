@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Draft from "../models/Draft";
 import mongoose from "mongoose";
+import { getAuthUser } from "../middleware/auth";
 
 function normalizeDraftType(value: any) {
   return value === "meal" ? "meal" : "recipe";
@@ -29,7 +30,6 @@ function normalizeDraftRecipeIds(recipes: any) {
 export async function saveDraft(req: Request, res: Response) {
   try {
     const {
-      authorId,
       draftType,
       name,
       title,
@@ -50,6 +50,7 @@ export async function saveDraft(req: Request, res: Response) {
       people,
       recipes,
     } = req.body;
+    const authorId = getAuthUser(req)?.id;
 
     if (!authorId) {
       return res.status(400).json({ error: "authorId is required" });
@@ -92,7 +93,8 @@ export async function saveDraft(req: Request, res: Response) {
 
 export async function getDraft(req: Request, res: Response) {
   try {
-    const { authorId, id } = req.query;
+    const id = req.query.id;
+    const authorId = getAuthUser(req)?.id;
 
     if (!authorId) {
       return res.status(400).json({ error: "authorId is required" });
@@ -128,7 +130,6 @@ export async function updateDraft(req: Request, res: Response) {
     const rawId = req.params.id || req.body.id;
     const id = Array.isArray(rawId) ? rawId[0] : rawId;
     const {
-      authorId,
       draftType,
       name,
       title,
@@ -149,6 +150,7 @@ export async function updateDraft(req: Request, res: Response) {
       people,
       recipes,
     } = req.body;
+    const authorId = getAuthUser(req)?.id;
 
     if (!authorId) {
       return res.status(400).json({ error: "authorId is required" });
@@ -203,7 +205,8 @@ export async function updateDraft(req: Request, res: Response) {
 
 export async function deleteDraft(req: Request, res: Response) {
   try {
-    const { authorId, id } = req.query;
+    const id = req.query.id;
+    const authorId = getAuthUser(req)?.id;
 
     if (!authorId) {
       return res.status(400).json({ error: "authorId is required" });

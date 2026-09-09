@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSaved } from "../contexts/SavedContext";
 import RecipeCard from "./RecipeCard";
@@ -11,6 +11,7 @@ import { buildExploreCategories } from "../utils/exploreCategories";
 import { authFetch, getCurrentUser } from "../utils/authSession";
 import { getRecipeAuthor } from "../utils/recipeAuthor";
 import type { AccountIdentity } from "../utils/accountAvatar";
+import type { RecipeImageFocus } from "../utils/imageFocus";
 
 interface Recipe {
   id: string;
@@ -29,6 +30,7 @@ interface Recipe {
   createdAt: string;
   isPublic?: boolean;
   image?: string;
+  imageFocus?: RecipeImageFocus;
 }
 
 interface Meal {
@@ -132,6 +134,7 @@ export default function BrowsePage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [visibilityTab, setVisibilityTab] = useState<VisibilityTab>("public");
   const [sortMode, setSortMode] = useState<SortMode>("popular");
+  const categoryTabsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetchBrowseData();
@@ -156,16 +159,20 @@ export default function BrowsePage() {
     setLoading(true);
     setError("");
     try {
-      const recipeResponse = await authFetch(`/api/recipes?limit=1000`);
+      const [recipeResponse, mealResponse] = await Promise.all([
+        authFetch(`/api/recipes?limit=1000`),
+        authFetch(`/api/meals?visibility=public&kind=meal`),
+      ]);
 
       if (!recipeResponse.ok) {
         throw new Error("Failed to fetch recipes");
       }
 
       const recipeData = await recipeResponse.json();
+      const mealData = mealResponse.ok ? await mealResponse.json() : { meals: [] };
 
       setAllRecipes((recipeData.recipes || []) as Recipe[]);
-      setAllMeals([]);
+      setAllMeals((mealData.meals || []) as Meal[]);
     } catch (err: any) {
       setError(err.message);
       console.error(err);
@@ -266,6 +273,7 @@ export default function BrowsePage() {
             type="button"
             className={`${styles.sortButton} ${styles.sortButtonActive}`}
             onClick={() => setSortMode((current) => current === "popular" ? "newest" : "popular")}
+            aria-label={`Sort by ${sortMode === "popular" ? "most recent" : "most popular"}`}
           >
             <span className="material-symbols-rounded" aria-hidden="true">
               {sortMode === "popular" ? "keyboard_arrow_down" : "keyboard_arrow_up"}
@@ -276,27 +284,37 @@ export default function BrowsePage() {
       </div>
 
       {browseCategories.length > 0 && (
-        <div className={styles.categoryTabs} role="list" aria-label="Browse categories">
+        <div className={styles.categoryTabsWrap}>
+          <div ref={categoryTabsRef} className={styles.categoryTabs} role="list" aria-label="Browse categories">
+            <button
+              type="button"
+              className={`${styles.categoryTab} ${selectedCategories.length === 0 ? styles.categoryTabActive : ""}`}
+              onClick={clearCategories}
+            >
+              All
+            </button>
+            {(() => {
+              const selectedIds = new Set(selectedCategories);
+              return browseCategories.map((category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  className={`${styles.categoryTab} ${selectedIds.has(category.id.toLowerCase()) ? styles.categoryTabActive : ""}`}
+                  onClick={() => toggleCategory(category.id)}
+                >
+                  {category.label}
+                </button>
+              ));
+            })()}
+          </div>
           <button
             type="button"
-            className={`${styles.categoryTab} ${selectedCategories.length === 0 ? styles.categoryTabActive : ""}`}
-            onClick={clearCategories}
+            className={styles.categoryTabsNext}
+            onClick={() => categoryTabsRef.current?.scrollBy({ left: 240, behavior: "smooth" })}
+            aria-label="Show more browse categories"
           >
-            All
+            <span className="material-symbols-rounded" aria-hidden="true">chevron_right</span>
           </button>
-          {(() => {
-            const selectedIds = new Set(selectedCategories);
-            return browseCategories.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                className={`${styles.categoryTab} ${selectedIds.has(category.id.toLowerCase()) ? styles.categoryTabActive : ""}`}
-                onClick={() => toggleCategory(category.id)}
-              >
-                {category.label}
-              </button>
-            ));
-          })()}
         </div>
       )}
 
@@ -369,6 +387,7 @@ export default function BrowsePage() {
                 title={recipe.title}
                 subtitle={recipe.subtitle}
                 image={recipe.image}
+                imageFocus={recipe.imageFocus}
                 author={author}
                 saved={saved}
                 onToggleSave={() => {

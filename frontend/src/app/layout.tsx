@@ -9,6 +9,7 @@ import BottomNav from './components/BottomNav';
 import DesktopChrome from './components/DesktopChrome';
 import CreateFormModal from './components/CreateFormModal';
 import SettingsModal from './components/SettingsModal';
+import PublicFooter from './components/PublicFooter';
 import AuthGate from './components/AuthGate';
 import ConfirmDialogProvider from './components/ConfirmDialogProvider';
 import ToastProvider from './components/toast/ToastProvider';
@@ -51,6 +52,7 @@ export default function RootLayout({
                       {children}
                     </div>
                     <BottomNav />
+                    <PublicFooter />
                     <CreateFormModal />
                     <SettingsModal />
                   </AuthGate>

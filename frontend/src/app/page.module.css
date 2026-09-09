@@ -87,7 +87,7 @@
 }
 
 .slideCardActive .slideImage {
-  animation: slideImageDrift 8600ms linear both;
+  animation: none;
 }
 
 .slideShade {
@@ -105,10 +105,6 @@
   max-width: 560px;
   color: white;
   padding-bottom: 20px;
-}
-
-.slideCardActive .slideContent {
-  animation: slideTitleIn 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .slideKicker,
@@ -154,10 +150,13 @@
 .slideDots button {
   width: 24px;
   height: 24px;
-  padding: 10px 8px;
+  padding: 0;
   border: none;
   border-radius: 999px;
   background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .slideDots button::before {
@@ -171,7 +170,7 @@
 }
 
 .slideDots .slideDotActive::before {
-  width: 26px;
+  width: 20px;
   background: var(--primary-strong);
   opacity: 1;
 }
@@ -184,26 +183,6 @@
   to {
     opacity: 1;
     transform: scale(1);
-  }
-}
-
-@keyframes slideImageDrift {
-  from {
-    transform: translate(0, 0);
-  }
-  to {
-    transform: translate(-10px, -6px);
-  }
-}
-
-@keyframes slideTitleIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -504,6 +483,23 @@
     padding: 12px 12px 112px;
   }
 
+  .carouselTrack {
+    inset: 0;
+  }
+
+  .tabs {
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab {
+    padding-inline: 10px;
+    font-size: 13px;
+  }
+
   .dashboardContent {
     --hero-height: 218px;
   }
@@ -524,6 +520,33 @@
   .slideDots {
     left: 16px;
     bottom: 7px;
+    display: none;
+  }
+
+  .slideShade {
+    z-index: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(35, 27, 12, 0) 28%,
+      rgba(35, 27, 12, 0.08) 48%,
+      rgba(35, 27, 12, 0.76) 100%
+    );
+  }
+
+  .slideContent {
+    z-index: 1;
+  }
+
+  .slideSubtitle {
+    display: -webkit-box;
+    margin: 6px 0 0;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .recipeGrid {
@@ -559,6 +582,12 @@
   }
 }
 
+@media (max-width: 380px) {
+  .recipeGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (min-width: 768px) {
   .container {
     max-width: 1240px;
@@ -586,6 +615,7 @@
     max-width: 100%;
     min-width: 0;
     padding: 14px 14px 12px;
+    min-height: 230px;
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -751,16 +781,16 @@
   .slideDots button {
     width: 24px;
     height: 24px;
-    padding: 10px 8px;
+    padding: 0;
   }
 
   .slideDots button::before {
-    width: 18px;
+    width: 16px;
     height: 4px;
   }
 
   .slideDots .slideDotActive::before {
-    width: 30px;
+    width: 20px;
     background: var(--foreground);
   }
 
@@ -814,5 +844,44 @@
   .recipeCard:hover {
     transform: translateY(-0.6px);
     box-shadow: var(--shadow-md);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .dashboard {
+    display: block;
+  }
+
+  .dashboardContent {
+    --hero-height: 248px;
+  }
+
+  .quickPanel {
+    display: none;
+  }
+
+  .slideImage {
+    width: clamp(220px, 34%, 340px);
+  }
+
+  .slideContent {
+    max-width: calc(100% - clamp(220px, 34%, 340px));
+    padding: 20px 24px 48px;
+  }
+
+  .dashboardContent h1,
+  .dashboardContent h2,
+  .slideFallback h1,
+  .slideFallback h2 {
+    font-size: clamp(20px, 2.15vw, 26px);
+    line-height: 1.08;
+  }
+
+  .slideDescription {
+    -webkit-line-clamp: 3;
+  }
+
+  .slideDots {
+    bottom: 10px;
   }
 }

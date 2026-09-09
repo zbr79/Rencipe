@@ -3,6 +3,7 @@
 import Link from "next/link";
 import AccountAvatar from "./AccountAvatar";
 import { getAccountDisplayName, type AccountIdentity } from "../utils/accountAvatar";
+import { getImageFocusStyle, type RecipeImageFocus } from "../utils/imageFocus";
 import styles from "./recipe-card.module.css";
 
 interface RecipeCardProps {
@@ -10,6 +11,7 @@ interface RecipeCardProps {
   title: string;
   subtitle?: string;
   image?: string;
+  imageFocus?: RecipeImageFocus;
   imageIcon?: string;
   badge?: string;
   author?: AccountIdentity | null;
@@ -23,6 +25,7 @@ export default function RecipeCard({
   title,
   subtitle,
   image,
+  imageFocus,
   imageIcon = "restaurant",
   badge,
   author,
@@ -35,7 +38,7 @@ export default function RecipeCard({
       <Link href={href} className={styles.cardLink}>
         <div className={styles.cardImage}>
           {image ? (
-            <img src={image} alt={title} loading="lazy" />
+            <img src={image} alt={title} loading="lazy" style={getImageFocusStyle(imageFocus?.card)} />
           ) : (
             <div className={styles.imagePlaceholder}>
               <span className="material-symbols-rounded" aria-hidden="true">{imageIcon}</span>

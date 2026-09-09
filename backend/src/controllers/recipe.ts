@@ -4,6 +4,7 @@ import Recipe, { RecipeLanguage } from "../models/Recipe";
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
 import { getAuthUser } from "../middleware/auth";
+import { DEFAULT_RECIPE_IMAGE_FOCUS, normalizeImageFocus } from "../utils/imageFocus";
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ function pickRecipe(doc: any) {
     sharedSource: doc.sharedSource ?? "",
     sharedSourceLink: doc.sharedSourceLink ?? "",
     image: doc.image ?? null,
+    imageFocus: normalizeImageFocus(doc.imageFocus) ?? DEFAULT_RECIPE_IMAGE_FOCUS,
     language: getRecipeLanguage(doc),
     authorId: getAuthorId(doc),
     author: pickAuthor(doc.authorId),
@@ -216,6 +218,7 @@ export async function createRecipe(req: Request, res: Response) {
       servings,
       tags,
       image,
+      imageFocus,
       component,
       isPublic,
     } = req.body;
@@ -253,6 +256,7 @@ export async function createRecipe(req: Request, res: Response) {
       servings: servings || 1,
       tags: tags || [],
       image: image || undefined,
+      imageFocus: normalizeImageFocus(imageFocus),
       language: detectRecipeLanguage({ title, description, tips, sharedSource, mainIngredients, seasonings, steps, tags }),
       component: component ?? false,
       isPublic: Boolean(isPublic),
@@ -307,6 +311,7 @@ export async function updateRecipe(req: Request, res: Response) {
       servings,
       tags,
       image,
+      imageFocus,
       component,
       isPublic,
     } = req.body;
@@ -317,6 +322,9 @@ export async function updateRecipe(req: Request, res: Response) {
     if (!canMutateRecipe(req, existing)) return res.status(403).json({ error: "Not allowed to update this recipe" });
 
     const authUser = getAuthUser(req);
+    if (imageFocus !== undefined && authUser?.role !== "admin") {
+      return res.status(403).json({ error: "Only admin accounts can adjust recipe image focus" });
+    }
     if (isPublic && (!authUser || authUser.role === "guest")) {
       return res.status(403).json({ error: "Create an account to publish recipes", code: "ACCOUNT_REQUIRED" });
     }
@@ -345,6 +353,9 @@ export async function updateRecipe(req: Request, res: Response) {
     existing.tags = tags || [];
     if (typeof image === "string") {
       existing.image = image || undefined;
+    }
+    if (imageFocus !== undefined) {
+      existing.imageFocus = normalizeImageFocus(imageFocus);
     }
     if (typeof component === "boolean") {
       existing.component = component;
