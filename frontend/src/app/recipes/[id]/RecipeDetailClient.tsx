@@ -12,6 +12,7 @@ import { useSaved } from "../../contexts/SavedContext";
 import { getVisibleTags } from "../../utils/recipeTags";
 import { getAccountDisplayName, type AccountIdentity } from "../../utils/accountAvatar";
 import { getRecipeAuthor } from "../../utils/recipeAuthor";
+import { getImageFocusStyle, type RecipeImageFocus } from "../../utils/imageFocus";
 import { authFetch, getCurrentUser, type AuthUser } from "../../utils/authSession";
 import type { RecipeLanguage } from "../../utils/recipeLanguage";
 import styles from "./page.module.css";
@@ -27,6 +28,7 @@ interface Recipe {
   authorId: string;
   author?: AccountIdentity | null;
   image?: string;
+  imageFocus?: RecipeImageFocus;
   mainIngredients: Array<{
     name: string;
     quantity: number;
@@ -310,6 +312,7 @@ export default function RecipeDetailPage({
                 src={recipe.image}
                 alt={recipe.title}
                 className={styles.recipeImage}
+                style={getImageFocusStyle(recipe.imageFocus?.detail)}
                 fetchPriority="high"
               />
             </div>

@@ -11,6 +11,7 @@ import { buildExploreCategories } from "../utils/exploreCategories";
 import { authFetch, getCurrentUser } from "../utils/authSession";
 import { getRecipeAuthor } from "../utils/recipeAuthor";
 import type { AccountIdentity } from "../utils/accountAvatar";
+import type { RecipeImageFocus } from "../utils/imageFocus";
 
 interface Recipe {
   id: string;
@@ -29,6 +30,7 @@ interface Recipe {
   createdAt: string;
   isPublic?: boolean;
   image?: string;
+  imageFocus?: RecipeImageFocus;
 }
 
 interface Meal {
@@ -385,6 +387,7 @@ export default function BrowsePage() {
                 title={recipe.title}
                 subtitle={recipe.subtitle}
                 image={recipe.image}
+                imageFocus={recipe.imageFocus}
                 author={author}
                 saved={saved}
                 onToggleSave={() => {

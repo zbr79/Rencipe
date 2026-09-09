@@ -131,6 +131,7 @@ export default function SavedPage() {
                 title={recipe.title}
                 subtitle={recipe.subtitle}
                 image={recipe.image}
+                imageFocus={recipe.imageFocus}
                 author={author}
                 saved
                 onToggleSave={() => handleRemoveSavedRecipe(recipeId)}
