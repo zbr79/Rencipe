@@ -31,6 +31,14 @@
   box-shadow: 0 16px 30px rgba(84, 61, 20, 0.12);
 }
 
+.panelActionsSingle {
+  padding: 0;
+}
+
+.panelActionsSingle::before {
+  display: none;
+}
+
 .panelButton {
   position: relative;
   z-index: 1;
@@ -73,10 +81,14 @@
 }
 
 .panelButtonSave {
+  color: var(--text-secondary);
+}
+
+.panelButtonSaved {
   color: #d84f67;
 }
 
-.panelButtonPrimary.panelButtonSave {
+.panelButtonPrimary.panelButtonSaved {
   background: color-mix(in srgb, #d84f67 12%, var(--card-bg));
   border-color: color-mix(in srgb, #d84f67 26%, var(--border));
 }

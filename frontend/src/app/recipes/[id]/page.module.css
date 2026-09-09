@@ -153,8 +153,16 @@
 .byline {
   display: flex;
   align-items: center;
-  gap: 9px;
+  justify-content: space-between;
+  gap: 12px;
   margin-top: 16px;
+}
+
+.publisher {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
 }
 
 .bylineName {
@@ -167,11 +175,7 @@
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 500;
-}
-
-.bylineName + .bylineDate::before {
-  content: "·";
-  margin-right: 9px;
+  white-space: nowrap;
 }
 
 .metaRow {
@@ -541,7 +545,9 @@
 
 @media (max-width: 767px) {
   .metaRow {
-    gap: 8px 12px;
+    flex-wrap: nowrap;
+    gap: 0;
+    overflow: hidden;
   }
 
   .metaRow > * + * {
@@ -550,13 +556,63 @@
     border-left: 0;
   }
 
+  .ratingRow,
   .metaChip {
-    white-space: normal;
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .ratingRow {
+    gap: 4px;
+  }
+
+  .stars span {
+    font-size: 13px;
+  }
+
+  .stars {
+    gap: 0;
+  }
+
+  .ratingText,
+  .metaChip {
+    font-size: 12px;
+  }
+
+  .metaChip {
+    gap: 3px;
+  }
+
+  .metaChip .material-symbols-outlined {
+    font-size: 15px;
+  }
+
+  .metaRow > * {
+    flex: 1 1 0;
+  }
+
+  .servingsMeta {
+    order: 1;
+    justify-content: flex-start;
+  }
+
+  .viewsMeta {
+    order: 2;
+    justify-content: center;
+  }
+
+  .ratingMeta {
+    order: 3;
+    justify-content: flex-end;
   }
 
   .ingredientItem {
     align-items: flex-start;
     gap: 6px;
+  }
+
+  .ingredientDots {
+    display: none;
   }
 
   .ingredientName {

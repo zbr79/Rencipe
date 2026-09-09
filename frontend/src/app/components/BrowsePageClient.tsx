@@ -267,18 +267,17 @@ export default function BrowsePage() {
           <h2>Browse</h2>
         </div>
         <div className={styles.sortToggle} aria-label="Recipe sort">
-          <label htmlFor="browse-sort" className="visually-hidden">
-            Sort recipes
-          </label>
-          <select
-            id="browse-sort"
-            className={styles.sortSelect}
-            value={sortMode}
-            onChange={(event) => setSortMode(event.target.value as SortMode)}
+          <button
+            type="button"
+            className={`${styles.sortButton} ${styles.sortButtonActive}`}
+            onClick={() => setSortMode((current) => current === "popular" ? "newest" : "popular")}
+            aria-label={`Sort by ${sortMode === "popular" ? "most recent" : "most popular"}`}
           >
-            <option value="popular">Most Popular</option>
-            <option value="newest">Most Recent</option>
-          </select>
+            <span className="material-symbols-rounded" aria-hidden="true">
+              {sortMode === "popular" ? "keyboard_arrow_down" : "keyboard_arrow_up"}
+            </span>
+            {sortMode === "popular" ? "Most Popular" : "Most Recent"}
+          </button>
         </div>
       </div>
 

@@ -311,25 +311,6 @@
   padding: 0;
 }
 
-.sortSelect {
-  min-height: 34px;
-  min-width: 132px;
-  padding: 0 28px 0 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--card-bg);
-  color: var(--foreground);
-  font-size: 13px;
-  font-weight: 650;
-  cursor: pointer;
-}
-
-.sortSelect:focus {
-  outline: none;
-  border-color: var(--primary-text);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-text) 14%, transparent);
-}
-
 .sortButton {
   min-height: 32px;
   display: inline-flex;
@@ -568,6 +549,17 @@
   background: var(--primary-strong);
   border-color: var(--primary-text);
   color: var(--on-strong);
+}
+
+@media (max-width: 767px) {
+  .categoryTabs {
+    gap: 6px;
+  }
+
+  .categoryTab {
+    gap: 5px;
+    padding-inline: 10px;
+  }
 }
 
 @media (min-width: 768px) and (max-width: 1200px) {

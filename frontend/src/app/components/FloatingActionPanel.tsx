@@ -38,7 +38,7 @@ export default function FloatingActionPanel({ ariaLabel, actions }: FloatingActi
 
   return (
     <aside className={styles.floatingPanel} aria-label={ariaLabel}>
-      <div className={styles.panelActions}>
+      <div className={`${styles.panelActions} ${actions.length === 1 ? styles.panelActionsSingle : ""}`}>
         {orderedActions.map((action) => {
           const isPrimaryAction = action.id === primaryAction.id;
 
@@ -46,7 +46,7 @@ export default function FloatingActionPanel({ ariaLabel, actions }: FloatingActi
             <button
               key={action.id}
               type="button"
-              className={`${styles.panelButton} ${isPrimaryAction ? styles.panelButtonAnchor : styles.panelButtonSecondary} ${action.id === "save" ? styles.panelButtonSave : ""} ${action.tone === "primary" ? styles.panelButtonPrimary : ""} ${action.tone === "danger" ? styles.panelButtonDanger : ""}`}
+              className={`${styles.panelButton} ${isPrimaryAction ? styles.panelButtonAnchor : styles.panelButtonSecondary} ${action.id === "save" ? styles.panelButtonSave : ""} ${action.id === "save" && action.icon === "favorite" ? styles.panelButtonSaved : ""} ${action.tone === "primary" ? styles.panelButtonPrimary : ""} ${action.tone === "danger" ? styles.panelButtonDanger : ""}`}
               onClick={action.onClick}
               disabled={action.disabled}
               aria-label={action.label}

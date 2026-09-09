@@ -1,4 +1,3 @@
-import BackButton from "./BackButton";
 import Link from "next/link";
 import styles from "./breadcrumbs.module.css";
 
@@ -7,7 +6,7 @@ export interface BreadcrumbItem {
   href?: string;
 }
 
-export default function Breadcrumbs({ items, mobileBackHref = "/" }: { items: BreadcrumbItem[]; mobileBackHref?: string }) {
+export default function Breadcrumbs({ items }: { items: BreadcrumbItem[]; mobileBackHref?: string }) {
   if (items.length === 0) return null;
 
   return (
@@ -31,12 +30,6 @@ export default function Breadcrumbs({ items, mobileBackHref = "/" }: { items: Br
           })}
         </ol>
       </nav>
-
-      <div className={styles.mobileBack}>
-        <BackButton fallbackHref={mobileBackHref} ariaLabel="Go back" className={styles.backCircle}>
-          <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
-        </BackButton>
-      </div>
     </div>
   );
 }
