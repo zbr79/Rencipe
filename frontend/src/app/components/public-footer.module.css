@@ -1,6 +1,7 @@
 .footer {
   width: 100%;
-  padding: 18px 24px 24px;
+  margin-top: 28px;
+  padding: 0 24px 24px;
   color: var(--text-muted);
 }
 
@@ -11,21 +12,41 @@
   justify-content: space-between;
   gap: 18px;
   margin: 0 auto;
-  padding-top: 14px;
+  padding: 18px 0 0;
   border-top: 1px solid var(--border);
-  font-size: 12px;
-  font-weight: 600;
+}
+
+.brandBlock {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .brand {
   color: var(--text-secondary);
+  font-size: 13px;
   font-weight: 700;
+}
+
+.tagline {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .links {
   display: inline-flex;
   align-items: center;
   gap: 16px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
 }
 
 .links a:hover {
@@ -34,18 +55,25 @@
 
 @media (max-width: 767px) {
   .footer {
-    padding: 14px 12px 88px;
+    margin-top: 20px;
+    padding: 0 12px 88px;
   }
 
   .inner {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 10px;
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+    padding-top: 14px;
+  }
+
+  .brandBlock {
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .links {
-    flex-wrap: wrap;
-    gap: 4px 8px;
+    flex: none;
+    gap: 4px;
   }
 
   .links a {
