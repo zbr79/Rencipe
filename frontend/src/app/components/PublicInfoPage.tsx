@@ -1,21 +1,19 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
+import Breadcrumbs from "./Breadcrumbs";
 import styles from "./public-info-page.module.css";
 
 type PublicInfoPageProps = {
   title: string;
-  eyebrow: string;
+  eyebrow?: string;
   children: ReactNode;
 };
 
-export default function PublicInfoPage({ title, eyebrow, children }: PublicInfoPageProps) {
+export default function PublicInfoPage({ title, children }: PublicInfoPageProps) {
   return (
     <main className={styles.page}>
-      <Link href="/" className={styles.backLink}>
-        <span className="material-symbols-rounded" aria-hidden="true">arrow_back</span>
-        Back to Rencipe
-      </Link>
-      <p className={styles.eyebrow}>{eyebrow}</p>
+      <div className={styles.pageTop}>
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: title }]} />
+      </div>
       <h1>{title}</h1>
       <div className={styles.content}>{children}</div>
     </main>
