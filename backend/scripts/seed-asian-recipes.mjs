@@ -34,7 +34,7 @@ const RECIPES = [
     ],
     servings: 3,
     tags: ["Chinese", "Sichuan", "Chicken", "Spicy", "Dinner", "Quick"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Kung_Pao_Chicken_at_Liqiaoshun_Restaurant_%2820220310175424%29.jpg/960px-Kung_Pao_Chicken_at_Liqiaoshun_Restaurant_%2820220310175424%29.jpg",
+    image: "https://savorychina.com/wp-content/uploads/2025/10/Authentic-Kung-Pao-Chicken-Gong-Bao-Ji-Ding-1.jpg",
     views: 880, likes: 96, ratingAverage: 4.7, ratingCount: 64,
   },
   {
@@ -114,7 +114,7 @@ const RECIPES = [
     ],
     servings: 4,
     tags: ["Chinese", "Pork", "Dinner", "Family", "Easy"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Sweet_and_Sour_Pork_-_RV90_-_22_August_2024.jpg/960px-Sweet_and_Sour_Pork_-_RV90_-_22_August_2024.jpg",
+    image: "https://www.recipetineats.com/uploads/2020/08/Sweet-and-Sour-Pork_6.jpg",
     views: 690, likes: 74, ratingAverage: 4.4, ratingCount: 49,
   },
   {
@@ -140,7 +140,7 @@ const RECIPES = [
     ],
     servings: 6,
     tags: ["Chinese", "Duck", "Dinner", "Family", "Special Occasion"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Peking_duck_by_Mr_Wabu_in_Beijing.jpg/960px-Peking_duck_by_Mr_Wabu_in_Beijing.jpg",
+    image: "https://thewoksoflife.com/wp-content/uploads/2015/11/peking-duck-recipe-11.jpg",
     views: 1050, likes: 132, ratingAverage: 4.9, ratingCount: 82,
   },
   {
@@ -220,7 +220,7 @@ const RECIPES = [
     ],
     servings: 2,
     tags: ["Chinese", "Sichuan", "Noodles", "Pork", "Spicy", "Quick"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Dan_Dan_Noodles.jpg/960px-Dan_Dan_Noodles.jpg",
+    image: "https://thewoksoflife.com/wp-content/uploads/2014/11/dan-dan-noodles-12.jpg",
     views: 780, likes: 91, ratingAverage: 4.7, ratingCount: 55,
   },
   {
@@ -377,7 +377,7 @@ const RECIPES = [
     ],
     servings: 4,
     tags: ["Chinese", "Pork", "Dinner", "Family"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Red_braised_pork_belly.jpg/960px-Red_braised_pork_belly.jpg",
+    image: "https://thewoksoflife.com/wp-content/uploads/2013/07/hongshao-rou-2.jpg",
     views: 720, likes: 79, ratingAverage: 4.6, ratingCount: 47,
   },
   {
@@ -486,7 +486,7 @@ const RECIPES = [
     ],
     servings: 4,
     tags: ["Korean", "Chicken", "Spicy", "Fried", "Dinner", "Family"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Yangnyeom_Chicken_Korean_fried_chicken.jpg/960px-Yangnyeom_Chicken_Korean_fried_chicken.jpg",
+    image: "https://mikhaeats.com/wp-content/uploads/2025/04/korean-fried-chicken-featured-image-2.jpg",
     views: 880, likes: 102, ratingAverage: 4.7, ratingCount: 62,
   },
   {
@@ -513,7 +513,7 @@ const RECIPES = [
     ],
     servings: 4,
     tags: ["Korean", "Beef", "Dinner", "Easy", "Family"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Korean.cuisine-Bulgogi-01.jpg/960px-Korean.cuisine-Bulgogi-01.jpg",
+    image: "https://www.koreanbapsang.com/wp-content/uploads/2019/04/DSC_0814.jpg",
     views: 810, likes: 93, ratingAverage: 4.6, ratingCount: 56,
   },
   {
@@ -539,7 +539,7 @@ const RECIPES = [
     ],
     servings: 3,
     tags: ["Japanese", "Chicken", "Dinner", "Quick", "Easy"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Chicken_teriyaki_bento_box_-_Massachusetts.jpg/960px-Chicken_teriyaki_bento_box_-_Massachusetts.jpg",
+    image: "https://www.justonecookbook.com/wp-content/uploads/2017/09/Chicken-Teriyaki-recipe.jpg",
     views: 700, likes: 71, ratingAverage: 4.5, ratingCount: 44,
   },
   {
