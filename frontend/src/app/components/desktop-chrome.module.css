@@ -279,6 +279,14 @@
     transition: background-color var(--transition-fast);
   }
 
+  button.account {
+    border: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
   .account:hover {
     background: var(--hover-bg);
   }
@@ -316,4 +324,27 @@
     font-size: 20px;
   }
 
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  .sidebar {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .navItem,
+  .sidebarSubLink {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .brand {
+    gap: 7px;
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+
+  .brandText {
+    font-size: 14px;
+  }
 }

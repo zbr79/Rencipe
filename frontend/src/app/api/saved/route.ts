@@ -11,10 +11,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/saved?userId=${userId}`);
+    const authorization = request.headers.get("authorization");
+    const response = await fetch(`${BACKEND_URL}/saved?userId=${userId}`, {
+      headers: authorization ? { Authorization: authorization } : undefined,
+    });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch saved items from backend");
+      const error = await response.json().catch(() => null);
+      return NextResponse.json(
+        { error: error?.error || "Failed to fetch saved items from backend" },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();

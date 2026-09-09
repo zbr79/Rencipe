@@ -31,6 +31,14 @@
   box-shadow: 0 16px 30px rgba(84, 61, 20, 0.12);
 }
 
+.panelActionsSingle {
+  padding: 0;
+}
+
+.panelActionsSingle::before {
+  display: none;
+}
+
 .panelButton {
   position: relative;
   z-index: 1;
@@ -73,10 +81,14 @@
 }
 
 .panelButtonSave {
+  color: var(--text-secondary);
+}
+
+.panelButtonSaved {
   color: #d84f67;
 }
 
-.panelButtonPrimary.panelButtonSave {
+.panelButtonPrimary.panelButtonSaved {
   background: color-mix(in srgb, #d84f67 12%, var(--card-bg));
   border-color: color-mix(in srgb, #d84f67 26%, var(--border));
 }
@@ -107,7 +119,8 @@
 
 @media (max-width: 600px) {
   .floatingPanel {
-    bottom: calc(70px + env(safe-area-inset-bottom));
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    z-index: 10000;
   }
 
   .panelActions {
@@ -116,9 +129,9 @@
   }
 
   .panelButton {
-    width: 38px;
-    min-width: 38px;
-    min-height: 38px;
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 

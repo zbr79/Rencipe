@@ -153,8 +153,16 @@
 .byline {
   display: flex;
   align-items: center;
-  gap: 9px;
+  justify-content: space-between;
+  gap: 12px;
   margin-top: 16px;
+}
+
+.publisher {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
 }
 
 .bylineName {
@@ -167,11 +175,7 @@
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 500;
-}
-
-.bylineName + .bylineDate::before {
-  content: "·";
-  margin-right: 9px;
+  white-space: nowrap;
 }
 
 .metaRow {
@@ -540,6 +544,89 @@
 }
 
 @media (max-width: 767px) {
+  .metaRow {
+    flex-wrap: nowrap;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .metaRow > * + * {
+    padding-left: 0;
+    margin-left: 0;
+    border-left: 0;
+  }
+
+  .ratingRow,
+  .metaChip {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .ratingRow {
+    gap: 4px;
+  }
+
+  .stars span {
+    font-size: 13px;
+  }
+
+  .stars {
+    gap: 0;
+  }
+
+  .ratingText,
+  .metaChip {
+    font-size: 12px;
+  }
+
+  .metaChip {
+    gap: 3px;
+  }
+
+  .metaChip .material-symbols-outlined {
+    font-size: 15px;
+  }
+
+  .metaRow > * {
+    flex: 1 1 0;
+  }
+
+  .servingsMeta {
+    order: 1;
+    justify-content: flex-start;
+  }
+
+  .viewsMeta {
+    order: 2;
+    justify-content: center;
+  }
+
+  .ratingMeta {
+    order: 3;
+    justify-content: flex-end;
+  }
+
+  .ingredientItem {
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .ingredientDots {
+    display: none;
+  }
+
+  .ingredientName {
+    flex: 1 1 auto;
+  }
+
+  .ingredientAmount {
+    flex: 0 0 auto;
+  }
+
+  .ratingMessage {
+    white-space: normal;
+  }
+
   .ingredientsSection,
   .directionsSection,
   .tipsSection {
@@ -562,5 +649,28 @@
 
   .step p {
     font-size: 15px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .layout {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+    row-gap: 0;
+  }
+
+  .imageContainer,
+  .recipeDescription,
+  .tipsSection {
+    grid-column: 1 / -1;
+  }
+
+  .ingredientsSection {
+    grid-column: 1;
+  }
+
+  .directionsSection {
+    grid-column: 2;
   }
 }

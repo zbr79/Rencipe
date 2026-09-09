@@ -1,4 +1,5 @@
 import type { AuthUser } from "../../utils/authSession";
+import type { RecipeImageFocus } from "../../utils/imageFocus";
 
 export interface Ingredient {
   name: string;
@@ -42,6 +43,7 @@ export interface RecipeFormData {
 export interface RecipeData extends RecipeFormData {
   id: string;
   image?: string;
+  imageFocus?: RecipeImageFocus;
 }
 
 export interface RecipeComposerProps {
@@ -130,7 +132,7 @@ export function buildRecipeSteps(steps: Step[], stepImages: { [key: number]: str
 export function buildRecipeUpdatePayload(
   data: RecipeFormData,
   stepImages: { [key: number]: string },
-  options?: { includeImage?: boolean; recipeImage?: string | null }
+  options?: { includeImage?: boolean; recipeImage?: string | null; imageFocus?: RecipeImageFocus | null }
 ) {
   return {
     title: data.title,
@@ -148,11 +150,16 @@ export function buildRecipeUpdatePayload(
     servings: data.servings,
     tags: data.tags,
     ...(options?.includeImage ? { image: options.recipeImage ?? "" } : {}),
+    ...(options?.imageFocus ? { imageFocus: options.imageFocus } : {}),
   };
 }
 
-export function getRecipeUpdateSignature(data: RecipeFormData, stepImages: { [key: number]: string }) {
-  return JSON.stringify(buildRecipeUpdatePayload(data, stepImages));
+export function getRecipeUpdateSignature(
+  data: RecipeFormData,
+  stepImages: { [key: number]: string },
+  imageFocus?: RecipeImageFocus | null
+) {
+  return JSON.stringify(buildRecipeUpdatePayload(data, stepImages, { imageFocus }));
 }
 
 export function getEditValidationMessage(data: RecipeFormData) {

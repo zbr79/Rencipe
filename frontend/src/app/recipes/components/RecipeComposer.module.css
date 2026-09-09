@@ -185,6 +185,37 @@
   color: var(--error);
 }
 
+.focusImageButton {
+  width: fit-content;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.focusImageButton:hover {
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+
+.focusImageButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.focusImageButton span {
+  font-size: 17px;
+}
+
 .createCoverSection {
   width: 100%;
   padding: 28px 0;
@@ -533,6 +564,18 @@
 
   .editorHeader {
     align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .headerText {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .title,
+  .kicker {
+    text-align: left;
   }
 
   .coverImageSection,

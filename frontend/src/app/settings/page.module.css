@@ -920,6 +920,13 @@
     padding: 16px 12px 96px;
   }
 
+  .settingItemValue {
+    overflow: visible;
+    line-height: 1.35;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
   .group {
     padding: 14px;
   }

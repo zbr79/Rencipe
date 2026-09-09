@@ -104,6 +104,7 @@ export default function SavedPage() {
           title="No saved recipes yet"
           actionLabel="Browse"
           actionHref="/browse"
+          className={styles.savedEmptyState}
         />
       )}
 
@@ -128,8 +129,9 @@ export default function SavedPage() {
                 key={recipeId}
                 href={`/recipes/${recipeId}`}
                 title={recipe.title}
-                subtitle={recipe.description}
+                subtitle={recipe.subtitle}
                 image={recipe.image}
+                imageFocus={recipe.imageFocus}
                 author={author}
                 saved
                 onToggleSave={() => handleRemoveSavedRecipe(recipeId)}

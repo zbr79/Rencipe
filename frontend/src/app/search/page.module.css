@@ -450,6 +450,11 @@
 }
 
 
+.categoryTabsWrap {
+  position: relative;
+  min-width: 0;
+}
+
 .categoryTabs {
   display: flex;
   gap: 10px;
@@ -457,6 +462,10 @@
   overflow-x: auto;
   padding-bottom: 2px;
   scrollbar-width: none;
+}
+
+.categoryTabsNext {
+  display: none;
 }
 
 .categoryTabs::-webkit-scrollbar {
@@ -540,6 +549,53 @@
   background: var(--primary-strong);
   border-color: var(--primary-text);
   color: var(--on-strong);
+}
+
+@media (max-width: 767px) {
+  .categoryTabs {
+    gap: 6px;
+  }
+
+  .categoryTab {
+    gap: 5px;
+    padding-inline: 10px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1200px) {
+  .categoryTabs {
+    width: calc(100% - 96px);
+    padding-right: 12px;
+  }
+
+  .categoryTabsNext {
+    position: absolute;
+    top: 8px;
+    right: 0;
+    width: 96px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 2px 0 66px;
+    border: 0;
+    border-radius: 0 999px 999px 0;
+    background: var(--background);
+    color: var(--primary-text);
+    cursor: pointer;
+  }
+
+  .categoryTabsNext span {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--card-bg);
+    font-size: 18px;
+  }
 }
 
 .recipeGrid {

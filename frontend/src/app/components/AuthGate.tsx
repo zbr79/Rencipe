@@ -19,19 +19,19 @@ const GUEST_BLOCKED_PREFIXES = [
   "/drafts",
   "/my-work",
   "/meals",
-  "/settings/account",
   "/settings/profile",
   "/profile",
 ];
 
 function isGuestBlockedPath(pathname: string) {
+  if (pathname === "/settings/account") return false;
   return GUEST_BLOCKED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-  );
+  ) || pathname.startsWith("/settings/account/");
 }
 
-function isMealsPath(pathname: string) {
-  return pathname === "/meals" || pathname.startsWith("/meals/");
+function loginPathFor(pathname: string) {
+  return `/login?next=${encodeURIComponent(pathname)}`;
 }
 
 export default function AuthGate({ children }: { children: ReactNode }) {
@@ -69,7 +69,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
           if (!active) return;
           if (isGuestBlockedPath(pathname)) {
             setChecking(false);
-            router.replace("/login");
+            router.replace(loginPathFor(pathname));
             return;
           }
           setAuthenticated(true);
@@ -78,7 +78,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
           if (!active) return;
           setAuthenticated(false);
           setChecking(false);
-          router.replace("/login");
+          router.replace(loginPathFor(pathname));
         }
         return;
       }
@@ -98,7 +98,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
           setAuthenticated(false);
           setChecking(false);
           if (!isLoginPage) {
-            router.replace("/login");
+            router.replace(loginPathFor(pathname));
           }
           return;
         }
@@ -106,13 +106,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         const isGuest = session.user?.role === "guest";
         if (isGuest && isGuestBlockedPath(pathname)) {
           setChecking(false);
-          router.replace("/login");
-          return;
-        }
-
-        if (isMealsPath(pathname) && session.user?.role !== "admin") {
-          setChecking(false);
-          router.replace("/");
+          router.replace(loginPathFor(pathname));
           return;
         }
 
@@ -124,12 +118,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         const isGuest = session.user?.role === "guest";
         if (isGuest && isGuestBlockedPath(pathname)) {
           setChecking(false);
-          router.replace("/login");
-          return;
-        }
-        if (isMealsPath(pathname) && session.user?.role !== "admin") {
-          setChecking(false);
-          router.replace("/");
+          router.replace(loginPathFor(pathname));
           return;
         }
         setAuthenticated(true);

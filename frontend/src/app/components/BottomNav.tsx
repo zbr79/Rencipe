@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useCreateForm } from "../contexts/CreateFormContext";
 import { useSettings } from "../contexts/SettingsContext";
 import { getCurrentUser } from "../utils/authSession";
 import styles from "./bottom-nav.module.css";
+import SignInModal from "./SignInModal";
 
 interface NavItem {
   href: string | null;
@@ -26,14 +28,15 @@ const GUEST_NAV_ITEMS: NavItem[] = [
   { href: `/`, icon: "home", label: "Home" },
   { href: `/browse`, icon: "category", label: "Browse" },
   { href: `/saved`, icon: "favorite_border", label: "Saved" },
-  { href: `/login`, icon: "login", label: "Sign in" },
   { href: null, icon: "settings", label: "Settings" },
+  { href: null, icon: "account_circle", label: "Me" },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
   const { isOpen, openCreateForm, closeCreateForm } = useCreateForm();
   const { openSettings } = useSettings();
+  const [signInOpen, setSignInOpen] = useState(false);
 
   if (pathname === "/login") return null;
 
@@ -41,7 +44,7 @@ export default function BottomNav() {
   const navItems = isGuest
     ? GUEST_NAV_ITEMS.map((item) => ({
         ...item,
-        action: item.href === null ? openSettings : item.action,
+        action: item.label === "Me" ? () => setSignInOpen(true) : item.href === null ? openSettings : item.action,
       }))
     : FULL_NAV_ITEMS.map((item) => ({
         ...item,
@@ -57,49 +60,54 @@ export default function BottomNav() {
   };
 
   return (
-    <nav className={styles.nav}>
-      <div className={styles.navItems}>
-        {navItems.map((item) => {
-          if (item.action) {
+    <>
+      <nav className={styles.nav}>
+        <div className={styles.navItems}>
+          {navItems.map((item) => {
+            if (item.action) {
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => {
+                    if (isOpen) {
+                      closeCreateForm();
+                      return;
+                    }
+                    item.action?.();
+                  }}
+                  className={styles.item}
+                  title={item.label}
+                >
+                  <span className={`material-symbols-outlined ${styles.icon}`}>
+                    {getItemIcon(item, false)}
+                  </span>
+                  <span className={styles.label}>{item.label}</span>
+                </button>
+              );
+            }
+
+            const active = pathname === item.href || (item.href === "/browse" && pathname.startsWith("/browse"));
+
             return (
-              <button
-                key={item.label}
-                onClick={() => {
-                  if (isOpen) {
-                    closeCreateForm();
-                    return;
-                  }
-                  item.action?.();
-                }}
-                className={styles.item}
+              <Link
+                key={item.href}
+                href={item.href!}
+                className={`${styles.item} ${active ? styles.active : ""}`}
                 title={item.label}
+                onClick={() => {
+                  if (isOpen) closeCreateForm();
+                }}
               >
                 <span className={`material-symbols-outlined ${styles.icon}`}>
-                  {getItemIcon(item, false)}
+                  {getItemIcon(item, active)}
                 </span>
-              </button>
+                <span className={styles.label}>{item.label}</span>
+              </Link>
             );
-          }
-
-          const active = pathname === item.href || (item.href === "/browse" && pathname.startsWith("/browse"));
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href!}
-              className={`${styles.item} ${active ? styles.active : ""}`}
-              title={item.label}
-              onClick={() => {
-                if (isOpen) closeCreateForm();
-              }}
-            >
-              <span className={`material-symbols-outlined ${styles.icon}`}>
-                {getItemIcon(item, active)}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+          })}
+        </div>
+      </nav>
+      <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} />
+    </>
   );
 }

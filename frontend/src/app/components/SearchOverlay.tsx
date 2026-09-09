@@ -9,6 +9,7 @@ import { getVisibleTags } from "../utils/recipeTags";
 import { matchesTextSearch } from "../utils/textSearch";
 import { authFetch } from "../utils/authSession";
 import { type AccountIdentity } from "../utils/accountAvatar";
+import { getImageFocusStyle, type RecipeImageFocus } from "../utils/imageFocus";
 
 interface Recipe {
   id: string;
@@ -26,6 +27,7 @@ interface Recipe {
   ratingCount: number;
   createdAt: string;
   image?: string;
+  imageFocus?: RecipeImageFocus;
 }
 
 interface SearchOverlayProps {
@@ -277,7 +279,7 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                     }}
                   >
                     <div className={searchStyles.recipeImage}>
-                      {recipe.image ? <img src={recipe.image} alt={recipe.title} /> : <span className="material-symbols-outlined">restaurant</span>}
+                      {recipe.image ? <img src={recipe.image} alt={recipe.title} style={getImageFocusStyle(recipe.imageFocus?.card)} /> : <span className="material-symbols-outlined">restaurant</span>}
                     </div>
                     <div className={searchStyles.recipeBody}>
                       <h3>{recipe.title}</h3>

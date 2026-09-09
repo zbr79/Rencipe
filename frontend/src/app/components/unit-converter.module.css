@@ -48,9 +48,10 @@
 
 .input {
   flex-shrink: 0;
-  width: 48px;
-  padding: 4px 3px;
-  font-size: 12px;
+  width: 48px !important;
+  min-height: 0 !important;
+  padding: 4px 3px !important;
+  font-size: 12px !important;
   border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   border-radius: 8px;
   background: var(--hover-bg);
@@ -74,6 +75,22 @@
   background: var(--card-bg);
   border-color: var(--primary-strong);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-strong) 18%, transparent);
+}
+
+.inputInvalid {
+  border-color: var(--error);
+}
+
+.inputInvalid:focus {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 16%, transparent);
+}
+
+.inputHint {
+  margin: 1px 0 0 37px;
+  color: var(--error);
+  font-size: 10px;
+  font-weight: 650;
 }
 
 .inputResult {

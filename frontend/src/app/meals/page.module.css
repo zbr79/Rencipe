@@ -125,7 +125,7 @@
   border-color: color-mix(in srgb, var(--primary) 42%, var(--border));
 }
 
-.mealCard h3 {
+.mealCard h2 {
   margin: 0 0 6px;
   color: var(--foreground);
   font-size: 17px;
@@ -232,7 +232,7 @@
     border-radius: 10px;
   }
 
-  .mealCard h3 {
+  .mealCard h2 {
     font-size: 15px;
     font-weight: 600;
   }

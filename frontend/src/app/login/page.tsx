@@ -24,8 +24,8 @@ function LoginPageInner() {
   const searchParams = useSearchParams();
   const isAddAccount = searchParams.get("mode") === "add-account";
   const nextPath = getSafeNextPath(searchParams.get("next"));
-  const [username, setUsername] = useState(isAddAccount ? "" : "admin");
-  const [password, setPassword] = useState(isAddAccount ? "" : "admin");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +40,7 @@ function LoginPageInner() {
       user: data.user,
       signedInAt: new Date().toISOString(),
     });
-    router.replace(isAddAccount ? nextPath : "/");
+    router.replace(nextPath);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -75,6 +75,11 @@ function LoginPageInner() {
 
         <div className={styles.formHeader}>
           <h2>{isAddAccount ? "Add account" : "Welcome back"}</h2>
+          <p className={styles.formHelp}>
+            {isAddAccount
+              ? "Sign in with another existing account."
+              : "Sign in with an existing account. Forgot your password? Contact an administrator. Sign-up is not available for this demo."}
+          </p>
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit}>
@@ -108,11 +113,11 @@ function LoginPageInner() {
         </form>
 
         <div className={styles.formFooter}>
-          <button type="button" onClick={() => toastError("please contant admin")}>
+          <button type="button" onClick={() => toastError("Contact an administrator to reset your password.")}>
             Forgot password?
           </button>
           {!isAddAccount && (
-            <button type="button" onClick={() => toastError("sign up not open")}>
+            <button type="button" onClick={() => toastError("Sign up is temporarily disabled.")}>
               Sign up
             </button>
           )}

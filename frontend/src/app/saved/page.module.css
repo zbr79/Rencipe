@@ -163,6 +163,17 @@
   font-weight: 600;
 }
 
+.savedEmptyState {
+  min-height: 360px;
+  margin-top: 24px;
+}
+
+@media (max-width: 640px) {
+  .savedEmptyState {
+    min-height: 280px;
+  }
+}
+
 .createLink {
   display: inline-flex;
   align-items: center;
@@ -184,12 +195,10 @@
   }
 
   .pageHeader {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "title count"
-      "search search";
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "title search count";
     align-items: center;
-    gap: 10px 12px;
+    gap: 8px;
     margin-bottom: 12px;
   }
 
@@ -200,7 +209,10 @@
   .searchBar {
     grid-area: search;
     width: 100%;
-    max-width: none;
+    max-width: 140px;
+    min-width: 0;
+    justify-self: start;
+    padding-inline: 8px;
   }
 
   .pageCount {
