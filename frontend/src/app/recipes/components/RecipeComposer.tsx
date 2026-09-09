@@ -6,6 +6,7 @@ import styles from "./RecipeComposer.module.css";
 import { useCreateForm } from "../../contexts/CreateFormContext";
 import BackButton from "../../components/BackButton";
 import FloatingActionPanel from "../../components/FloatingActionPanel";
+import ImageFocusEditor from "../../components/ImageFocusEditor";
 import RecipeBasicsForm from "../../create/components/RecipeBasicsForm";
 import IngredientsSection from "../../create/components/IngredientsSection";
 import StepsSection from "../../create/components/StepsSection";
@@ -15,6 +16,7 @@ import { useConfirmDialog } from "../../components/ConfirmDialogProvider";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { useDraft } from "../../../hooks/useDraft";
 import { authFetch, getCurrentUser, getCurrentUserId, type AuthUser } from "../../utils/authSession";
+import { normalizeImageFocus, type RecipeImageFocus } from "../../utils/imageFocus";
 import {
   EMPTY_CREATE_VALIDATION,
   buildRecipeUpdatePayload,
@@ -57,6 +59,8 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
   const [error, setError] = useState("");
   const [recipeImage, setRecipeImage] = useState<string | null>(isCreateMode ? contextRecipeImage : null);
   const [recipeImageFile, setRecipeImageFile] = useState<File | null>(isCreateMode ? contextRecipeImageFile : null);
+  const [imageFocus, setImageFocus] = useState<RecipeImageFocus>(() => normalizeImageFocus());
+  const [focusEditorOpen, setFocusEditorOpen] = useState(false);
   const [originalRecipe, setOriginalRecipe] = useState<RecipeData | null>(null);
   const [originalStepImages, setOriginalStepImages] = useState<{ [key: number]: string }>({});
   const [formData, setFormData] = useState<RecipeFormData>(() => createInitialFormData());
@@ -169,7 +173,9 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
         }
 
         const normalizedRecipe = normalizeRecipeForm(recipe);
-        const signature = getRecipeUpdateSignature(normalizedRecipe, images);
+        const nextImageFocus = normalizeImageFocus(recipe.imageFocus);
+        const editableImageFocus = user?.role === "admin" ? nextImageFocus : undefined;
+        const signature = getRecipeUpdateSignature(normalizedRecipe, images, editableImageFocus);
 
         setOriginalRecipe(recipe);
         setOriginalStepImages(images);
@@ -178,6 +184,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
         setEditSaveMessage("All changes saved.");
         setFormData(normalizedRecipe);
         setRecipeImage(recipe.image || null);
+        setImageFocus(nextImageFocus);
         setRecipeImageFile(null);
         setStepImages(images);
         setStepImageFiles({});
@@ -530,6 +537,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
     nextStepImages,
     includeImage = false,
     nextRecipeImage = recipeImage,
+    nextImageFocus = currentUser?.role === "admin" ? imageFocus : undefined,
     successMessage,
     statusMessage = "All changes saved.",
     errorMessage,
@@ -538,6 +546,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
     nextStepImages: { [key: number]: string };
     includeImage?: boolean;
     nextRecipeImage?: string | null;
+    nextImageFocus?: RecipeImageFocus;
     successMessage?: string;
     statusMessage?: string;
     errorMessage?: string;
@@ -556,6 +565,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
           buildRecipeUpdatePayload(nextFormData, nextStepImages, {
             includeImage,
             recipeImage: nextRecipeImage,
+            imageFocus: nextImageFocus,
           })
         ),
       });
@@ -566,7 +576,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
       }
 
       await response.json().catch(() => null);
-      lastSavedEditSignatureRef.current = getRecipeUpdateSignature(nextFormData, nextStepImages);
+      lastSavedEditSignatureRef.current = getRecipeUpdateSignature(nextFormData, nextStepImages, nextImageFocus);
       setEditSaveState("saved");
       setEditSaveMessage(statusMessage);
 
@@ -735,7 +745,8 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
       return;
     }
 
-    const nextSignature = getRecipeUpdateSignature(formData, stepImages);
+    const editableImageFocus = currentUser?.role === "admin" ? imageFocus : undefined;
+    const nextSignature = getRecipeUpdateSignature(formData, stepImages, editableImageFocus);
     if (nextSignature === lastSavedEditSignatureRef.current) {
       if (editSaveState === "saving") {
         setEditSaveState("saved");
@@ -758,6 +769,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
       void persistEditRecipe({
         nextFormData: formData,
         nextStepImages: stepImages,
+        nextImageFocus: editableImageFocus,
       });
     }, 800);
 
@@ -771,6 +783,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
     };
   }, [
     deleting,
+    currentUser,
     editSaveState,
     formData,
     imageUploading,
@@ -779,6 +792,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
     originalRecipe,
     persistingEdit,
     recipeId,
+    imageFocus,
     stepImageUploadingCount,
     stepImages,
   ]);
@@ -796,11 +810,13 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
     const revertedFormData = normalizeRecipeForm(originalRecipe);
     const revertedStepImages = { ...originalStepImages };
     const revertedRecipeImage = originalRecipe.image || null;
+    const revertedImageFocus = normalizeImageFocus(originalRecipe.imageFocus);
     const reverted = await persistEditRecipe({
       nextFormData: revertedFormData,
       nextStepImages: revertedStepImages,
       includeImage: true,
       nextRecipeImage: revertedRecipeImage,
+      nextImageFocus: currentUser?.role === "admin" ? revertedImageFocus : undefined,
       successMessage: "Reverted recipe changes",
       statusMessage: "Original version restored.",
       errorMessage: "Could not revert recipe changes.",
@@ -812,6 +828,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
 
     setFormData(revertedFormData);
     setRecipeImage(revertedRecipeImage);
+    setImageFocus(revertedImageFocus);
     setRecipeImageFile(null);
     setStepImages(revertedStepImages);
     setStepImageFiles({});
@@ -857,10 +874,12 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
           ? "Keep editing"
           : "";
   const showEditStatusButton = Boolean(editStatusLabel);
+  const editableImageFocus = currentUser?.role === "admin" ? imageFocus : undefined;
   const hasRevertableRecipeChanges = originalRecipe
-    ? getRecipeUpdateSignature(formData, stepImages) !== getRecipeUpdateSignature(normalizeRecipeForm(originalRecipe), originalStepImages)
+    ? getRecipeUpdateSignature(formData, stepImages, editableImageFocus) !== getRecipeUpdateSignature(normalizeRecipeForm(originalRecipe), originalStepImages, currentUser?.role === "admin" ? normalizeImageFocus(originalRecipe.imageFocus) : undefined)
       || (recipeImage || "") !== (originalRecipe.image || "")
     : false;
+  const canAdjustImageFocus = isEditMode && currentUser?.role === "admin" && Boolean(recipeImage);
 
   return (
     <>
@@ -1008,6 +1027,17 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
             </button>
 
             <p className={styles.coverHint}>{imageUploading ? "Saving cover image..." : "Tap image to change cover"}</p>
+            {canAdjustImageFocus && (
+              <button
+                type="button"
+                className={styles.focusImageButton}
+                onClick={() => setFocusEditorOpen(true)}
+                disabled={actionBusy}
+              >
+                <span className="material-symbols-outlined" aria-hidden="true">center_focus_strong</span>
+                Adjust image focus
+              </button>
+            )}
           </div>
         ) : (
           <div className={styles.uploadPrompt}>
@@ -1150,6 +1180,20 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
           onChange={handleRecipeImageChange}
         />
       </div>
+      {canAdjustImageFocus && (
+        <ImageFocusEditor
+          open={focusEditorOpen}
+          image={recipeImage}
+          title={formData.title || "recipe"}
+          value={imageFocus}
+          onClose={() => setFocusEditorOpen(false)}
+          onSave={(nextFocus) => {
+            setImageFocus(nextFocus);
+            setFocusEditorOpen(false);
+            setEditSaveMessage("Saving image focus...");
+          }}
+        />
+      )}
     </>
   );
 }

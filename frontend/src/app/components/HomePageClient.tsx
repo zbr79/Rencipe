@@ -7,9 +7,11 @@ import styles from "../page.module.css";
 import { useSaved } from "../contexts/SavedContext";
 import RecipeCard from "./RecipeCard";
 import type { AccountIdentity } from "../utils/accountAvatar";
+import type { RecipeImageFocus } from "../utils/imageFocus";
 import UnitConverter from "./UnitConverter";
 import { authFetch } from "../utils/authSession";
 import { getRecipeAuthor } from "../utils/recipeAuthor";
+import { getImageFocusStyle } from "../utils/imageFocus";
 
 const TABS = [
   { id: "recommended", label: "Recommended" },
@@ -27,6 +29,7 @@ type Recipe = {
   author?: AccountIdentity | null;
   authorId?: string | AccountIdentity | null;
   image?: string;
+  imageFocus?: RecipeImageFocus;
   component?: boolean;
   servings?: number;
   tags?: string[];
@@ -331,6 +334,7 @@ export default function HomePage({
                         src={recipe.image!}
                         alt={recipe.title}
                         className={styles.slideImage}
+                        style={getImageFocusStyle(recipe.imageFocus?.hero)}
                         draggable={false}
                         fetchPriority={active ? "high" : undefined}
                         loading={active ? "eager" : "lazy"}
@@ -430,6 +434,7 @@ export default function HomePage({
                 title={r.title}
                 subtitle={r.subtitle}
                 image={r.image}
+                imageFocus={r.imageFocus}
                 author={author}
                 saved={saved}
                 onToggleSave={() => {

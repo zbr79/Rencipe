@@ -5,6 +5,7 @@ import { toastError, toastSuccess } from "../components/toast/toast";
 import { authFetch, getCurrentUser, getCurrentUserId } from "../utils/authSession";
 import { filterRecipesForUserLanguage, type RecipeLanguage } from "../utils/recipeLanguage";
 import type { AccountIdentity } from "../utils/accountAvatar";
+import type { RecipeImageFocus } from "../utils/imageFocus";
 
 export interface SavedRecipe {
   _id: string;
@@ -18,6 +19,7 @@ export interface SavedRecipe {
   component: boolean;
   servings: number;
   image?: string;
+  imageFocus?: RecipeImageFocus;
   mainIngredients: Array<{
     name: string;
     quantity: string;

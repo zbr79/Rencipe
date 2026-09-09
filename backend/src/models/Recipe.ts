@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
+import type { RecipeImageFocus } from "../utils/imageFocus";
 
 export type RecipeLanguage = "en" | "zh";
 
@@ -12,6 +13,7 @@ export interface IRecipe extends Document {
   sharedSourceLink?: string;
   authorId: mongoose.Types.ObjectId;
   image?: string;
+  imageFocus?: RecipeImageFocus;
   language: RecipeLanguage;
   component: boolean;
   isPublic: boolean;
@@ -71,6 +73,23 @@ const RecipeSchema = new Schema<IRecipe>(
     },
     authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     image: String,
+    imageFocus: {
+      card: {
+        x: { type: Number, min: 0, max: 100 },
+        y: { type: Number, min: 0, max: 100 },
+        zoom: { type: Number, min: 1, max: 2.5 },
+      },
+      hero: {
+        x: { type: Number, min: 0, max: 100 },
+        y: { type: Number, min: 0, max: 100 },
+        zoom: { type: Number, min: 1, max: 2.5 },
+      },
+      detail: {
+        x: { type: Number, min: 0, max: 100 },
+        y: { type: Number, min: 0, max: 100 },
+        zoom: { type: Number, min: 1, max: 2.5 },
+      },
+    },
     language: { type: String, enum: ["en", "zh"], default: "en", index: true },
     component: { type: Boolean, default: false },
     isPublic: { type: Boolean, default: false },
