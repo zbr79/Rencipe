@@ -488,7 +488,7 @@ const RECIPES = [
     ],
     servings: 4,
     tags: ["Cantonese", "Noodles", "Soup", "Beef", "Dinner"],
-    image: "https://thewoksoflife.com/wp-content/uploads/2017/03/beef-noodle-soup-16.jpg",
+    image: "https://thewoksoflife.com/wp-content/uploads/2017/03/beef-noodle-soup-18.jpg",
     views: 660, likes: 75, ratingAverage: 4.6, ratingCount: 43,
   },
 ];

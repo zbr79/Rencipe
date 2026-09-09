@@ -87,7 +87,7 @@ const RECIPES = [
     ],
     servings: 4,
     tags: ["Chinese", "Cantonese", "Pork", "Dinner", "Family"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/9/95/Charsiu.jpg",
+    image: "https://thewoksoflife.com/wp-content/uploads/2019/04/char-siu-recipe-15.jpg",
     views: 760, likes: 88, ratingAverage: 4.6, ratingCount: 58,
   },
   {
@@ -114,7 +114,7 @@ const RECIPES = [
     ],
     servings: 4,
     tags: ["Chinese", "Pork", "Dinner", "Family", "Easy"],
-    image: "https://www.recipetineats.com/uploads/2020/08/Sweet-and-Sour-Pork_6.jpg",
+    image: "https://www.recipetineats.com/tachyon/2020/08/Sweet-and-Sour-Pork_8.jpg",
     views: 690, likes: 74, ratingAverage: 4.4, ratingCount: 49,
   },
   {
@@ -406,7 +406,7 @@ const RECIPES = [
     ],
     servings: 4,
     tags: ["Korean", "Rice", "Beef", "Healthy", "Lunch"],
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Korean.food-Bibimbap-02.jpg/960px-Korean.food-Bibimbap-02.jpg",
+    image: "https://www.koreanbapsang.com/wp-content/uploads/2018/09/DSC3899-4.jpg",
     views: 950, likes: 118, ratingAverage: 4.8, ratingCount: 73,
   },
   {
@@ -513,7 +513,7 @@ const RECIPES = [
     ],
     servings: 4,
     tags: ["Korean", "Beef", "Dinner", "Easy", "Family"],
-    image: "https://www.koreanbapsang.com/wp-content/uploads/2019/04/DSC_0814.jpg",
+    image: "https://www.koreanbapsang.com/wp-content/uploads/2015/02/DSC_0847.jpg",
     views: 810, likes: 93, ratingAverage: 4.6, ratingCount: 56,
   },
   {
@@ -539,7 +539,7 @@ const RECIPES = [
     ],
     servings: 3,
     tags: ["Japanese", "Chicken", "Dinner", "Quick", "Easy"],
-    image: "https://www.justonecookbook.com/wp-content/uploads/2017/09/Chicken-Teriyaki-recipe.jpg",
+    image: "https://www.justonecookbook.com/wp-content/uploads/2024/04/Chicken-Teriyaki-7895-I-1.jpg",
     views: 700, likes: 71, ratingAverage: 4.5, ratingCount: 44,
   },
   {
