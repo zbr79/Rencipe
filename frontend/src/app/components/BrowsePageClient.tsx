@@ -173,8 +173,8 @@ export default function BrowsePage() {
 
       setAllRecipes((recipeData.recipes || []) as Recipe[]);
       setAllMeals((mealData.meals || []) as Meal[]);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load browse results");
       console.error(err);
     } finally {
       setLoading(false);
@@ -266,7 +266,7 @@ export default function BrowsePage() {
 
       <div className={styles.resultsHeader}>
         <div className={styles.resultsTitleGroup}>
-          <h2>Browse</h2>
+          <h1>Browse</h1>
         </div>
         <div className={styles.sortToggle} aria-label="Recipe sort">
           <button

@@ -61,7 +61,7 @@ export default function BottomNav() {
 
   return (
     <>
-      <nav className={styles.nav}>
+      <nav className={styles.nav} aria-label="Mobile navigation">
         <div className={styles.navItems}>
           {navItems.map((item) => {
             if (item.action) {

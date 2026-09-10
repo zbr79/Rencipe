@@ -386,43 +386,41 @@ export default function RecipeDetailPage({
 
         </div>
 
-        {currentUser && currentUser.role !== "guest" && (
-          <CommentSection
-            entryType="recipe"
-            entryId={recipeId}
-            card
-            title="Reviews"
-            ratingSlot={
-              <div className={styles.mergedRating}>
-                <span className={styles.mergedRatingLabel}>Rate this recipe</span>
-                <div className={styles.ratingButtons}>
-                  {Array.from({ length: 5 }, (_, index) => {
-                    const rating = index + 1;
-                    return (
-                      <button
-                        key={rating}
-                        type="button"
-                        className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""} ${ratingSubmitted ? styles.starButtonDone : ""}`}
-                        onClick={() => handleRatingSubmit(rating)}
-                        disabled={ratingSubmitting || ratingSubmitted}
-                        aria-label={`Rate ${rating} star${rating === 1 ? "" : "s"}`}
-                      >
-                        <span className="material-symbols-outlined">star</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {ratingSubmitting ? (
-                  <span className={styles.ratingMessage}>Submitting...</span>
-                ) : ratingSubmitted ? (
-                  <span className={styles.ratingMessage}>You rated this {selectedRating}/5</span>
-                ) : (
-                  ratingMessage && <span className={styles.ratingMessage}>{ratingMessage}</span>
-                )}
+        <CommentSection
+          entryType="recipe"
+          entryId={recipeId}
+          card
+          title="Reviews"
+          ratingSlot={
+            <div className={styles.mergedRating}>
+              <span className={styles.mergedRatingLabel}>Rate this recipe</span>
+              <div className={styles.ratingButtons}>
+                {Array.from({ length: 5 }, (_, index) => {
+                  const rating = index + 1;
+                  return (
+                    <button
+                      key={rating}
+                      type="button"
+                      className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""} ${ratingSubmitted ? styles.starButtonDone : ""}`}
+                      onClick={() => handleRatingSubmit(rating)}
+                      disabled={ratingSubmitting || ratingSubmitted}
+                      aria-label={`Rate ${rating} star${rating === 1 ? "" : "s"}`}
+                    >
+                      <span className="material-symbols-outlined">star</span>
+                    </button>
+                  );
+                })}
               </div>
-            }
-          />
-        )}
+              {ratingSubmitting ? (
+                <span className={styles.ratingMessage}>Submitting...</span>
+              ) : ratingSubmitted ? (
+                <span className={styles.ratingMessage}>You rated this {selectedRating}/5</span>
+              ) : (
+                ratingMessage && <span className={styles.ratingMessage}>{ratingMessage}</span>
+              )}
+            </div>
+          }
+        />
     </main>
   );
 }

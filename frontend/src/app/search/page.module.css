@@ -172,6 +172,7 @@
 }
 
 .sectionHeader h2,
+.resultsHeader h1,
 .resultsHeader h2 {
   margin: 0;
   color: var(--text-primary);
@@ -1227,6 +1228,7 @@
     font-weight: 600;
   }
 
+  .resultsHeader h1,
   .resultsHeader h2 {
     font-size: 22px;
     font-weight: 600;
