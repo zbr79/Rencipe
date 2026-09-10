@@ -10,6 +10,7 @@ import { matchesTextSearch } from "../utils/textSearch";
 import { authFetch } from "../utils/authSession";
 import { type AccountIdentity } from "../utils/accountAvatar";
 import { getImageFocusStyle, type RecipeImageFocus } from "../utils/imageFocus";
+import { getErrorMessage } from "../utils/errorMessage";
 
 interface Recipe {
   id: string;
@@ -101,8 +102,8 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
         if (ignore) return;
 
         setAllRecipes((data.recipes || []) as Recipe[]);
-      } catch (fetchError: any) {
-        if (!ignore) setError(fetchError.message || "Failed to fetch recipes");
+      } catch (fetchError: unknown) {
+        if (!ignore) setError(getErrorMessage(fetchError, "Failed to fetch recipes"));
       } finally {
         if (!ignore) {
           setLoading(false);

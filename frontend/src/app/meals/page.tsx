@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { useConfirmDialog } from "../components/ConfirmDialogProvider";
-import { useSaved } from "../contexts/SavedContext";
+import { useSaved, type Meal } from "../contexts/SavedContext";
 import { useQuickCreateMeal } from "../hooks/useQuickCreateMeal";
 import { getMealDisplayName } from "../utils/mealDisplay";
 import EmptyState from "../components/EmptyState";
@@ -47,9 +47,9 @@ export default function MealsPage() {
   const loading = loadingMeals;
   const visibleMeals = meals.filter((meal) => meal.kind === "meal");
   const hasMeals = visibleMeals.length > 0;
-  const getMealRecipeCount = (meal: any) => {
-    const scheduledCount = (meal.days || []).reduce((total: number, day: any) => {
-      return total + (day.meals || []).reduce((mealTotal: number, meal: any) => mealTotal + (meal.recipes?.length || 0), 0);
+  const getMealRecipeCount = (meal: Meal) => {
+    const scheduledCount = (meal.days || []).reduce((total, day) => {
+      return total + (day.meals || []).reduce((mealTotal, scheduledMeal) => mealTotal + (scheduledMeal.recipes?.length || 0), 0);
     }, 0);
     return scheduledCount || meal.recipes?.length || 0;
   };

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./page.module.css";
 import { toastError } from "../components/toast/toast";
 import { writeAuthSession } from "../utils/authSession";
+import { getErrorMessage } from "../utils/errorMessage";
 
 function getSafeNextPath(value: string | null) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) return "/";
@@ -34,7 +35,7 @@ function LoginPageInner() {
     return () => document.body.classList.remove("loginScreen");
   }, []);
 
-  const finishLogin = (data: any) => {
+  const finishLogin = (data: { token: string; user: Parameters<typeof writeAuthSession>[0]["user"] }) => {
     writeAuthSession({
       token: data.token,
       user: data.user,
@@ -62,8 +63,8 @@ function LoginPageInner() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to sign in.");
       finishLogin(data);
-    } catch (err: any) {
-      setError(err.message || "Unable to sign in.");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Unable to sign in."));
       setLoading(false);
     }
   };

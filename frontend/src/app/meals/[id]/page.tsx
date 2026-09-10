@@ -11,9 +11,11 @@ import { useConfirmDialog } from "../../components/ConfirmDialogProvider";
 import { useSaved } from "../../contexts/SavedContext";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { authFetch, getCurrentUser, getCurrentUserId, type AuthUser } from "../../utils/authSession";
+import type { AccountIdentity } from "../../utils/accountAvatar";
 import { filterRecipesForUserLanguage, isRecipeRelevantToUserLanguage, type RecipeLanguage } from "../../utils/recipeLanguage";
 import { matchesTextSearch } from "../../utils/textSearch";
 import { readRecentlyViewedRecipes, type RecentlyViewedRecipe } from "../../utils/recentlyViewedRecipes";
+import { getErrorMessage } from "../../utils/errorMessage";
 import styles from "./page.module.css";
 
 type MealType = "breakfast" | "lunch" | "dinner";
@@ -59,7 +61,7 @@ interface MealScheduleDay {
 interface Meal {
   _id: string;
   kind?: MealEntryKind;
-  userId: string;
+  userId: string | AccountIdentity;
   name: string;
   people: Person[];
   numberOfDays?: number;
@@ -264,8 +266,8 @@ function getSettingsFromMeal(meal: Meal): {
 }
 
 function getMealOwnerId(meal: Meal | null) {
-  const owner = meal?.userId as any;
-  return String(owner?._id || owner?.id || owner || "");
+  const owner = meal?.userId;
+  return typeof owner === "string" ? owner : owner?.id || "";
 }
 
 function getInitialSlot(meal: Meal): ActiveSlot | null {
@@ -441,8 +443,8 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
         if (shouldAutoEdit) {
           window.history.replaceState(window.history.state, "", `/meals/${normalizedMeal._id}`);
         }
-      } catch (err: any) {
-        setError(err.message || "Failed to load meal");
+      } catch (err: unknown) {
+        setError(getErrorMessage(err, "Failed to load meal"));
       } finally {
         setLoading(false);
       }
@@ -517,10 +519,10 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
       setDraftSaveState("saved");
       setDraftSaveMessage("Draft saved.");
       return savedDraft;
-    } catch (err: any) {
+    } catch (err: unknown) {
       setDraftSaveState("error");
-      setDraftSaveMessage(err.message || "Could not save meal draft.");
-      toastError(err.message || "Could not save meal draft");
+      setDraftSaveMessage(getErrorMessage(err, "Could not save meal draft."));
+      toastError(getErrorMessage(err, "Could not save meal draft"));
       return null;
     }
   }
@@ -585,8 +587,8 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
       setDraftSaveMessage("");
       toastSuccess("Meal created successfully.");
       window.history.replaceState(window.history.state, "", `/meals/${normalizedMeal._id}`);
-    } catch (err: any) {
-      const nextMessage = err.message || "Could not create meal.";
+    } catch (err: unknown) {
+      const nextMessage = getErrorMessage(err, "Could not create meal.");
       setSettingsSaveState("error");
       setSettingsSaveMessage(nextMessage);
       toastError(nextMessage);
@@ -709,8 +711,8 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
       }
       if (successMessage) toastSuccess(successMessage);
       return true;
-    } catch (err: any) {
-      toastError(err.message || "Could not update meal");
+    } catch (err: unknown) {
+      toastError(getErrorMessage(err, "Could not update meal"));
       return false;
     } finally {
       setSaving(false);
@@ -827,8 +829,8 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
       }
 
       return true;
-    } catch (err: any) {
-      const nextMessage = err.message || options?.errorMessage || "Could not save settings";
+    } catch (err: unknown) {
+      const nextMessage = getErrorMessage(err, options?.errorMessage || "Could not save settings");
       setSettingsSaveState("error");
       setSettingsSaveMessage(nextMessage);
       toastError(nextMessage);

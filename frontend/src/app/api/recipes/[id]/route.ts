@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getErrorMessage } from "../../../utils/errorMessage";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:6000";
 
@@ -11,7 +12,7 @@ function forwardHeaders(request: NextRequest) {
 
 async function backendJson(response: Response) {
   const text = await response.text();
-  let data: any = {};
+  let data: unknown = {};
   if (text) {
     try {
       data = JSON.parse(text);
@@ -34,9 +35,9 @@ export async function GET(
     });
 
     return backendJson(response);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("API error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error, "Recipe fetch failed") }, { status: 500 });
   }
 }
 
@@ -55,9 +56,9 @@ export async function PUT(
     });
 
     return backendJson(response);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("API error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error, "Recipe update failed") }, { status: 500 });
   }
 }
 
@@ -74,8 +75,8 @@ export async function DELETE(
     });
 
     return backendJson(response);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("API error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error, "Recipe deletion failed") }, { status: 500 });
   }
 }

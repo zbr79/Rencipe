@@ -16,6 +16,7 @@ import { useConfirmDialog } from "../../components/ConfirmDialogProvider";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { useDraft } from "../../../hooks/useDraft";
 import { authFetch, getCurrentUser, getCurrentUserId, type AuthUser } from "../../utils/authSession";
+import { getErrorMessage } from "../../utils/errorMessage";
 import { normalizeImageFocus, type RecipeImageFocus } from "../../utils/imageFocus";
 import {
   EMPTY_CREATE_VALIDATION,
@@ -189,8 +190,8 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
         setStepImages(images);
         setStepImageFiles({});
         setTagsInput("");
-      } catch (err: any) {
-        setError(err.message || "Failed to load recipe");
+      } catch (err: unknown) {
+        setError(getErrorMessage(err, "Failed to load recipe"));
         console.error(err);
       } finally {
         setLoading(false);
@@ -303,11 +304,12 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
       setRecipeImageFile(null);
       setEditSaveState("saved");
       setEditSaveMessage("Cover image saved.");
-    } catch (err: any) {
+    } catch (err: unknown) {
       setRecipeImage(previousImage);
       setEditSaveState("error");
-      setEditSaveMessage(err.message || "Could not save cover image.");
-      toastError(err.message || "Could not save cover image");
+      const message = getErrorMessage(err, "Could not save cover image.");
+      setEditSaveMessage(message);
+      toastError(message);
     } finally {
       setImageUploading(false);
     }
@@ -372,7 +374,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
       }));
       setEditSaveState("saved");
       setEditSaveMessage(`Step ${stepNumber} image saved.`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStepImages((prev) => {
         const updated = { ...prev };
         if (previousImage) {
@@ -383,8 +385,9 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
         return updated;
       });
       setEditSaveState("error");
-      setEditSaveMessage(err.message || `Could not save step ${stepNumber} image.`);
-      toastError(err.message || `Could not save step ${stepNumber} image`);
+      const message = getErrorMessage(err, `Could not save step ${stepNumber} image.`);
+      setEditSaveMessage(message);
+      toastError(message);
     } finally {
       setStepImageUploadingCount((current) => Math.max(0, current - 1));
     }
@@ -585,8 +588,8 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
       }
 
       return true;
-    } catch (err: any) {
-      const nextMessage = err.message || errorMessage || "Could not save recipe changes.";
+    } catch (err: unknown) {
+      const nextMessage = getErrorMessage(err, errorMessage || "Could not save recipe changes.");
       setEditSaveState("error");
       setEditSaveMessage(nextMessage);
       toastError(nextMessage);
@@ -671,9 +674,9 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
       window.setTimeout(() => {
         router.push(`/recipes/${createdRecipeId}`);
       }, 1500);
-    } catch (submitError: any) {
+    } catch (submitError: unknown) {
       console.error("Error in handleCreateSubmit:", submitError);
-      toastError(submitError.message || String(submitError));
+      toastError(getErrorMessage(submitError, "Could not create recipe."));
     } finally {
       setSubmitting(false);
     }
@@ -718,10 +721,10 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
       }
       toastSuccess("Moved to Trash");
       router.push("/my-work?kind=trash");
-    } catch (deleteError: any) {
+    } catch (deleteError: unknown) {
       await notify({
         title: "Delete failed",
-        message: `Delete failed: ${deleteError.message || "Unknown error"}`,
+        message: `Delete failed: ${getErrorMessage(deleteError)}`,
         intent: "danger",
       });
       setDeleting(false);

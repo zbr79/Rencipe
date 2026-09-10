@@ -17,8 +17,9 @@ import { authFetch, getCurrentUser, type AuthUser } from "../../utils/authSessio
 import type { RecipeLanguage } from "../../utils/recipeLanguage";
 import styles from "./page.module.css";
 import { recordRecentlyViewedRecipe } from "../../utils/recentlyViewedRecipes";
+import { getErrorMessage } from "../../utils/errorMessage";
 
-interface Recipe {
+export interface Recipe {
   id: string;
   title: string;
   subtitle?: string;
@@ -120,8 +121,8 @@ export default function RecipeDetailPage({
       setSelectedRating(0);
       setRatingMessage("");
       setRatingSubmitted(false);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
       console.error(err);
     } finally {
       setLoading(false);
@@ -140,8 +141,8 @@ export default function RecipeDetailPage({
       } else {
         await saveRecipe(undefined, recipeId);
       }
-    } catch (err: any) {
-      toastError(err.message || "Could not update saved recipe");
+    } catch (err: unknown) {
+      toastError(getErrorMessage(err, "Could not update saved recipe"));
     } finally {
       setIsSavingRecipe(false);
     }
@@ -165,8 +166,8 @@ export default function RecipeDetailPage({
       setRecipe(data.recipe);
       setRatingMessage("Rating submitted");
       setRatingSubmitted(true);
-    } catch (err: any) {
-      setRatingMessage(err.message || "Rating failed");
+    } catch (err: unknown) {
+      setRatingMessage(getErrorMessage(err, "Rating failed"));
     } finally {
       setRatingSubmitting(false);
     }
