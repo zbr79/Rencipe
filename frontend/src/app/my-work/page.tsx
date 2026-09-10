@@ -9,6 +9,7 @@ import { toastError, toastSuccess } from "../components/toast/toast";
 import { useSaved, type Meal } from "../contexts/SavedContext";
 import { authFetch, getCurrentUser, type AuthUser } from "../utils/authSession";
 import type { AccountIdentity } from "../utils/accountAvatar";
+import { getErrorMessage } from "../utils/errorMessage";
 import styles from "./page.module.css";
 
 type VisibilityTab = "private" | "public";
@@ -138,8 +139,8 @@ function MyWorkPageInner() {
       if (!response.ok) throw new Error("Failed to fetch recipes");
       const data = await response.json();
       setRecipes((data.recipes || []) as Recipe[]);
-    } catch (err: any) {
-      setError(err.message || "Failed to load work");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to load work"));
       setRecipes([]);
     } finally {
       setLoadingRecipes(false);
@@ -168,8 +169,8 @@ function MyWorkPageInner() {
       const mealData = await mealResponse.json();
       setTrashRecipes((recipeData.recipes || []) as Recipe[]);
       setTrashMeals((mealData.meals || []) as Meal[]);
-    } catch (err: any) {
-      setError(err.message || "Failed to load trash");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to load trash"));
       setTrashRecipes([]);
       setTrashMeals([]);
     } finally {
@@ -187,8 +188,8 @@ function MyWorkPageInner() {
       if (!response.ok) throw new Error("Restore failed");
       await Promise.all([fetchRecipes(), fetchMeals(), fetchTrash(currentUser?.id || "")]);
       toastSuccess(`${item.title} restored`);
-    } catch (err: any) {
-      toastError(err.message || "Could not restore item");
+    } catch (err: unknown) {
+      toastError(getErrorMessage(err, "Could not restore item"));
     } finally {
       setRestoringId("");
     }

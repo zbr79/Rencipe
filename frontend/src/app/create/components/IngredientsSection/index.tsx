@@ -30,13 +30,13 @@ export default function IngredientsSection({
   onRemoveSeasonings,
   onAddSeasonings,
 }: IngredientsSectionProps) {
-  const handleMainEditChange = (index: number, field: keyof Ingredient, value: any) => {
+  const handleMainEditChange = (index: number, field: keyof Ingredient, value: string) => {
     const updated = [...mainIngredients];
     updated[index] = { ...updated[index], [field]: value };
     onMainIngredientsChange(updated);
   };
 
-  const handleSeasoningEditChange = (index: number, field: keyof Ingredient, value: any) => {
+  const handleSeasoningEditChange = (index: number, field: keyof Ingredient, value: string) => {
     const updated = [...seasonings];
     updated[index] = { ...updated[index], [field]: value };
     onSeasoningsChange(updated);

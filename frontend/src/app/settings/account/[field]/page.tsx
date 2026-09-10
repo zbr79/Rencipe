@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Breadcrumbs from "../../../components/Breadcrumbs";
 import { toastError, toastSuccess } from "../../../components/toast/toast";
 import { authFetch, readAuthSession, writeAuthSession, type AuthSession, type AuthUser } from "../../../utils/authSession";
+import { getErrorMessage } from "../../../utils/errorMessage";
 import styles from "../../page.module.css";
 
 type EditableField = "display-name" | "email" | "phone";
@@ -127,8 +128,8 @@ export default function EditAccountFieldPage() {
       setFieldValue(resolveFieldValue(data.user, config.valueKey));
       toastSuccess(config.successMessage);
       router.replace("/settings/account");
-    } catch (error: any) {
-      toastError(error.message || "Failed to update profile");
+    } catch (error: unknown) {
+      toastError(getErrorMessage(error, "Failed to update profile"));
     } finally {
       setSaving(false);
     }

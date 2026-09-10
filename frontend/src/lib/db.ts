@@ -1,19 +1,21 @@
 import mongoose from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI!;
+type MongooseCache = {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+};
 
 if (!MONGODB_URI) {
   throw new Error("MONGODB_URI is not defined");
 }
 
-let cached = (global as any).mongoose;
-
-if (!cached) {
-  cached = (global as any).mongoose = {
+const globalWithMongoose = globalThis as typeof globalThis & { mongoose?: MongooseCache };
+const cached: MongooseCache = globalWithMongoose.mongoose ?? {
     conn: null,
     promise: null,
   };
-}
+globalWithMongoose.mongoose = cached;
 
 export async function connectDB() {
   if (cached.conn) return cached.conn;

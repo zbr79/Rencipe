@@ -10,6 +10,7 @@ import { useConfirmDialog } from "../components/ConfirmDialogProvider";
 import { authFetch, getCurrentUserId } from "../utils/authSession";
 import { matchesTextSearch } from "../utils/textSearch";
 import { useSwipeRowDrag } from "../hooks/useSwipeRowDrag";
+import { getErrorMessage } from "../utils/errorMessage";
 
 interface Draft {
   _id: string;
@@ -44,8 +45,8 @@ export default function DraftsPage() {
       if (!response.ok) throw new Error("Failed to fetch drafts");
       const data = await response.json();
       setDrafts(data.drafts || []);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
       console.error("Error fetching drafts:", err);
     } finally {
       setLoading(false);
@@ -72,10 +73,10 @@ export default function DraftsPage() {
       });
       if (!response.ok) throw new Error("Failed to delete draft");
       setDrafts(drafts.filter((d) => d._id !== draftId));
-    } catch (err: any) {
+    } catch (err: unknown) {
       await notify({
         title: "Delete failed",
-        message: `Delete failed: ${err.message}`,
+        message: `Delete failed: ${getErrorMessage(err)}`,
         intent: "danger",
       });
     }

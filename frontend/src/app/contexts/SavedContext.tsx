@@ -6,6 +6,7 @@ import { authFetch, getCurrentUser, getCurrentUserId } from "../utils/authSessio
 import { filterRecipesForUserLanguage, type RecipeLanguage } from "../utils/recipeLanguage";
 import type { AccountIdentity } from "../utils/accountAvatar";
 import type { RecipeImageFocus } from "../utils/imageFocus";
+import { getErrorMessage } from "../utils/errorMessage";
 
 export interface SavedRecipe {
   _id: string;
@@ -154,9 +155,9 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       const recipes = filterRecipesForUserLanguage((saved.recipes || []) as SavedRecipe[], getCurrentUser());
       setSavedRecipes(recipes);
       setSavedMeals((saved.meals || []) as Meal[]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching saved items:", err);
-      setErrorSaved(err.message);
+      setErrorSaved(getErrorMessage(err));
       setSavedRecipes([]);
       setSavedMeals([]);
     } finally {
@@ -188,10 +189,10 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       setSavedRecipes(recipes);
       setSavedMeals((saved.meals || []) as Meal[]);
       toastSuccess("Saved recipe");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error saving recipe:", err);
-      setErrorSaved(err.message);
-      toastError(err.message || "Could not save recipe");
+      setErrorSaved(getErrorMessage(err));
+      toastError(getErrorMessage(err, "Could not save recipe"));
     }
   };
 
@@ -216,10 +217,10 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       setSavedRecipes(recipes);
       setSavedMeals((saved.meals || []) as Meal[]);
       toastSuccess("Unsaved recipe");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error unsaving recipe:", err);
-      setErrorSaved(err.message);
-      toastError(err.message || "Could not unsave recipe");
+      setErrorSaved(getErrorMessage(err));
+      toastError(getErrorMessage(err, "Could not unsave recipe"));
     }
   };
 
@@ -249,10 +250,10 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       const saved = data.saved || {};
       setSavedMeals((saved.meals || []) as Meal[]);
       toastSuccess("Saved meal");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error saving meal:", err);
-      setErrorSaved(err.message);
-      toastError(err.message || "Could not save meal");
+      setErrorSaved(getErrorMessage(err));
+      toastError(getErrorMessage(err, "Could not save meal"));
     }
   };
 
@@ -275,10 +276,10 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       const saved = data.saved || {};
       setSavedMeals((saved.meals || []) as Meal[]);
       toastSuccess("Unsaved meal");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error unsaving meal:", err);
-      setErrorSaved(err.message);
-      toastError(err.message || "Could not unsave meal");
+      setErrorSaved(getErrorMessage(err));
+      toastError(getErrorMessage(err, "Could not unsave meal"));
     }
   };
 
@@ -302,9 +303,9 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       }
       const data = await response.json();
       setMeals(data.meals || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching meals:", err);
-      setErrorMeals(err.message);
+      setErrorMeals(getErrorMessage(err));
       setMeals([]);
     } finally {
       setLoadingMeals(false);
@@ -334,9 +335,9 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       setMeals([data.meal, ...meals]);
       return data.meal;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error creating meal:", err);
-      setErrorMeals(err.message);
+      setErrorMeals(getErrorMessage(err));
       throw err;
     }
   };
@@ -358,9 +359,9 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         meals.map((meal) => (meal._id === mealId ? data.meal : meal))
       );
       return data.meal;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error renaming meal:", err);
-      setErrorMeals(err.message);
+      setErrorMeals(getErrorMessage(err));
       throw err;
     }
   };
@@ -377,9 +378,9 @@ export function SavedProvider({ children }: { children: ReactNode }) {
 
       setMeals(meals.filter((meal) => meal._id !== mealId));
       toastSuccess("Moved to Trash");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error deleting meal:", err);
-      setErrorMeals(err.message);
+      setErrorMeals(getErrorMessage(err));
       throw err;
     }
   };
@@ -401,9 +402,9 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         meals.map((meal) => (meal._id === mealId ? data.meal : meal))
       );
       return data.meal;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error adding recipe to meal:", err);
-      setErrorMeals(err.message);
+      setErrorMeals(getErrorMessage(err));
       throw err;
     }
   };
