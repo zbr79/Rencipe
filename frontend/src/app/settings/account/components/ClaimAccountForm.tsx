@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { authFetch, writeAuthSession, type AuthSession } from "../../../utils/authSession";
 import { toastError, toastSuccess } from "../../../components/toast/toast";
+import { getErrorMessage } from "../../../utils/errorMessage";
 import styles from "./claim-account.module.css";
 
 interface ClaimAccountFormProps {
@@ -40,8 +41,8 @@ export default function ClaimAccountForm({ onClaimed }: ClaimAccountFormProps) {
       writeAuthSession(nextSession);
       onClaimed(nextSession);
       toastSuccess("Account created — your data is now linked to it.");
-    } catch (err: any) {
-      toastError(err.message || "Could not create account");
+    } catch (err: unknown) {
+      toastError(getErrorMessage(err, "Could not create account"));
     } finally {
       setBusy(false);
     }

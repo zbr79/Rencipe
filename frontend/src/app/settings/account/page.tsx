@@ -8,6 +8,7 @@ import Breadcrumbs from "../../components/Breadcrumbs";
 import ClaimAccountForm from "./components/ClaimAccountForm";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { authFetch, removeSignedInAccount, readAuthSession, writeAuthSession, type AuthSession } from "../../utils/authSession";
+import { getErrorMessage } from "../../utils/errorMessage";
 import styles from "../page.module.css";
 
 const profileItems = [
@@ -116,8 +117,8 @@ export default function AccountSettingsPage() {
       writeAuthSession(nextSession);
       setSession(nextSession);
       toastSuccess("Profile photo updated");
-    } catch (error: any) {
-      toastError(error.message || "Failed to upload profile photo");
+    } catch (error: unknown) {
+      toastError(getErrorMessage(error, "Failed to upload profile photo"));
     } finally {
       setAvatarUploading(false);
     }
@@ -166,8 +167,8 @@ export default function AccountSettingsPage() {
       setPasswordForm({ currentPassword: "", newPassword: "" });
       setPasswordModalOpen(false);
       toastSuccess("Password updated");
-    } catch (error: any) {
-      toastError(error.message || "Failed to update password");
+    } catch (error: unknown) {
+      toastError(getErrorMessage(error, "Failed to update password"));
     } finally {
       setSavingPassword(false);
     }

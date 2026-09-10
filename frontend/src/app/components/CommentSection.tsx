@@ -3,6 +3,7 @@
 import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { toastError } from "./toast/toast";
 import { authFetch, readAuthSession } from "../utils/authSession";
+import { getErrorMessage } from "../utils/errorMessage";
 import styles from "./comment-section.module.css";
 
 type CommentEntryType = "recipe" | "meal";
@@ -37,6 +38,7 @@ export default function CommentSection({ entryType, entryId, card = false, title
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const canUpvoteComments = readAuthSession()?.user.role !== "guest";
 
   useEffect(() => {
     let active = true;
@@ -45,12 +47,15 @@ export default function CommentSection({ entryType, entryId, card = false, title
       setLoading(true);
       try {
         const response = await authFetch(`/api/comments/${entryType}/${entryId}`);
-        if (!response.ok) throw new Error("Failed to load comments");
+        if (!response.ok) {
+          if (response.status === 401 && !readAuthSession()) return;
+          throw new Error("Failed to load comments");
+        }
         const data = await response.json();
         if (!active) return;
         setComments(data.comments || []);
-      } catch (error: any) {
-        if (active) toastError(error.message || "Could not load comments");
+      } catch (error: unknown) {
+        if (active) toastError(getErrorMessage(error, "Could not load comments"));
       } finally {
         if (active) setLoading(false);
       }
@@ -91,8 +96,8 @@ export default function CommentSection({ entryType, entryId, card = false, title
       if (!response.ok) throw new Error(data.error || "Could not post comment");
       setComments((current) => [data.comment, ...current]);
       setCommentText("");
-    } catch (error: any) {
-      toastError(error.message || "Could not post comment");
+    } catch (error: unknown) {
+      toastError(getErrorMessage(error, "Could not post comment"));
     } finally {
       setSubmitting(false);
     }
@@ -107,8 +112,8 @@ export default function CommentSection({ entryType, entryId, card = false, title
         setComments((current) => current.map((comment) => comment._id === commentId ? data.comment : comment));
       }
       return true;
-    } catch (error: any) {
-      toastError(error.message || "Comment update failed");
+    } catch (error: unknown) {
+      toastError(getErrorMessage(error, "Comment update failed"));
       return false;
     }
   }
@@ -143,10 +148,17 @@ export default function CommentSection({ entryType, entryId, card = false, title
               </div>
               <p>{comment.text}</p>
               <div className={styles.commentActions}>
-                <button type="button" className={comment.upvotedByCurrentUser ? styles.actionActive : ""} onClick={() => updateComment(comment._id, `/api/comments/${comment._id}/upvote`)}>
-                  <span className="material-symbols-outlined">thumb_up</span>
-                  {comment.upvotes}
-                </button>
+                {canUpvoteComments && (
+                  <button
+                    type="button"
+                    className={comment.upvotedByCurrentUser ? styles.actionActive : ""}
+                    onClick={() => updateComment(comment._id, `/api/comments/${comment._id}/upvote`)}
+                    aria-label={comment.upvotedByCurrentUser ? "Unlike comment" : "Like comment"}
+                  >
+                    <span className="material-symbols-outlined">thumb_up</span>
+                    {comment.upvotes}
+                  </button>
+                )}
                 {comment.canDelete && <button type="button" className={styles.actionDelete} onClick={() => handleDeleteComment(comment._id)}>Delete</button>}
               </div>
             </article>

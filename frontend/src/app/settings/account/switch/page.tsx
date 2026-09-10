@@ -28,6 +28,8 @@ export default function SwitchAccountPage() {
   const [accounts, setAccounts] = useState<AuthSession[]>([]);
 
   useEffect(() => {
+    // Initialize this browser-only account page from localStorage after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveSession(readAuthSession());
     setAccounts(readSignedInAccounts());
   }, []);

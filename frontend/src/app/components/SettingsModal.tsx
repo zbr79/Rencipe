@@ -6,6 +6,7 @@ import { useSettings } from "../contexts/SettingsContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { toastError } from "./toast/toast";
 import { authFetch, readAuthSession, writeAuthSession, type AuthSession } from "../utils/authSession";
+import { getErrorMessage } from "../utils/errorMessage";
 import styles from "./settings-modal.module.css";
 
 export default function SettingsModal() {
@@ -59,8 +60,8 @@ export default function SettingsModal() {
       } satisfies AuthSession;
       writeAuthSession(nextSession);
       setSession(nextSession);
-    } catch (error: any) {
-      toastError(error.message || "Could not save account setting");
+    } catch (error: unknown) {
+      toastError(getErrorMessage(error, "Could not save account setting"));
     } finally {
       setSavingAccountSetting(false);
     }

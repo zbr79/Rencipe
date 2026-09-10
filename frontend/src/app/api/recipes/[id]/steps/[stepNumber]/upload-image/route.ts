@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getErrorMessage } from "../../../../../../utils/errorMessage";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:6000";
 
@@ -9,7 +10,7 @@ function forwardHeaders(request: NextRequest): Record<string, string> {
 
 async function backendJson(response: Response) {
   const text = await response.text();
-  let data: any = {};
+  let data: unknown = {};
   if (text) {
     try {
       data = JSON.parse(text);
@@ -35,8 +36,8 @@ export async function POST(
     });
 
     return backendJson(response);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error uploading step image:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error, "Step image upload failed") }, { status: 500 });
   }
 }

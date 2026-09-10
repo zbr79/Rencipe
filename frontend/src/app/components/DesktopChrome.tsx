@@ -175,7 +175,7 @@ export default function DesktopChrome() {
           </button>
         )}
 
-        <nav className={styles.nav}>
+        <nav className={styles.nav} aria-label="Primary navigation">
           {navItems.map((item) => {
             if (item.href === "/settings") {
               return (
@@ -205,7 +205,7 @@ export default function DesktopChrome() {
 
         <div className={styles.sidebarSection}>
           <p className={styles.sidebarSectionLabel}>Explore</p>
-          <nav className={styles.sidebarSubNav}>
+          <nav className={styles.sidebarSubNav} aria-label="Explore navigation">
             <button
               type="button"
               className={styles.sidebarSubLink}
@@ -238,7 +238,7 @@ export default function DesktopChrome() {
         {recentlyViewed.length > 0 && (
           <div className={styles.sidebarSection}>
             <p className={styles.sidebarSectionLabel}>Recently viewed</p>
-            <nav className={styles.sidebarSubNav}>
+            <nav className={styles.sidebarSubNav} aria-label="Recently viewed navigation">
               {recentlyViewed.slice(0, MAX_RECENTLY_VIEWED_ITEMS).map((item) => (
                 <Link
                   key={item.id}

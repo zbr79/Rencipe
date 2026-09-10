@@ -12,6 +12,7 @@ import UnitConverter from "./UnitConverter";
 import { authFetch } from "../utils/authSession";
 import { getRecipeAuthor } from "../utils/recipeAuthor";
 import { getImageFocusStyle } from "../utils/imageFocus";
+import { getErrorMessage } from "../utils/errorMessage";
 
 const TABS = [
   { id: "recommended", label: "Recommended" },
@@ -20,7 +21,7 @@ const TABS = [
   { id: "health", label: "Health" },
 ];
 
-type Recipe = {
+export type Recipe = {
   id: string;
   _id?: string;
   title: string;
@@ -144,8 +145,8 @@ export default function HomePage({
 
       const parsed = data as ListRes;
       setRecipes(Array.isArray(parsed?.recipes) ? parsed.recipes : []);
-    } catch (e: any) {
-      setError(e?.message || "");
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, ""));
       setRecipes([]);
     } finally {
       setLoading(false);

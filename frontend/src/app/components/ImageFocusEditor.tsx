@@ -35,6 +35,8 @@ export default function ImageFocusEditor({
 
   useEffect(() => {
     if (!open) return;
+    // Reset the editable draft from the latest recipe value when the editor opens.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft(normalizeImageFocus(value));
   }, [open, value]);
 

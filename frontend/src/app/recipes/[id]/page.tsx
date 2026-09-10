@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import RecipeDetailPage from "./RecipeDetailClient";
+import RecipeDetailPage, { type Recipe } from "./RecipeDetailClient";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:6100";
 
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  let initialRecipe: any = null;
+  let initialRecipe: Recipe | null = null;
 
   try {
     const response = await fetch(`${BACKEND_URL}/recipes/${id}`, { cache: "no-store" });

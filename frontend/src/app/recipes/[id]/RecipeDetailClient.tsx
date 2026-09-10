@@ -17,8 +17,9 @@ import { authFetch, getCurrentUser, type AuthUser } from "../../utils/authSessio
 import type { RecipeLanguage } from "../../utils/recipeLanguage";
 import styles from "./page.module.css";
 import { recordRecentlyViewedRecipe } from "../../utils/recentlyViewedRecipes";
+import { getErrorMessage } from "../../utils/errorMessage";
 
-interface Recipe {
+export interface Recipe {
   id: string;
   title: string;
   subtitle?: string;
@@ -120,8 +121,8 @@ export default function RecipeDetailPage({
       setSelectedRating(0);
       setRatingMessage("");
       setRatingSubmitted(false);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
       console.error(err);
     } finally {
       setLoading(false);
@@ -140,8 +141,8 @@ export default function RecipeDetailPage({
       } else {
         await saveRecipe(undefined, recipeId);
       }
-    } catch (err: any) {
-      toastError(err.message || "Could not update saved recipe");
+    } catch (err: unknown) {
+      toastError(getErrorMessage(err, "Could not update saved recipe"));
     } finally {
       setIsSavingRecipe(false);
     }
@@ -165,8 +166,8 @@ export default function RecipeDetailPage({
       setRecipe(data.recipe);
       setRatingMessage("Rating submitted");
       setRatingSubmitted(true);
-    } catch (err: any) {
-      setRatingMessage(err.message || "Rating failed");
+    } catch (err: unknown) {
+      setRatingMessage(getErrorMessage(err, "Rating failed"));
     } finally {
       setRatingSubmitting(false);
     }
@@ -386,43 +387,41 @@ export default function RecipeDetailPage({
 
         </div>
 
-        {currentUser && currentUser.role !== "guest" && (
-          <CommentSection
-            entryType="recipe"
-            entryId={recipeId}
-            card
-            title="Reviews"
-            ratingSlot={
-              <div className={styles.mergedRating}>
-                <span className={styles.mergedRatingLabel}>Rate this recipe</span>
-                <div className={styles.ratingButtons}>
-                  {Array.from({ length: 5 }, (_, index) => {
-                    const rating = index + 1;
-                    return (
-                      <button
-                        key={rating}
-                        type="button"
-                        className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""} ${ratingSubmitted ? styles.starButtonDone : ""}`}
-                        onClick={() => handleRatingSubmit(rating)}
-                        disabled={ratingSubmitting || ratingSubmitted}
-                        aria-label={`Rate ${rating} star${rating === 1 ? "" : "s"}`}
-                      >
-                        <span className="material-symbols-outlined">star</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {ratingSubmitting ? (
-                  <span className={styles.ratingMessage}>Submitting...</span>
-                ) : ratingSubmitted ? (
-                  <span className={styles.ratingMessage}>You rated this {selectedRating}/5</span>
-                ) : (
-                  ratingMessage && <span className={styles.ratingMessage}>{ratingMessage}</span>
-                )}
+        <CommentSection
+          entryType="recipe"
+          entryId={recipeId}
+          card
+          title="Reviews"
+          ratingSlot={
+            <div className={styles.mergedRating}>
+              <span className={styles.mergedRatingLabel}>Rate this recipe</span>
+              <div className={styles.ratingButtons}>
+                {Array.from({ length: 5 }, (_, index) => {
+                  const rating = index + 1;
+                  return (
+                    <button
+                      key={rating}
+                      type="button"
+                      className={`${styles.starButton} ${selectedRating >= rating ? styles.starButtonActive : ""} ${ratingSubmitted ? styles.starButtonDone : ""}`}
+                      onClick={() => handleRatingSubmit(rating)}
+                      disabled={ratingSubmitting || ratingSubmitted}
+                      aria-label={`Rate ${rating} star${rating === 1 ? "" : "s"}`}
+                    >
+                      <span className="material-symbols-outlined">star</span>
+                    </button>
+                  );
+                })}
               </div>
-            }
-          />
-        )}
+              {ratingSubmitting ? (
+                <span className={styles.ratingMessage}>Submitting...</span>
+              ) : ratingSubmitted ? (
+                <span className={styles.ratingMessage}>You rated this {selectedRating}/5</span>
+              ) : (
+                ratingMessage && <span className={styles.ratingMessage}>{ratingMessage}</span>
+              )}
+            </div>
+          }
+        />
     </main>
   );
 }

@@ -22,6 +22,8 @@ export function CreateFormProvider({ children }: { children: ReactNode }) {
   const [recipeImageFile, setRecipeImageFile] = useState<File | null>(null);
 
   useEffect(() => {
+    // Close the global create form whenever navigation changes its route context.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsOpen(false);
   }, [pathname]);
 
