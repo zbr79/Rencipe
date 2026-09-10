@@ -31,6 +31,8 @@ export default function AccountSwitchModal({ isOpen, onClose }: AccountSwitchMod
 
   useEffect(() => {
     if (!isOpen) return;
+    // The modal reads browser-backed account state when it opens.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveSession(readAuthSession());
     setAccounts(readSignedInAccounts());
   }, [isOpen]);

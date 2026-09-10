@@ -99,12 +99,34 @@ cd ../frontend
 npm run build
 ```
 
-Run the frontend lint command:
+Run the backend test suite:
+
+```bash
+cd backend
+npm test
+```
+
+Run frontend lint:
 
 ```bash
 cd frontend
 npm run lint
 ```
+
+The lint command currently completes with non-blocking recommendations for image optimization, hook dependency review, and unused values.
+
+Run the complete browser suite:
+
+```bash
+cd frontend
+npm run test:e2e
+```
+
+The Playwright suite covers responsive layouts from phone through desktop widths, public navigation and search, recipe details, comments and ratings, the kitchen converter, admin image-focus editing, accessibility checks, and visual regression snapshots.
+
+## Continuous integration
+
+GitHub Actions runs on every branch push and pull request. It installs dependencies, runs backend tests and builds, then runs frontend linting, the production build, and the Playwright browser suite.
 
 ## Deployment
 
@@ -132,4 +154,4 @@ frontend/
 
 ## Current scope
 
-The application is suitable for demonstrating full-stack product development and responsive UI work. Before production use, it should receive additional automated tests, CI checks, rate limiting, tighter CORS configuration, guest-account cleanup, database backup procedures, and image licensing review.
+The application is suitable for demonstrating full-stack product development, responsive UI work, automated testing, and CI. Before production use, it should still receive rate limiting, tighter CORS configuration, guest-account cleanup, database backup procedures, and image licensing review.

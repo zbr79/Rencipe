@@ -207,7 +207,7 @@
   }
 
   button.sidebarSubLink:disabled {
-    opacity: 0.45;
+  color: var(--text-secondary);
     cursor: default;
   }
 
