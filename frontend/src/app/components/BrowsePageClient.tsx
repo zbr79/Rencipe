@@ -53,29 +53,8 @@ type BrowseItem =
 type VisibilityTab = "public" | "private";
 type SortMode = "popular" | "newest";
 
-function getRecipeTimestamp(recipe: Recipe) {
-  const timestamp = Date.parse(recipe.createdAt || "");
-  return Number.isFinite(timestamp) ? timestamp : 0;
-}
-
-function getRecipeStableId(recipe: Recipe) {
-  return String(recipe._id || recipe.id || "");
-}
-
 function getPopularityScore(recipe: Recipe) {
   return recipe.ratingAverage * 100 + recipe.ratingCount * 12 + recipe.likes * 5 + recipe.views * 0.1;
-}
-
-function compareNewestRecipes(left: Recipe, right: Recipe) {
-  const dateDiff = getRecipeTimestamp(right) - getRecipeTimestamp(left);
-  if (dateDiff !== 0) return dateDiff;
-  return getRecipeStableId(right).localeCompare(getRecipeStableId(left));
-}
-
-function comparePopularRecipes(left: Recipe, right: Recipe) {
-  const scoreDiff = getPopularityScore(right) - getPopularityScore(left);
-  if (scoreDiff !== 0) return scoreDiff;
-  return compareNewestRecipes(left, right);
 }
 
 function getItemTimestamp(item: BrowseItem) {

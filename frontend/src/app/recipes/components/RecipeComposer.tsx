@@ -71,7 +71,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
   const [persistingEdit, setPersistingEdit] = useState(false);
   const [stepImageUploadingCount, setStepImageUploadingCount] = useState(0);
   const [editSaveState, setEditSaveState] = useState<EditSaveState>("idle");
-  const [editSaveMessage, setEditSaveMessage] = useState("");
+  const [, setEditSaveMessage] = useState("");
   const [showCreateValidation, setShowCreateValidation] = useState(false);
   const editAutosaveTimerRef = useRef<number | null>(null);
   const lastSavedEditSignatureRef = useRef("");

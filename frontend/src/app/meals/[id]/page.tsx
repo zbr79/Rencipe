@@ -12,7 +12,7 @@ import { useSaved } from "../../contexts/SavedContext";
 import { toastError, toastSuccess } from "../../components/toast/toast";
 import { authFetch, getCurrentUser, getCurrentUserId, type AuthUser } from "../../utils/authSession";
 import type { AccountIdentity } from "../../utils/accountAvatar";
-import { filterRecipesForUserLanguage, isRecipeRelevantToUserLanguage, type RecipeLanguage } from "../../utils/recipeLanguage";
+import { isRecipeRelevantToUserLanguage, type RecipeLanguage } from "../../utils/recipeLanguage";
 import { matchesTextSearch } from "../../utils/textSearch";
 import { readRecentlyViewedRecipes, type RecentlyViewedRecipe } from "../../utils/recentlyViewedRecipes";
 import { getErrorMessage } from "../../utils/errorMessage";
@@ -401,7 +401,6 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
           }
 
           const initialSettings = getSettingsFromMeal(draftMeal);
-          const shouldAutoEdit = typeof window !== "undefined" && window.location.hash === "#edit";
           setMeal(draftMeal);
           setMealDraftId(loadedDraftId);
           setSettings(initialSettings);
@@ -722,7 +721,6 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
   async function handleDeleteCurrentMeal() {
     if (!meal || !canEditCurrentView) return;
 
-    const entryKind = getMealEntryKind(meal);
     const itemName = "meal";
     const approved = await confirm({
       title: "Delete meal",

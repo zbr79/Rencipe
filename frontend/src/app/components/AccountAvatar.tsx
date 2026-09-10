@@ -14,7 +14,7 @@ export default function AccountAvatar({ account, size = 32, className = "" }: Ac
   const avatarUrl = isAdmin ? "" : account?.avatarUrl?.trim() || "";
   const style = {
     "--avatar-size": `${size}px`,
-    "--avatar-bg": getAccountAvatarColor(account),
+    "--avatar-bg": getAccountAvatarColor(),
   } as CSSProperties;
 
   return (

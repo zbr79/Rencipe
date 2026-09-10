@@ -100,7 +100,6 @@ export default function HomePage({
   const [activeTab, setActiveTab] = useState("recommended");
   const [slidePosition, setSlidePosition] = useState(0);
   const [skipTransition, setSkipTransition] = useState(false);
-  const [paused, setPaused] = useState(false);
   const swipeStartXRef = useRef<number | null>(null);
   const swipeStartYRef = useRef<number | null>(null);
   const dragStartTimeRef = useRef(0);
@@ -200,7 +199,6 @@ export default function HomePage({
     swipeStartXRef.current = event.clientX;
     swipeStartYRef.current = event.clientY;
     dragStartTimeRef.current = Date.now();
-    setPaused(true);
   }
 
   function handleSlidePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
@@ -228,7 +226,6 @@ export default function HomePage({
     const startX = swipeStartXRef.current;
     swipeStartXRef.current = null;
     swipeStartYRef.current = null;
-    setPaused(false);
 
     if (startX === null) return;
 
@@ -275,7 +272,6 @@ export default function HomePage({
     draggingRef.current = false;
     setDragging(false);
     setDragOffset(0);
-    setPaused(false);
   }
 
   function handleSlideClick(event: ReactMouseEvent<HTMLAnchorElement>) {
@@ -295,8 +291,6 @@ export default function HomePage({
           onPointerMove={handleSlidePointerMove}
           onPointerUp={handleSlidePointerUp}
           onPointerCancel={handleSlidePointerCancel}
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
         >
           {loading ? (
             <div className={styles.heroLoading}>
