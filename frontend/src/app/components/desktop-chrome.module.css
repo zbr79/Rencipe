@@ -207,8 +207,13 @@
   }
 
   button.sidebarSubLink:disabled {
-  color: var(--text-secondary);
+    color: var(--text-secondary);
+    opacity: 1;
     cursor: default;
+  }
+
+  button.sidebarSubLink:disabled span:first-child {
+    color: var(--text-secondary);
   }
 
   .sidebarSubLink:hover {
