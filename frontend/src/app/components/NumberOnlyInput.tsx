@@ -20,6 +20,8 @@ export default function NumberOnlyInput({ value, onValueChange, min, max, onBlur
 
   useEffect(() => {
     const nextDraft = String(value);
+    // Keep the local text draft aligned when the controlled numeric value changes externally.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraftValue((current) => (current === nextDraft ? current : nextDraft));
   }, [value]);
 
