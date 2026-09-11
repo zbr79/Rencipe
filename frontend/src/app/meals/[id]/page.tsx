@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import NumberOnlyInput from "../../components/NumberOnlyInput";
@@ -153,7 +154,7 @@ function titleCaseMeal(type: MealType) {
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
-function getMealEntryKind(meal?: { kind?: MealEntryKind }): MealEntryKind {
+function getMealEntryKind(): MealEntryKind {
   return "meal";
 }
 
@@ -188,7 +189,7 @@ function normalizeMealTypes(types?: MealType[]): MealType[] {
 }
 
 function normalizeMeal(rawMeal: Meal, user?: AuthUser | null): Meal {
-  const kind = getMealEntryKind(rawMeal);
+  const kind = getMealEntryKind();
   const inboxRecipes = filterMealRecipesForUserLanguage((rawMeal.recipes || []) as MealRecipe[], user);
 
   if (kind === "meal") {
@@ -271,7 +272,7 @@ function getMealOwnerId(meal: Meal | null) {
 }
 
 function getInitialSlot(meal: Meal): ActiveSlot | null {
-  if (getMealEntryKind(meal) === "meal") return null;
+  if (getMealEntryKind() === "meal") return null;
 
   return {
     dayNumber: meal.days?.[0]?.dayNumber || 1,
@@ -280,13 +281,24 @@ function getInitialSlot(meal: Meal): ActiveSlot | null {
 }
 
 function getSettingsSignature(
-  settings: { name: string; peopleCount: number; numberOfDays: number; mealTypes: MealType[]; isPublic: boolean },
-  entryKind: MealEntryKind
+  settings: { name: string; peopleCount: number; numberOfDays: number; mealTypes: MealType[]; isPublic: boolean }
 ) {
   return JSON.stringify({
     name: settings.name.trim(),
     peopleCount: settings.peopleCount,
     isPublic: settings.isPublic,
+  });
+}
+
+function getMealDraftSignature(
+  nextSettings: { name: string; peopleCount: number; isPublic: boolean },
+  recipes: MealRecipe[]
+) {
+  return JSON.stringify({
+    name: nextSettings.name.trim(),
+    peopleCount: nextSettings.peopleCount,
+    isPublic: nextSettings.isPublic,
+    recipes: recipes.map(getRecipeId).filter(Boolean),
   });
 }
 
@@ -369,7 +381,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     fetchSaved();
 
-  }, []);
+  }, [fetchSaved]);
 
   useEffect(() => {
     if (!mealId) return;
@@ -405,7 +417,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
           setMealDraftId(loadedDraftId);
           setSettings(initialSettings);
           setRevertSettingsSnapshot(initialSettings);
-          lastSavedSettingsSignatureRef.current = getSettingsSignature(initialSettings, "meal");
+          lastSavedSettingsSignatureRef.current = getSettingsSignature(initialSettings);
           lastSavedMealDraftSignatureRef.current = getMealDraftSignature(initialSettings, draftMeal.recipes || []);
           setSettingsSaveState("blocked");
           setSettingsSaveMessage("Saved as draft until required fields are complete.");
@@ -428,12 +440,12 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
         const normalizedMeal = normalizeMeal(data.meal, activeUser);
         const initialSettings = getSettingsFromMeal(normalizedMeal);
         const shouldAutoEdit = typeof window !== "undefined"
-          && getMealEntryKind(normalizedMeal) === "meal"
+          && getMealEntryKind() === "meal"
           && window.location.hash === "#edit";
         setMeal(normalizedMeal);
         setSettings(initialSettings);
         setRevertSettingsSnapshot(initialSettings);
-        lastSavedSettingsSignatureRef.current = getSettingsSignature(initialSettings, getMealEntryKind(normalizedMeal));
+        lastSavedSettingsSignatureRef.current = getSettingsSignature(initialSettings);
         setSettingsSaveState("saved");
         setSettingsSaveMessage("All changes saved.");
         setActiveSlot(getInitialSlot(normalizedMeal));
@@ -451,15 +463,6 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
 
     fetchMeal();
   }, [mealId]);
-
-  function getMealDraftSignature(nextSettings: typeof settings, recipes: MealRecipe[]) {
-    return JSON.stringify({
-      name: nextSettings.name.trim(),
-      peopleCount: nextSettings.peopleCount,
-      isPublic: nextSettings.isPublic,
-      recipes: recipes.map(getRecipeId).filter(Boolean),
-    });
-  }
 
   function getMealDraftPayload(nextSettings: typeof settings, recipes: MealRecipe[]) {
     const people = Array.from({ length: nextSettings.peopleCount }, (_, index) => ({
@@ -579,7 +582,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
       setMealDraftId(null);
       setSettings(normalizedSettings);
       setRevertSettingsSnapshot(normalizedSettings);
-      lastSavedSettingsSignatureRef.current = getSettingsSignature(normalizedSettings, "meal");
+      lastSavedSettingsSignatureRef.current = getSettingsSignature(normalizedSettings);
       setSettingsSaveState("saved");
       setSettingsSaveMessage("Meal created.");
       setDraftSaveState("idle");
@@ -601,7 +604,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
   }, [pickerOpen]);
 
   useEffect(() => {
-    if (meal && getMealEntryKind(meal) === "meal" && recipeSource === "meal") {
+    if (meal && getMealEntryKind() === "meal" && recipeSource === "meal") {
       setRecipeSource("website");
     }
   }, [meal, recipeSource]);
@@ -626,7 +629,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
 
   const recipesInMeal = useMemo(() => {
     if (!meal) return [];
-    if (getMealEntryKind(meal) === "meal") {
+    if (getMealEntryKind() === "meal") {
       return uniqueRecipes(meal.recipes || []);
     }
     const scheduledRecipes = (meal.days || []).flatMap((day) => day.meals.flatMap((meal) => meal.recipes));
@@ -667,7 +670,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
   }, [availableRecipesInMeal]);
 
   const canEditMeal = Boolean(meal && currentUser && (currentUser.role === "admin" || getMealOwnerId(meal) === currentUser.id));
-  const isMealEntry = getMealEntryKind(meal || undefined) === "meal";
+  const isMealEntry = getMealEntryKind() === "meal";
   const canEditCurrentView = canEditMeal && (!isMealEntry || mealEditMode);
 
   const sourceRecipes = useMemo(() => {
@@ -692,7 +695,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
 
     setSaving(true);
     try {
-      const body = getMealEntryKind(nextMeal) === "meal"
+      const body = getMealEntryKind() === "meal"
         ? { recipes: serializeRecipes(nextMeal.recipes || []) }
         : { days: serializeDays(nextMeal.days || []) };
 
@@ -705,7 +708,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
       const data = await response.json();
       const normalizedMeal = normalizeMeal(data.meal, currentUser);
       setMeal(normalizedMeal);
-      if (getMealEntryKind(normalizedMeal) === "meal") {
+      if (getMealEntryKind() === "meal") {
         setActiveSlot(null);
       }
       if (successMessage) toastSuccess(successMessage);
@@ -754,7 +757,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
   ) {
     if (!meal || !canEditCurrentView) return false;
 
-    const entryKind = getMealEntryKind(meal);
+    const entryKind = getMealEntryKind();
     const people = Array.from({ length: nextSettings.peopleCount }, (_, index) => ({
       name: meal.people[index]?.name || `Person ${index + 1}`,
       modifier: 1,
@@ -803,11 +806,11 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
       const normalizedSettings = getSettingsFromMeal(normalizedMeal);
       setMeal(normalizedMeal);
       setSettings(normalizedSettings);
-      lastSavedSettingsSignatureRef.current = getSettingsSignature(normalizedSettings, getMealEntryKind(normalizedMeal));
+      lastSavedSettingsSignatureRef.current = getSettingsSignature(normalizedSettings);
       setSettingsSaveState("saved");
       setSettingsSaveMessage(options?.statusMessage || "All changes saved.");
       setActiveSlot((current) => {
-        if (getMealEntryKind(normalizedMeal) === "meal") {
+        if (getMealEntryKind() === "meal") {
           return null;
         }
 
@@ -921,6 +924,8 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
         mealDraftAutosaveTimerRef.current = null;
       }
     };
+  // Autosave intentionally captures the current state snapshot instead of unstable callback identities.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canEditCurrentView, loading, meal, saving, settings]);
 
   useEffect(() => {
@@ -928,8 +933,8 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
       return;
     }
 
-    const entryKind = getMealEntryKind(meal);
-    const nextSignature = getSettingsSignature(settings, entryKind);
+    const entryKind = getMealEntryKind();
+    const nextSignature = getSettingsSignature(settings);
     if (nextSignature === lastSavedSettingsSignatureRef.current) {
       if (settingsSaveState === "saving") {
         setSettingsSaveState("saved");
@@ -960,6 +965,8 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
         settingsAutosaveTimerRef.current = null;
       }
     };
+  // Autosave intentionally captures the current state snapshot instead of unstable callback identities.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canEditCurrentView, loading, meal, saving, settings, settingsSaveState]);
 
   async function revertSettings() {
@@ -985,7 +992,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
     if (!meal || !canEditCurrentView) return;
     const recipeId = getRecipeId(recipe);
 
-    if (getMealEntryKind(meal) === "meal") {
+    if (getMealEntryKind() === "meal") {
       if ((meal.recipes || []).some((item) => getRecipeId(item) === recipeId)) return;
 
       const nextMeal = {
@@ -1021,7 +1028,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
   async function removeRecipeFromMeal(recipeId: string, dayNumber?: number, mealType?: MealType) {
     if (!meal || !canEditCurrentView) return;
 
-    if (getMealEntryKind(meal) === "meal") {
+    if (getMealEntryKind() === "meal") {
       const nextMeal = {
         ...meal,
         recipes: (meal.recipes || []).filter((recipe) => getRecipeId(recipe) !== recipeId),
@@ -1068,7 +1075,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
   const sourceTabs = isMeal ? MEAL_SOURCE_TABS : MEAL_ENTRY_SOURCE_TABS;
   const sourceLabel = sourceTabs.find((tab) => tab.id === recipeSource)?.label.toLowerCase() || "website";
   const hasRevertableSettingsChanges = revertSettingsSnapshot
-    ? getSettingsSignature(settings, "meal") !== getSettingsSignature(revertSettingsSnapshot, "meal")
+    ? getSettingsSignature(settings) !== getSettingsSignature(revertSettingsSnapshot)
     : false;
   const statusMessage = meal._id === "new" ? (draftSaveMessage || settingsSaveMessage) : settingsSaveMessage;
   const statusState = meal._id === "new" && draftSaveState === "error" ? "error" : settingsSaveState;
@@ -1221,7 +1228,7 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
                     return (
                       <div key={recipeId || `deleted-recipe-${index}`} className={`${styles.scheduledRecipe} ${styles.scheduledRecipeWithImage} ${readOnlyRecipe ? styles.scheduledRecipeReadOnly : ""} ${!recipeAvailable ? styles.scheduledRecipeDeleted : ""}`}>
                         {recipeAvailable && recipe.image ? (
-                          <img className={styles.scheduledRecipeImage} src={recipe.image} alt={recipe.title} />
+                          <Image className={styles.scheduledRecipeImage} src={recipe.image} alt={recipe.title} width={44} height={44} unoptimized />
                         ) : (
                           <span className={`material-symbols-outlined ${styles.scheduledRecipeImage}`}>{recipeAvailable ? "restaurant" : "no_food"}</span>
                         )}
@@ -1334,7 +1341,9 @@ export default function MealDetailPage({ params }: { params: Promise<{ id: strin
                 const recipeId = getRecipeId(recipe);
                 return (
                   <button key={recipeId} type="button" className={styles.recipeResult} onClick={() => addRecipeToActiveMeal(recipe)} disabled={saving || (!isMeal && !activeSlot)} aria-label={isMeal ? `Add ${recipe.title} to this meal` : `Add ${recipe.title} to ${activeSlot ? `Day ${activeSlot.dayNumber} ${titleCaseMeal(activeSlot.mealType)}` : "the selected meal"}`}>
-                    {recipe.image ? <img src={recipe.image} alt={recipe.title} /> : <span className="material-symbols-outlined">restaurant</span>}
+                    {recipe.image ? (
+                      <Image src={recipe.image} alt={recipe.title} width={44} height={44} unoptimized />
+                    ) : <span className="material-symbols-outlined">restaurant</span>}
                     <span>{recipe.title}</span>
                     <span className="material-symbols-outlined">add</span>
                   </button>

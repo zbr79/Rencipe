@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Breadcrumbs from "../components/Breadcrumbs";
@@ -123,7 +124,7 @@ function MyWorkPageInner() {
     fetchMeals();
     fetchRecipes();
     fetchTrash(account?.id || "");
-  }, []);
+  }, [fetchMeals]);
 
   useEffect(() => {
     if (searchParams.get("kind") === "trash") {
@@ -311,7 +312,7 @@ function MyWorkPageInner() {
             item.trashed ? (
               <div key={`${item.kind}-${item.id}`} className={`${styles.workRow} ${styles.workRowWithAction}`}>
                 <div className={styles.workImage}>
-                  {item.image ? <img src={item.image} alt={item.title} /> : <span className="material-symbols-outlined">delete</span>}
+                  {item.image ? <Image src={item.image} alt={item.title} width={56} height={56} unoptimized /> : <span className="material-symbols-outlined">delete</span>}
                 </div>
                 <div className={styles.workText}>
                   <h2>{item.title}</h2>
@@ -330,7 +331,7 @@ function MyWorkPageInner() {
             ) : (
               <Link key={`${item.kind}-${item.id}`} href={item.href || "/my-work"} className={styles.workRow}>
                 <div className={styles.workImage}>
-                  {item.image ? <img src={item.image} alt={item.title} /> : <span className="material-symbols-outlined">{item.icon}</span>}
+                  {item.image ? <Image src={item.image} alt={item.title} width={56} height={56} unoptimized /> : <span className="material-symbols-outlined">{item.icon}</span>}
                 </div>
                 <div className={styles.workText}>
                   <h2>{item.title}</h2>

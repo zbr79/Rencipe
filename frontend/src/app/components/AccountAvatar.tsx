@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import Image from "next/image";
 import { getAccountAvatarColor, getAccountDisplayName, getAccountInitial, type AccountIdentity } from "../utils/accountAvatar";
 import styles from "./account-avatar.module.css";
 
@@ -19,7 +20,7 @@ export default function AccountAvatar({ account, size = 32, className = "" }: Ac
 
   return (
     <span className={`${styles.avatar} ${className}`} style={style} aria-label={label} title={label}>
-      {avatarUrl ? <img className={styles.image} src={avatarUrl} alt="" /> : getAccountInitial(account)}
+      {avatarUrl ? <Image className={styles.image} src={avatarUrl} alt="" width={size} height={size} unoptimized /> : getAccountInitial(account)}
     </span>
   );
 }

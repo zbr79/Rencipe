@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import styles from "./styles.module.css";
 
 interface Step {
@@ -109,9 +110,12 @@ export default function StepsSection({
 
                   {stepImage && (
                     <div className={styles.imagePreviewCard}>
-                      <img
+                      <Image
                         src={stepImage}
                         alt={`Step ${step.stepNumber}`}
+                        width={640}
+                        height={360}
+                        unoptimized
                         className={styles.stepImage}
                       />
                     </div>

@@ -132,7 +132,7 @@ export default function BrowsePage() {
   useEffect(() => {
     fetchSaved();
 
-  }, []);
+  }, [fetchSaved]);
 
   const fetchBrowseData = async () => {
     setLoading(true);
@@ -166,7 +166,10 @@ export default function BrowsePage() {
     [allMeals, visibilityTab]
   );
   const filteredRecipes = visibleRecipes.filter((recipe) => matchesCategory(recipe, selectedCategories));
-  const filteredMeals = selectedCategories.length > 0 ? [] : visibleMeals;
+  const filteredMeals = useMemo(
+    () => (selectedCategories.length > 0 ? [] : visibleMeals),
+    [selectedCategories.length, visibleMeals]
+  );
   const browseItems = useMemo<BrowseItem[]>(() => {
     const recipeItems = filteredRecipes.map((recipe) => {
       const recipeId = recipe._id || recipe.id;
@@ -264,7 +267,7 @@ export default function BrowsePage() {
 
       {browseCategories.length > 0 && (
         <div className={styles.categoryTabsWrap}>
-          <div ref={categoryTabsRef} className={styles.categoryTabs} role="list" aria-label="Browse categories">
+          <div ref={categoryTabsRef} className={styles.categoryTabs} role="group" aria-label="Browse categories">
             <button
               type="button"
               className={`${styles.categoryTab} ${selectedCategories.length === 0 ? styles.categoryTabActive : ""}`}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type TransitionEvent as ReactTransitionEvent } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../page.module.css";
 import { useSaved } from "../contexts/SavedContext";
@@ -156,11 +157,11 @@ export default function HomePage({
     if (initialRecipes === null) {
       fetchRecipes();
     }
-  }, []);
+  }, [initialRecipes]);
 
   useEffect(() => {
     fetchSaved();
-  }, []);
+  }, [fetchSaved]);
 
   const tabs = TABS;
 
@@ -325,9 +326,12 @@ export default function HomePage({
                       aria-hidden={!active || isClone}
                       tabIndex={active && !isClone ? 0 : -1}
                     >
-                      <img
+                      <Image
                         src={recipe.image!}
                         alt={recipe.title}
+                        width={1600}
+                        height={900}
+                        unoptimized
                         className={styles.slideImage}
                         style={getImageFocusStyle(recipe.imageFocus?.hero)}
                         draggable={false}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import styles from "./RecipeComposer.module.css";
 import { useCreateForm } from "../../contexts/CreateFormContext";
@@ -401,6 +402,8 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
       return;
     }
     void saveDraft(getDraftData(), getDraftName());
+  // Draft autosave intentionally tracks the current form snapshot, not recreated helper functions.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftLoaded, draftName, formData, isCreateMode, recipeImage, saveDraft, stepImages, tagsInput]);
 
   const addMainIngredient = () => {
@@ -784,6 +787,8 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
         editAutosaveTimerRef.current = null;
       }
     };
+  // Edit autosave intentionally tracks the current form snapshot, not the recreated persistence callback.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     deleting,
     currentUser,
@@ -983,7 +988,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
             >
               {recipeImage ? (
                 <>
-                  <img src={recipeImage} alt="Recipe cover" className={styles.createCoverPreviewImage} />
+                  <Image src={recipeImage} alt="Recipe cover" width={640} height={480} unoptimized className={styles.createCoverPreviewImage} />
                   <div className={styles.createCoverPreviewMeta}>
                     <span>{imageUploading ? "Saving cover image..." : "Tap to replace cover image"}</span>
                     <span className="material-symbols-outlined" aria-hidden="true">
@@ -1018,7 +1023,7 @@ export default function RecipeComposer({ mode, draftId, recipeId }: RecipeCompos
               aria-label={isEditMode ? (imageUploading ? "Saving cover image" : "Replace cover image") : "Change cover image"}
               title={isEditMode ? (imageUploading ? "Saving cover image" : "Replace cover image") : "Change cover image"}
             >
-              <img src={recipeImage} alt="Recipe cover" className={styles.recipeImage} />
+              <Image src={recipeImage} alt="Recipe cover" width={640} height={360} unoptimized className={styles.recipeImage} />
               {isEditMode && (
                 <>
                   <span className={styles.replaceImageIconButton} aria-hidden="true">

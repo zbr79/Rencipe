@@ -22,7 +22,7 @@ export default function MealsPage() {
 
   useEffect(() => {
     fetchMeals();
-  }, []);
+  }, [fetchMeals]);
 
   const handleDeleteMeal = async (mealId: string) => {
     if (!(await confirm({
