@@ -53,29 +53,8 @@ type BrowseItem =
 type VisibilityTab = "public" | "private";
 type SortMode = "popular" | "newest";
 
-function getRecipeTimestamp(recipe: Recipe) {
-  const timestamp = Date.parse(recipe.createdAt || "");
-  return Number.isFinite(timestamp) ? timestamp : 0;
-}
-
-function getRecipeStableId(recipe: Recipe) {
-  return String(recipe._id || recipe.id || "");
-}
-
 function getPopularityScore(recipe: Recipe) {
   return recipe.ratingAverage * 100 + recipe.ratingCount * 12 + recipe.likes * 5 + recipe.views * 0.1;
-}
-
-function compareNewestRecipes(left: Recipe, right: Recipe) {
-  const dateDiff = getRecipeTimestamp(right) - getRecipeTimestamp(left);
-  if (dateDiff !== 0) return dateDiff;
-  return getRecipeStableId(right).localeCompare(getRecipeStableId(left));
-}
-
-function comparePopularRecipes(left: Recipe, right: Recipe) {
-  const scoreDiff = getPopularityScore(right) - getPopularityScore(left);
-  if (scoreDiff !== 0) return scoreDiff;
-  return compareNewestRecipes(left, right);
 }
 
 function getItemTimestamp(item: BrowseItem) {
@@ -153,7 +132,7 @@ export default function BrowsePage() {
   useEffect(() => {
     fetchSaved();
 
-  }, []);
+  }, [fetchSaved]);
 
   const fetchBrowseData = async () => {
     setLoading(true);
@@ -187,7 +166,10 @@ export default function BrowsePage() {
     [allMeals, visibilityTab]
   );
   const filteredRecipes = visibleRecipes.filter((recipe) => matchesCategory(recipe, selectedCategories));
-  const filteredMeals = selectedCategories.length > 0 ? [] : visibleMeals;
+  const filteredMeals = useMemo(
+    () => (selectedCategories.length > 0 ? [] : visibleMeals),
+    [selectedCategories.length, visibleMeals]
+  );
   const browseItems = useMemo<BrowseItem[]>(() => {
     const recipeItems = filteredRecipes.map((recipe) => {
       const recipeId = recipe._id || recipe.id;
@@ -285,7 +267,7 @@ export default function BrowsePage() {
 
       {browseCategories.length > 0 && (
         <div className={styles.categoryTabsWrap}>
-          <div ref={categoryTabsRef} className={styles.categoryTabs} role="list" aria-label="Browse categories">
+          <div ref={categoryTabsRef} className={styles.categoryTabs} role="group" aria-label="Browse categories">
             <button
               type="button"
               className={`${styles.categoryTab} ${selectedCategories.length === 0 ? styles.categoryTabActive : ""}`}

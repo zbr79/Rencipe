@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import BackButton from "../../components/BackButton";
 import Breadcrumbs from "../../components/Breadcrumbs";
@@ -95,7 +96,9 @@ export default function RecipeDetailPage({
     }
     setCurrentUser(getCurrentUser());
     fetchSaved();
-  }, [recipeId]);
+  // Load when the route changes; local fetchRecipe is intentionally not an effect dependency.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchSaved, recipeId]);
 
   const fetchRecipe = async () => {
     setLoading(true);
@@ -309,9 +312,12 @@ export default function RecipeDetailPage({
 
           {recipe.image && (
             <div className={styles.imageContainer}>
-              <img
+              <Image
                 src={recipe.image}
                 alt={recipe.title}
+                width={1600}
+                height={900}
+                unoptimized
                 className={styles.recipeImage}
                 style={getImageFocusStyle(recipe.imageFocus?.detail)}
                 fetchPriority="high"
@@ -366,9 +372,12 @@ export default function RecipeDetailPage({
                 <div>
                   <p>{step.instruction}</p>
                   {step.image && (
-                    <img
+                    <Image
                       src={step.image}
                       alt={`Step ${step.stepNumber}`}
+                      width={640}
+                      height={360}
+                      unoptimized
                       className={styles.stepImage}
                     />
                   )}

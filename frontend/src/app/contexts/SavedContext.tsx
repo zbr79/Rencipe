@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useCallback, useContext, useState, ReactNode } from "react";
 import { toastError, toastSuccess } from "../components/toast/toast";
 import { authFetch, getCurrentUser, getCurrentUserId } from "../utils/authSession";
 import { filterRecipesForUserLanguage, type RecipeLanguage } from "../utils/recipeLanguage";
@@ -133,9 +133,9 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   const [loadingMeals, setLoadingMeals] = useState(false);
   const [errorMeals, setErrorMeals] = useState<string | null>(null);
 
-  const resolveUserId = (userId?: string) => getCurrentUserId() || userId || "";
+  const resolveUserId = useCallback((userId?: string) => getCurrentUserId() || userId || "", []);
 
-  const fetchSaved = async (userId?: string) => {
+  const fetchSaved = useCallback(async (userId?: string) => {
     const accountId = resolveUserId(userId);
     if (!accountId) {
       setSavedRecipes([]);
@@ -163,7 +163,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoadingSaved(false);
     }
-  };
+  }, [resolveUserId]);
 
   const saveRecipe = async (userId: string | undefined, recipeId: string) => {
     const accountId = resolveUserId(userId);
@@ -287,7 +287,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     return savedMeals.some((meal) => (meal._id || meal.id) === mealId);
   };
 
-  const fetchMeals = async (userId?: string) => {
+  const fetchMeals = useCallback(async (userId?: string) => {
     const accountId = resolveUserId(userId);
     if (!accountId) {
       setMeals([]);
@@ -310,7 +310,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoadingMeals(false);
     }
-  };
+  }, [resolveUserId]);
 
   const createMeal = async ({ userId, kind = "meal", numberOfPeople, numberOfDays, mealTypes, name, people, recipes, isPublic }: CreateMealInput): Promise<Meal> => {
     if (kind !== "meal") {

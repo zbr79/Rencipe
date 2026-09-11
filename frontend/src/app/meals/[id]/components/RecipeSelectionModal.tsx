@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import styles from "./recipe-selection-modal.module.css";
 import { matchesTextSearch } from "../../../utils/textSearch";
 
@@ -100,9 +101,12 @@ export default function RecipeSelectionModal({
                 onClick={() => handleSelectRecipe(recipe.id)}
               >
                 {recipe.image && (
-                  <img
+                  <Image
                     src={recipe.image}
                     alt={recipe.title}
+                    width={80}
+                    height={80}
+                    unoptimized
                     className={styles.recipeImage}
                   />
                 )}

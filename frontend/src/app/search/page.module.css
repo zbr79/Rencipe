@@ -13,6 +13,7 @@
   width: min(100%, 860px);
   margin: 0 auto;
   padding: 14px 18px 96px;
+  overflow-x: clip;
 }
 
 .pageTop {

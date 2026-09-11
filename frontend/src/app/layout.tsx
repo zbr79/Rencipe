@@ -15,6 +15,8 @@ import ConfirmDialogProvider from './components/ConfirmDialogProvider';
 import ToastProvider from './components/toast/ToastProvider';
 import './globals.css';
 
+/* Material Symbols must remain in the app layout so icons are available globally. */
+/* eslint-disable @next/next/no-page-custom-font, @next/next/google-font-display */
 export const metadata = {
   title: 'Rencipe',
   description: 'Recipe sharing and meal building platform',
@@ -36,7 +38,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block" />
       </head>
       <body>
         <ThemeProvider>

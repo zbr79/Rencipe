@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import {
   DEFAULT_IMAGE_FOCUS,
@@ -143,7 +144,15 @@ export default function ImageFocusEditor({
           role="application"
           aria-label="Drag image to adjust focus"
         >
-          <img src={image} alt="" style={getImageFocusStyle(draft[surface])} draggable={false} />
+          <Image
+            src={image}
+            alt=""
+            width={1600}
+            height={900}
+            unoptimized
+            style={getImageFocusStyle(draft[surface])}
+            draggable={false}
+          />
           <div className={styles.displayArea} aria-hidden="true" />
         </div>
 
@@ -169,19 +178,19 @@ export default function ImageFocusEditor({
           <div>
             <span className={styles.previewLabel}>Card preview</span>
             <div className={`${styles.preview} ${styles.previewCard}`}>
-              <img src={image} alt="" style={getImageFocusStyle(draft.card)} />
+              <Image src={image} alt="" width={1600} height={900} unoptimized style={getImageFocusStyle(draft.card)} />
             </div>
           </div>
           <div>
             <span className={styles.previewLabel}>Home slideshow preview</span>
             <div className={`${styles.preview} ${styles.previewHero}`}>
-              <img src={image} alt="" style={getImageFocusStyle(draft.hero)} />
+              <Image src={image} alt="" width={1600} height={900} unoptimized style={getImageFocusStyle(draft.hero)} />
             </div>
           </div>
           <div>
             <span className={styles.previewLabel}>Detail preview</span>
             <div className={`${styles.preview} ${styles.previewDetail}`}>
-              <img src={image} alt="" style={getImageFocusStyle(draft.detail)} />
+              <Image src={image} alt="" width={1600} height={900} unoptimized style={getImageFocusStyle(draft.detail)} />
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Breadcrumbs from "../components/Breadcrumbs";
@@ -131,7 +132,9 @@ export default function DraftsPage() {
             <div key={draft._id} className={styles.swipeRow} {...swipeRowDrag}>
               <button type="button" className={styles.draftRow} onClick={() => handleOpenDraft(draft._id)}>
                 <div className={styles.draftImage}>
-                  {draft.image ? <img src={draft.image} alt={draft.title || draft.name || "Draft"} /> : <span className="material-symbols-outlined">edit_note</span>}
+                  {draft.image ? (
+                    <Image src={draft.image} alt={draft.title || draft.name || "Draft"} width={56} height={56} unoptimized />
+                  ) : <span className="material-symbols-outlined">edit_note</span>}
                 </div>
                 <div className={styles.draftText}>
                   <h2>{draft.name || draft.title || "Untitled Draft"}</h2>

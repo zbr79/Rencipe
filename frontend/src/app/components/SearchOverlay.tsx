@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import searchStyles from "./search-overlay.module.css";
@@ -83,7 +84,7 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 
     fetchSaved();
 
-  }, [open]);
+  }, [fetchSaved, open]);
 
   useEffect(() => {
     if (!open || didLoadRecipes) return;
@@ -234,7 +235,7 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                   >
                     <span className={searchStyles.historyRowText}>{entry.value}</span>
                     {entry.previewImage ? (
-                      <img className={searchStyles.historyPreview} src={entry.previewImage} alt="" />
+                      <Image className={searchStyles.historyPreview} src={entry.previewImage} alt="" width={44} height={44} unoptimized />
                     ) : null}
                   </button>
                 ))}
@@ -280,7 +281,16 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                     }}
                   >
                     <div className={searchStyles.recipeImage}>
-                      {recipe.image ? <img src={recipe.image} alt={recipe.title} style={getImageFocusStyle(recipe.imageFocus?.card)} /> : <span className="material-symbols-outlined">restaurant</span>}
+                      {recipe.image ? (
+                        <Image
+                          src={recipe.image}
+                          alt={recipe.title}
+                          width={48}
+                          height={48}
+                          unoptimized
+                          style={getImageFocusStyle(recipe.imageFocus?.card)}
+                        />
+                      ) : <span className="material-symbols-outlined">restaurant</span>}
                     </div>
                     <div className={searchStyles.recipeBody}>
                       <h3>{recipe.title}</h3>

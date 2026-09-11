@@ -27,6 +27,6 @@ export function getAccountInitial(account?: AccountIdentity | null) {
   return (firstLetter || "R").toUpperCase();
 }
 
-export function getAccountAvatarColor(account?: AccountIdentity | null) {
+export function getAccountAvatarColor() {
   return "#dbeafe";
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import AccountAvatar from "./AccountAvatar";
 import { getAccountDisplayName, type AccountIdentity } from "../utils/accountAvatar";
 import { getImageFocusStyle, type RecipeImageFocus } from "../utils/imageFocus";
@@ -38,7 +39,14 @@ export default function RecipeCard({
       <Link href={href} className={styles.cardLink}>
         <div className={styles.cardImage}>
           {image ? (
-            <img src={image} alt={title} loading="lazy" style={getImageFocusStyle(imageFocus?.card)} />
+            <Image
+              src={image}
+              alt={title}
+              width={1600}
+              height={900}
+              unoptimized
+              style={getImageFocusStyle(imageFocus?.card)}
+            />
           ) : (
             <div className={styles.imagePlaceholder}>
               <span className="material-symbols-rounded" aria-hidden="true">{imageIcon}</span>
@@ -47,7 +55,7 @@ export default function RecipeCard({
           {badge && <span className={styles.cardBadge}>{badge}</span>}
         </div>
         <div className={styles.cardContent}>
-          <h3 className={styles.cardTitle}>{title}</h3>
+          <h2 className={styles.cardTitle}>{title}</h2>
           {subtitle && <p className={styles.cardSubtitle}>{subtitle}</p>}
         </div>
       </Link>

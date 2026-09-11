@@ -182,6 +182,7 @@
 }
 
 .preview {
+  position: relative;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 9px;
